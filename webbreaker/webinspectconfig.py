@@ -14,7 +14,6 @@ import xml.etree.ElementTree as ET
 from subprocess import CalledProcessError, check_output
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from subprocess import CalledProcessError, check_output, Popen
 
 runenv = WebBreakerHelper.check_run_env()
 
