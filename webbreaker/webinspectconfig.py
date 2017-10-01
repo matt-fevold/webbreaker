@@ -6,15 +6,15 @@ try:
 except ImportError: #Python3
     import configparser
 import argparse
-import os
+import os, sys
 import random
 import string
 import re
 import xml.etree.ElementTree as ET
-from git import Repo
+from subprocess import CalledProcessError, check_output
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from subprocess import CalledProcessError, Popen, PIPE, Popen, STDOUT
+from subprocess import CalledProcessError, check_output, Popen
 
 runenv = WebBreakerHelper.check_run_env()
 
@@ -242,14 +242,14 @@ class WebInspectConfig(object):
                 Logger.console.info(
                     "Fetching the WebInspect configurations from {}\n".format(full_path))
                 Repo.clone_from(self.webinspect_git, full_path)
+                check_output(['git', 'clone', '--progress', self.webinspect_git, full_path])
 
             else:
                 Logger.console.info(
                     "Updating your WebInspect configurations from {}".format(full_path))
-                repo = Repo.init(full_path)
-                repo.git.reset('--hard')
-                repo.remotes.origin.pull()
-        # TODO: Need an exit here
-        #Cmd('git') failed due to: exit code(128)
+                check_output(['git','init', full_path])
+                check_output(['git', '--git-dir=' + full_path + '/.git', 'reset', '--hard'])
+                check_output(['git', '--git-dir=' + full_path + '/.git', 'pull', '--rebase'])
+                sys.stdout.flush()
         except (CalledProcessError, AttributeError) as e:
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!".format(e))
