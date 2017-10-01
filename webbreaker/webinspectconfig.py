@@ -242,7 +242,7 @@ class WebInspectConfig(object):
                 Logger.console.info(
                     "Fetching the WebInspect configurations from {}\n".format(full_path))
                 Repo.clone_from(self.webinspect_git, full_path)
-                check_output(['git', 'clone', '--progress', self.webinspect_git, full_path])
+                check_output(['git', 'clone', self.webinspect_git, full_path])
 
             else:
                 Logger.console.info(
