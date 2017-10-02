@@ -395,7 +395,6 @@ def fortify_list(config, fortify_user, fortify_password, application):
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_user,
                                                fortify_password=fortify_password)
-                secret_client = SecretClient()
                 fortify_config.write_token(fortify_client.token)
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
@@ -491,7 +490,6 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
                                                fortify_username=fortify_user,
                                                fortify_password=fortify_password, scan_name=version,
                                                extension=x)
-                secret_client = SecretClient()
                 fortify_config.write_token(fortify_client.token)
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
