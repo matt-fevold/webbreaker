@@ -3,9 +3,6 @@
 
 import os
 from webbreaker.webbreakerlogger import Logger
-import pycurl
-import validators
-
 
 class WebBreakerHelper(object):
     @classmethod
@@ -124,29 +121,3 @@ override which file WebBreaker uploads. Note: WebBreaker still assume the .fpr e
 it should not be included here\n
 """
 
-    @classmethod
-    def url_exists(url):
-        """
-        Check if the given URL really exists
-        :param url: str
-        :return: bool
-        """
-        if validators.url(url):
-            c = pycurl.Curl()
-            c.setopt(pycurl.NOBODY, True)
-            c.setopt(pycurl.FOLLOWLOCATION, False)
-            c.setopt(pycurl.CONNECTTIMEOUT, 10)
-            c.setopt(pycurl.TIMEOUT, 10)
-            c.setopt(pycurl.COOKIEFILE, '')
-            c.setopt(pycurl.URL, url)
-
-            try:
-                c.perform()
-                response_code = c.getinfo(pycurl.RESPONSE_CODE)
-                c.close()
-                return True if response_code < 400 else False
-            except pycurl.error as e:
-                errno, errstr = e
-                raise OSError('An error occurred: {}'.format(errstr))
-        else:
-            raise ValueError('"{}" is not a valid url'.format(url))
