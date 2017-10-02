@@ -237,7 +237,7 @@ class WebInspectConfig(object):
     # TODO: Move to the WebInspectHelper class
     def fetch_webinspect_configs(self):
         full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
-        git_dir = os.path.abspath(os.path.join(full_path, '/.git'))
+        git_dir = os.path.abspath(os.path.join(full_path, '.git'))
         
         try:
             if not os.path.isdir(full_path):
@@ -254,7 +254,7 @@ class WebInspectConfig(object):
                 sys.stdout.flush()
             else:
                 Logger.app.error(
-                    "No GIT Repo was declared in your wbinspect.ini, therefore nothing will be cloned!")
+                    "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
                 
         except (CalledProcessError, AttributeError) as e:
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!".format(e))
