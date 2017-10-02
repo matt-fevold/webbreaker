@@ -233,6 +233,7 @@ class WebInspectConfig(object):
             Logger.app.error("There was an error in the options provided!: ".format(e))
 
         return webinspect_dict
+
     # TODO: Move to the WebInspectHelper class
     def fetch_webinspect_configs(self):
         full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
@@ -242,9 +243,9 @@ class WebInspectConfig(object):
             if not os.path.isdir(full_path):
                 Logger.console.info(
                     "Fetching the WebInspect configurations from {}\n".format(full_path))
-                Repo.clone_from(self.webinspect_git, full_path)
                 check_output(['git', 'clone', self.webinspect_git, full_path])
-            elif:
+
+            elif os.path.isdir(git_dir):
                 Logger.console.info(
                     "Updating your WebInspect configurations from {}".format(full_path))
                 check_output(['git','init', full_path])
