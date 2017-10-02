@@ -233,7 +233,7 @@ class WebInspectConfig(object):
             Logger.app.error("There was an error in the options provided!: ".format(e))
 
         return webinspect_dict
-
+    # TODO: Move to the WebInspectHelper class
     def fetch_webinspect_configs(self):
         full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
         git_dir = os.path.abspath(os.path.join(full_path, '/.git'))
