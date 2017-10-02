@@ -24,7 +24,7 @@ class FortifyClient(object):
             self.token = self.get_token()
 
         if not self.token:
-            Logger.app.critical("Unable to obtain a Fortify API token.")
+            Logger.console.error("Unable to obtain a Fortify API token. Invalid Credentials")
             raise ValueError("Unable to obtain a Fortify API token.")
 
     def get_token(self):
@@ -37,7 +37,8 @@ class FortifyClient(object):
             else:
                 Logger.app.critical(response.message)
         except Exception as e:
-            Logger.app.critical("Exception while getting Fortify token: {0}".format(e.message))
+            if hasattr(e, 'message'):
+                Logger.app.critical("Exception while getting Fortify token: {0}".format(e.message))
 
         return None
 
