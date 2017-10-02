@@ -63,7 +63,6 @@ class FortifyClient(object):
         """
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
         try:
-            # It's kinda dumb for this api call to require both project name and id?
             response = api.create_project_version(project_name=self.application_name,
                                                   project_id=self.__get_project_id__(self.application_name),
                                                   project_template=self.project_template,
@@ -98,33 +97,36 @@ class FortifyClient(object):
     def __create_new_project_version__(self):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
 
-        # It's kinda dumb for this api call to require both project name and id?
-        response = api.create_new_project_version(project_name=self.application_name,
-                                              project_template=self.project_template,
-                                              version_name=self.fortify_version,
-                                              description=self.__project_version_description__())
+        try:
+            # It's kinda dumb for this api call to require both project name and id?
+            response = api.create_new_project_version(project_name=self.application_name,
+                                                  project_template=self.project_template,
+                                                  version_name=self.fortify_version,
+                                                  description=self.__project_version_description__())
 
-        if not response.success:
-            raise ValueError("Failed to create a new project version")
+            if not response.success:
+                raise ValueError("Failed to create a new project version")
 
-        project_version_id = response.data['data']['id']
-        project_id = response.data['data']['project']['id']
+            project_version_id = response.data['data']['id']
+            project_id = response.data['data']['project']['id']
 
-        # At Target, only one attribute is required
-        response = api.add_project_version_attribute(project_version_id=project_version_id,
-                                                     attribute_definition_id=self.__get_attribute_definition_id__(
-                                                         search_expression='name:"CI Number"'),
-                                                     value='New WebBreaker Application',
-                                                     values=[])
-        if not response.success:
-            raise ValueError("Failed to create required project version attribute")
+            # At Target, only one attribute is required
+            response = api.add_project_version_attribute(project_version_id=project_version_id,
+                                                         attribute_definition_id=self.__get_attribute_definition_id__(
+                                                             search_expression='name:"CI Number"'),
+                                                         value='New WebBreaker Application',
+                                                         values=[])
+            if not response.success:
+                raise ValueError("Failed to create required project version attribute")
 
-        response = api.commit_project_version(project_version_id=project_version_id)
-        if not response.success:
-            raise ValueError("Failed to commit new project version")
-            # Logger.app.debug("Created new project version id {0}".format(project_version_id))
+            response = api.commit_project_version(project_version_id=project_version_id)
+            if not response.success:
+                raise ValueError("Failed to commit new project version")
+                # Logger.app.debug("Created new project version id {0}".format(project_version_id))
+        except (AttributeError, UnboundLocalError) as e:
+            Logger.app.critical("Exception trying to create project version. {0}".format(e))
+
         return project_version_id
-
 
     def __get_attribute_definition_id__(self, search_expression):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
@@ -231,20 +233,26 @@ class FortifyClient(object):
         return None
 
     def build_pv_url(self):
-        version_id = self.__get_project_version__()
-        if version_id == -1:
-            # This signals that an auth error occurred, CLI will attempt to reauth
-            return -1
-        if not self.__get_project_id__(self.application_name):
-            version_id = self.__create_new_project_version__()
+        try:
+            version_id = self.__get_project_version__()
+
+            if version_id == -1:
+                # This signals that an auth error occurred, CLI will attempt to reauth
+                return -1
+            if not self.__get_project_id__(self.application_name):
+                version_id = self.__create_new_project_version__()
+                if not version_id:
+                    Logger.console.error("Unable to create new project version, see logs for details.")
+                    return None
             if not version_id:
-                Logger.console.error("Unable to create new project version, see logs for details.")
-                return None
-        if not version_id:
-            version_id = self.__create_project_version__()
-            if not version_id:
-                Logger.console.error("Unable to create new project version, see logs for details.")
-                return None
-        if self.ssc_server[-1] == '/':
-            self.ssc_server= self.ssc_server[:-1]
+                version_id = self.__create_project_version__()
+                if not version_id:
+                    Logger.console.error("Unable to create new project version, see logs for details.")
+                    return None
+            if self.ssc_server[-1] == '/':
+                self.ssc_server= self.ssc_server[:-1]
+
+        except UnboundLocalError as e:
+            Logger.app.critical("Exception trying to build Project Version URL. {0}".format(e))
+            
         return self.ssc_server + '/ssc/html/ssc/index.jsp#!/version/' + str(version_id)

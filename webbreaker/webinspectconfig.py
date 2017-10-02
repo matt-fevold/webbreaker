@@ -6,15 +6,14 @@ try:
 except ImportError: #Python3
     import configparser
 import argparse
-import os
+import os, sys
 import random
 import string
 import re
 import xml.etree.ElementTree as ET
-from git import Repo
+from subprocess import CalledProcessError, check_output
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from subprocess import CalledProcessError, Popen, PIPE, Popen, STDOUT
 
 runenv = WebBreakerHelper.check_run_env()
 
@@ -235,21 +234,27 @@ class WebInspectConfig(object):
 
         return webinspect_dict
 
+    # TODO: Move to the WebInspectHelper class
     def fetch_webinspect_configs(self):
         full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
+        git_dir = os.path.abspath(os.path.join(full_path, '.git'))
+        
         try:
             if not os.path.isdir(full_path):
                 Logger.console.info(
                     "Fetching the WebInspect configurations from {}\n".format(full_path))
-                Repo.clone_from(self.webinspect_git, full_path)
+                check_output(['git', 'clone', self.webinspect_git, full_path])
 
-            else:
+            elif os.path.isdir(git_dir):
                 Logger.console.info(
                     "Updating your WebInspect configurations from {}".format(full_path))
-                repo = Repo.init(full_path)
-                repo.git.reset('--hard')
-                repo.remotes.origin.pull()
-        # TODO: Need an exit here
-        #Cmd('git') failed due to: exit code(128)
+                check_output(['git','init', full_path])
+                check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
+                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
+                sys.stdout.flush()
+            else:
+                Logger.app.error(
+                    "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
+                
         except (CalledProcessError, AttributeError) as e:
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!".format(e))

@@ -7,8 +7,6 @@ import os
 from setuptools.command.test import test as TestCommand
 from webbreaker import __version__ as version
 from cryptography.fernet import Fernet
-from datetime import datetime
-import base64
 
 try:
     from setuptools import setup, find_packages
@@ -29,7 +27,8 @@ requires = ['click',
             'pyOpenSSL',
             'cryptography>=1.8.0',
             'webinspectapi>=1.0.15',
-            'requests']
+            'requests',
+            'validators']
 
 tests_require = ['pytest', 'pytest-cache', 'pytest-cov']
 
