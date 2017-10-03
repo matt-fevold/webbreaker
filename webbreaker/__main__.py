@@ -20,6 +20,7 @@ try: #Python3
     import urllib.request as urllib
 except:
     import urllib
+import sys
 import datetime
 import requests.exceptions
 import json
@@ -63,9 +64,8 @@ def fortify_prompt():
 def cli(config):
     # Show something pretty to start
     f = Figlet(font='slant')
-    Logger.console.info("\n\n{0}Version {1}\n".format(f.renderText('WebBreaker'), version))
-    Logger.console.info("Logging to files: {}".format(Logger.app_logfile))
-
+    sys.stdout.write(str("{0}Version {1}\n".format(f.renderText('WebBreaker'), version)))
+    sys.stdout.write(str("Logging to files: {}".format(Logger.app_logfile)))
 
 @cli.group(help="""WebInspect is dynamic application security testing software for assessing security of Web
 applications and Web services.""")
