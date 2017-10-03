@@ -444,8 +444,7 @@ def fortify_list(config, fortify_user, fortify_password, application):
                 fortify_client.list_application_versions(application)
             else:
                 fortify_client.list_versions()
-
-    except:
+    except (AttributeError, UnboundLocalError) as e:
         Logger.console.critical("Unable to complete command 'fortify list'")
 
 
