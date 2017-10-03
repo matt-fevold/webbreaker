@@ -43,7 +43,7 @@ def get_console_logger():
         # add the handler
         console_logger.addHandler(ch)
     except TypeError as e:
-        print("{}".format(e))
+        sys.stdout.write(str("Console logger error: {}!\n".format(e)))
 
     return console_logger
 
