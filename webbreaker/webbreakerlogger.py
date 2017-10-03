@@ -43,38 +43,47 @@ def get_console_logger():
         # add the handler
         console_logger.addHandler(ch)
     except TypeError as e:
-        sys.stdout.write(str("Console logger error: {}!\n".format(e)))
+        sys.stdout.write(str("Console logger is having issues: {}\n".format(e)))
 
     return console_logger
 
-def get_app_logger(name=None):
-    logger_map = {"__webbreaker__": APP_LOG}
-    app_logger = logging.getLogger("__webbreaker__")
-    app_logger.setLevel(logging.NOTSET)
-    # if there are two app_loggers use only one.
-    if app_logger.handlers:
-        app_logger.handlers.pop()
 
-    formatter = logging.Formatter('%(asctime)s: %(name)s %(levelname)s(%(message)s')
-    fh = logging.FileHandler(logger_map[name], mode='a')
-    fh.setFormatter(formatter)
-    fh.setLevel(logging.DEBUG)
-    app_logger.addHandler(fh)
+def get_app_logger(name=None):
+    try:
+        logger_map = {"__webbreaker__": APP_LOG}
+        app_logger = logging.getLogger("__webbreaker__")
+        app_logger.setLevel(logging.NOTSET)
+        # if there are two app_loggers use only one.
+        if app_logger.handlers:
+            app_logger.handlers.pop()
+    
+        formatter = logging.Formatter('%(asctime)s: %(name)s %(levelname)s(%(message)s')
+        fh = logging.FileHandler(logger_map[name], mode='a')
+        fh.setFormatter(formatter)
+        fh.setLevel(logging.DEBUG)
+        app_logger.addHandler(fh)
+    except TypeError as e:
+        sys.stdout.write(str("App logger error: {}!\n".format(e)))
+    
     return app_logger
 
 
 def get_debug_logger(name=None):
-    debug_logger = logging.getLogger(name)
-    debug_logger.setLevel(logging.NOTSET)
-    # if there are two debug_logger use only one.
-    if debug_logger.handlers:
-        debug_logger.handlers.pop()
-
-    debug_formatter = logging.Formatter('%(asctime)s: %(name)s %(levelname)s(%(message)s')
-    fh = logging.FileHandler(DEBUG_LOG, mode='a')
-    fh.setFormatter(debug_formatter)
-    fh.setLevel(logging.DEBUG)
-    debug_logger.addHandler(fh)
+    try:
+        debug_logger = logging.getLogger(name)
+        debug_logger.setLevel(logging.NOTSET)
+        # if there are two debug_logger use only one.
+        if debug_logger.handlers:
+            debug_logger.handlers.pop()
+    
+        debug_formatter = logging.Formatter('%(asctime)s: %(name)s %(levelname)s(%(message)s')
+        fh = logging.FileHandler(DEBUG_LOG, mode='a')
+        fh.setFormatter(debug_formatter)
+        fh.setLevel(logging.DEBUG)
+        debug_logger.addHandler(fh)
+    except TypeError as e:
+        sys.stdout.write(str("Debug logger error: {}!\n".format(e)))
+    
     return debug_logger
 
 
@@ -86,7 +95,6 @@ class LessThanFilter(logging.Filter):
 
     def filter(self, rec):
         return rec.levelno < self._level
-
 
 @singleton
 class Logger():
