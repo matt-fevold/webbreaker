@@ -99,7 +99,7 @@ class WebInspectConfig(object):
                                        "xmlns:string", namespaces={'xmlns': 'http://spidynamics.com/schemas/scanner/1.0'}):
                 targets.add(target.text)
         except Exception as e:
-            Logger.app.error("Unable to determine scan targets {0}".format(e))
+            Logger.app.error("Unable to read the WebInspect settings file {0}".format(e))
 
         return targets
 
