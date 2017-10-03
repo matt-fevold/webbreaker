@@ -40,15 +40,16 @@ class SecretClient(object):
         except configparser.Error as e:
             Logger.app.error("Error reading {} {}".format(config_file, e))
 
-        if not encryp_value:
-            return None
-        if encryp_value[:2] == "e$":
-            decryp_value = self.__decrypt__(encryp_value)
-            return decryp_value
+        try:
+            if not encryp_value:
+                return None
+            if encryp_value[:2] == "e$":
+                decryp_value = self.__decrypt__(encryp_value)
+                return decryp_value
+        except UnboundLocalError as e:
+            Logger.console.info("Incorrect user name or password!")
 
         return encryp_value
-
-
 
 
     def set(self, ini, section, key, value):
