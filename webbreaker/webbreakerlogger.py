@@ -23,27 +23,29 @@ def singleton(cls):
         return instances[cls]
     return get_instance()
 
-
 def get_console_logger():
-    console_logger = logging.getLogger()
-    console_logger.setLevel(logging.NOTSET)
-    #console_logger.propagate = False
-    #if there are two console_logger use only one.
-    if console_logger.handlers:
-        console_logger.handlers.pop()
+    try:
+        console_logger = logging.getLogger()
+        console_logger.setLevel(logging.NOTSET)
+        #console_logger.propagate = False
+        #if there are two console_logger use only one.
+        if console_logger.handlers:
+            console_logger.handlers.pop()
 
-    # Set-up the logging configs
-    ch = logging.StreamHandler(stream=sys.stdout)
-    # Use the standard formatter constant
-    ch.setFormatter(FORMATTER)
-    # Only send stout INFO level messages
-    ch.setLevel(logging.INFO)
-    # TODO: Delete LessThanFilter if not needed in future
-    #ch.addFilter(LessThanFilter(logging.WARNING))
-    # add the handler
-    console_logger.addHandler(ch)
+        # Set-up the logging configs
+        ch = logging.StreamHandler(stream=sys.stdout)
+        # Use the standard formatter constant
+        ch.setFormatter(FORMATTER)
+        # Only send stout INFO level messages
+        ch.setLevel(logging.INFO)
+        # TODO: Delete LessThanFilter if not needed in future
+        #ch.addFilter(LessThanFilter(logging.WARNING))
+        # add the handler
+        console_logger.addHandler(ch)
+    except TypeError as e:
+        print("{}".format(e))
+
     return console_logger
-
 
 def get_app_logger(name=None):
     logger_map = {"__webbreaker__": APP_LOG}
