@@ -36,7 +36,7 @@ from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info
+from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info
 from webbreaker.secretclient import SecretClient
 import re
 import os
@@ -656,6 +656,7 @@ def notifier(config, email, git_url):
     emails = git_client.get_all_emails(owner, repo)
     if emails:
         write_agent_info('git_emails', emails)
+        write_agent_info('git_url', git_url)
     else:
         Logger.console.info("Unable to complete command 'git email'")
 
@@ -671,8 +672,12 @@ def notifier(config, email, git_url):
 @pass_config
 def agent(config, start):
     if not start:
-        Logger.console.info(
-            "'webbreaker admin agent' currently requires the '--start' flag in order to create an agent")
+        agent_data = read_agent_info()
+        Logger.console.info("Current data stored in agent.json...")
+        Logger.console.info("Git URL: {}".format(agent_data['git_url']))
+        Logger.console.info("Contributer Emails: {}".format(", ".join(agent_data['git_emails'])))
+        Logger.console.info("SSC URL: {}".format(agent_data['fortify_pv_url']))
+        Logger.console.info("Build ID: {}".format(agent_data['fortify_build_id']))
         return
     else:
         Logger.console.info("Creating agent....")

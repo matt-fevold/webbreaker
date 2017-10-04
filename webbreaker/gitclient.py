@@ -85,6 +85,31 @@ def write_agent_info(name, value):
         Logger.console.error("Error writing {} to agent.json".format(name))
         exit(1)
 
+def read_agent_info():
+    json_file_path = os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json'))
+    try:
+        if os.path.isfile(json_file_path):
+            with open(json_file_path, 'r') as json_file:
+                try:
+                    data = json.load(json_file)
+                except json.decoder.JSONDecodeError:
+                    data = {}
+                json_file.close()
+        else:
+            data = {}
+        if 'fortify_build_id' not in data:
+            data['fortify_build_id'] = None
+        if 'git_url' not in data:
+            data['git_url'] = None
+        if 'fortify_pv_url' not in data:
+            data['fortify_pv_url'] = None
+        if 'git_emails' not in data:
+            data['git_emails'] = None
+        return data
+
+    except json.decoder.JSONDecodeError:
+        Logger.console.error("Error writing {} to agent.json".format(name))
+        exit(1)
 
 class UploadJSON(object):
     def __init__(self, log_file):
