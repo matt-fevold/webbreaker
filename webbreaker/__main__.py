@@ -642,7 +642,7 @@ def admin(config):
 @pass_config
 def notifier(config, email, git_url):
     if not email:
-        Logger.console.info("'webbreaker agent notifier' currently only supports email notifications. Please use the '--email' flag")
+        Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
         return
     parser = urlparse(git_url)
     host = "{}://{}".format(parser.scheme, parser.netloc)
@@ -662,18 +662,20 @@ def notifier(config, email, git_url):
 
 
 
-@admin.command('upload')
-@click.option('--webbreaker_agent',
+@admin.command()
+@click.option('--start',
               required=False,
-              help="Optional override of url of WebBreaker Agent to contact")
+              is_flag=True,
+              help="Optional flag which instruct WebBreaker to create an agent")
 @pass_config
-def git_upload(config, webbreaker_agent):
-    git_uploader = GitUploader(webbreaker_agent)
-    response = git_uploader.upload()
-    if response == 200:
-        Logger.console.info("Request to {} successful.".format(git_uploader.agent_url))
+def agent(config, start):
+    if not start:
+        Logger.console.info(
+            "'webbreaker admin agent' currently requires the '--start' flag in order to create an agent")
+        return
     else:
-        Logger.console.info("Request to {} was unsuccessful. Unable to complete command 'git upload'".format(git_uploader.agent_url))
+        Logger.console.info("Creating agent....")
+        # TODO: Create call to agent
 
 
 
