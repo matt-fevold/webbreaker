@@ -633,12 +633,18 @@ def admin(config):
 
 
 @admin.command()
-@click.option('--url',
+@click.option('--email',
+              is_flag=True,
+              help="Optional flag which instructs WebBreaker to find contributors to notify via email")
+@click.option('--git_url',
               required=True,
               help="The url of the Git repo from which to find contributors. Ex: --url https://github.com/target/webbreaker")
 @pass_config
-def email(config, url):
-    parser = urlparse(url)
+def notifier(config, email, git_url):
+    if not email:
+        Logger.console.info("'webbreaker agent notifier' currently only supports email notifications. Please use the '--email' flag")
+        return
+    parser = urlparse(git_url)
     host = "{}://{}".format(parser.scheme, parser.netloc)
     path = parser.path
     r = re.search('\/(.*)\/', path)
