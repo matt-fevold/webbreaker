@@ -40,6 +40,7 @@ from webbreaker.gitclient import GitClient, GitUploader, write_agent_info
 from webbreaker.secretclient import SecretClient
 import re
 import os
+import subprocess
 
 handle_scan_event = None
 reporter = None
@@ -675,7 +676,8 @@ def agent(config, start):
         return
     else:
         Logger.console.info("Creating agent....")
-        # TODO: Create call to agent
+        pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', 'webbreaker/etc/agent.json'])
+        return
 
 
 
