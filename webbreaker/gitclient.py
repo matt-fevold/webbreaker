@@ -50,12 +50,12 @@ class GitClient(object):
             for login in logins:
                 email = self.get_user_email(login)
                 if email:
-                    emails.append(email)
+                    emails.append(email.lower())
         else:
             Logger.console.error("Unable to retrieve list of contributors for this repo.")
             return None
         if len(emails):
-            return emails
+            return list(set(emails))
         else:
             Logger.console.error("No contributor emails where found for this repo.")
             return None
