@@ -626,13 +626,13 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
 
 
 
-@cli.group(help="""Interaction with a GitHub or GHE API. Used to gather and send information needed for WebBreaker Agent notifications.""")
+@cli.group(help="""TODO""")
 @pass_config
-def git(config):
+def admin(config):
     pass
 
 
-@git.command()
+@admin.command()
 @click.option('--url',
               required=True,
               help="The url of the Git repo from which to find contributors. Ex: --url https://github.com/target/webbreaker")
@@ -656,7 +656,7 @@ def email(config, url):
 
 
 
-@git.command('upload')
+@admin.command('upload')
 @click.option('--webbreaker_agent',
               required=False,
               help="Optional override of url of WebBreaker Agent to contact")
