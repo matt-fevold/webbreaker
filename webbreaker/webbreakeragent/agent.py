@@ -23,6 +23,8 @@ class AgentClient(object):
                                                       fortify_url=data['fortify_pv_url'])
         self.payload['start'] = datetime.now().isoformat()
         self.fortify_config = FortifyConfig()
+        self.check_count = 0
+        self.timeout = 15
 
     def find_job_id(self):
         api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
@@ -51,6 +53,7 @@ class AgentClient(object):
             self.log('NO SCAN FOUND', response.message)
 
     def check(self):
+        self.check_count += 1
         api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
                          password=self.fortify_config.password, verify_ssl=False)
 
@@ -65,16 +68,25 @@ class AgentClient(object):
         else:
             sys.exit()
 
+    def check_timeout(self):
+        time_running = self.timeout * self.check_count
+        if time_running > 259200:
+            self.payload['status'].append('AGENT TIMEOUT')
+            self.write_json()
+            sys.exit()
+
 
     def watch(self):
+        global TIMEOUT
         self.log("WATCH", "START")
         status = self.check()
         end_states = ['FAILURE', 'UPLOAD_COMPLETED']
         while status not in end_states:
-            time.sleep(15)
+            time.sleep(self.timeout)
             status = self.check()
             if status != self.payload['status'][-1]:
                 self.payload['status'].append(status)
+            self.check_timeout()
         self.log("WATCH", "END")
         self.payload['end'] = datetime.now().isoformat()
         return status
