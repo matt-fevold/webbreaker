@@ -59,12 +59,8 @@ class AgentClient(object):
 
         response = api.get_cloudscan_job_status(self.scan_id)
         if response.success:
-            self.log("DATA", response.data)
-            if len(response.data['data']):
-                self.log("CHECK", response.data['data']['jobState'])
-                return response.data['data']['jobState']
-            else:
-                return 'COMPLETE'
+            self.log("CHECK", response.data['data']['jobState'])
+            return response.data['data']['jobState']
         else:
             sys.exit()
 
