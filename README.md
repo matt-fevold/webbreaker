@@ -1,9 +1,10 @@
-## Introduction
 [![Build Status](https://travis-ci.org/target/webbreaker.svg?branch=fortify_upload)](https://travis-ci.org/target/webbreaker/builds)
 [![Release](http://img.shields.io/github/release/target/webbreaker.svg)](https://github.com/target/webbreaker/releases/latest)
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
 
-WebBreaker orchestrates web application security testing products to scale and reduce testing time, providing notifications and feedback to development, and other stakeholders.
+## Introduction
+
+WebBreaker orchestrates web application security testing products to scale and reduce testing time, providing notifications and feedback early and often to development and other stakeholders.
 
 Increasing visibility, orchestration, and scalability of your Dynamic Application Security Testing (DAST) into your DevOps pipeline are paramount to releasing secure applications.  WebBreaker truly enables all members of the Software Security Development Life-Cycle (SDLC), with access to security testing.  Resulting in greater test coverage with increased visibility, providing Dynamic Application Security Test Orchestration (DASTO).  Current support is limited to the World's most popular commercial DAST product, WebInspect.
 
