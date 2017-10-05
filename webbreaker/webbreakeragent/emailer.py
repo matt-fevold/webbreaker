@@ -52,6 +52,7 @@ class EmailNotifier(object):
             self.smtp_port = config.get("emailer", "smtp_port")
             self.from_address = config.get("emailer", "from_address")
             self.email_template = config.get("emailer", "email_template")
+            self.default_to_address = config.get("emailer", "default_to_address")
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.console.error("{} has incorrect or missing values {}".format(settings_file, noe))

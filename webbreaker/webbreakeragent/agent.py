@@ -70,6 +70,8 @@ class AgentClient(object):
     def notify(self):
         subject = "Static Scan Notification"
         notifier = EmailNotifier()
+        if notifier.default_to_address:
+            self.payload['notifiers'].append(notifier.default_to_address)
         for email in self.payload['notifiers']:
             notifier.notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
                             ssc_url=self.payload['fortify_url'])
