@@ -34,6 +34,18 @@ class AgentClient(object):
                     self.scan_id = scan['jobToken']
                     self.log('SCAN FOUND', self.scan_id)
                     self.payload['status'].append(scan['jobState'])
+                    return
+            for i in range(0,2):
+                time.sleep(30)
+                response = api.get_cloudscan_jobs()
+                for scan in response.data['data']:
+                    if scan['scaBuildId'] == self.payload['scan']:
+                        self.scan_id = scan['jobToken']
+                        self.log('SCAN FOUND', self.scan_id)
+                        self.payload['status'].append(scan['jobState'])
+                        return
+            self.scan_id = None
+            self.log('NO SCAN FOUND', "No scan was found within 1 minute")
         else:
             self.scan_id = None
             self.log('NO SCAN FOUND', response.message)
