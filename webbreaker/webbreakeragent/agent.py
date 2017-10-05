@@ -70,6 +70,7 @@ class AgentClient(object):
 
     def check_timeout(self):
         time_running = self.timeout * self.check_count
+        # Kill any agent that is 3 days old
         if time_running > 259200:
             self.payload['status'].append('AGENT TIMEOUT')
             self.write_json()
@@ -77,7 +78,6 @@ class AgentClient(object):
 
 
     def watch(self):
-        global TIMEOUT
         self.log("WATCH", "START")
         status = self.check()
         end_states = ['FAILURE', 'UPLOAD_COMPLETED']
