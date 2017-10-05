@@ -110,9 +110,19 @@ class AgentClient(object):
         return status
 
     def write_json(self):
-        with open('webbreaker.json', 'a') as json_file:
-            json.dump(self.payload, json_file, sort_keys=True, indent=4, separators=(',', ': '))
-            json_file.write('\n')
+        if os.path.isfile('webbreaker.json'):
+            with open('webbreaker.json', 'r') as json_file:
+                try:
+                    logs = json.load(json_file)
+                except json.decoder.JSONDecodeError:
+                    logs = {'logs': []}
+                    pass
+            json_file.close()
+        else:
+            logs = {'logs':[]}
+        logs['logs'].append(self.payload)
+        with open('webbreaker.json', 'w') as json_file:
+            json.dump(logs, json_file, sort_keys=True, indent=4, separators=(',', ': '))
         json_file.close()
 
 
