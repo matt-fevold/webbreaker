@@ -24,25 +24,45 @@ class AgentClient(object):
         self.payload['start'] = datetime.now().isoformat()
         self.fortify_config = FortifyConfig()
 
+    def find_job_id(self):
+        api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
+                         password=self.fortify_config.password, verify_ssl=False)
+        response = api.get_cloudscan_jobs()
+        if response.success:
+            for scan in response.data['data']:
+                if scan['scaBuildId'] == self.payload['scan']:
+                    self.scan_id = scan['jobToken']
+                    self.log('SCAN FOUND', self.scan_id)
+                    self.payload['status'].append(scan['jobState'])
+        else:
+            self.scan_id = None
+            self.log('NO SCAN FOUND', response.message)
+
     def check(self):
         api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
                          password=self.fortify_config.password, verify_ssl=False)
 
-        response = api.get_cloudscan_jobs()
+        response = api.get_cloudscan_job_status(self.scan_id)
         if response.success:
             self.log("DATA", response.data)
-            return 'COMPLETE'
+            if len(response.data['data']):
+                self.log("CHECK", response.data['data']['jobState'])
+                return response.data['data']['jobState']
+            else:
+                return 'COMPLETE'
         else:
             sys.exit()
-        # self.log("CHECK", status)
-        # return status
+
 
     def watch(self):
         self.log("WATCH", "START")
         status = self.check()
-        while status == 'RUNNING':
+        end_states = ['FAILURE', 'UPLOAD_COMPLETED']
+        while status not in end_states:
             time.sleep(15)
             status = self.check()
+            if status != self.payload['status'][-1]:
+                self.payload['status'].append(status)
         self.log("WATCH", "END")
         self.payload['end'] = datetime.now().isoformat()
         return status
@@ -105,6 +125,9 @@ if __name__ == '__main__':
     # sys.stderr = f
 
     agent = AgentClient(sys.argv[1])
+    agent.find_job_id()
+    if not agent.scan_id:
+        sys.exit()
     response = agent.watch()
     # TODO: Test notifier
     # agent.notify()
