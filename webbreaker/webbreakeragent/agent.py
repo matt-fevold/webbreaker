@@ -26,6 +26,26 @@ class AgentClient(object):
         self.check_count = 0
         self.timeout = 15
 
+    def check(self):
+        self.check_count += 1
+        api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
+                         password=self.fortify_config.password, verify_ssl=False)
+
+        response = api.get_cloudscan_job_status(self.scan_id)
+        if response.success:
+            self.log("CHECK", response.data['data']['jobState'])
+            return response.data['data']['jobState']
+        else:
+            sys.exit()
+
+    def check_timeout(self):
+        time_running = self.timeout * self.check_count
+        # Kill any agent that is 3 days old
+        if time_running > 259200:
+            self.payload['status'].append('AGENT TIMEOUT')
+            self.write_json()
+            sys.exit()
+
     def find_job_id(self):
         api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
                          password=self.fortify_config.password, verify_ssl=False)
@@ -52,26 +72,19 @@ class AgentClient(object):
             self.scan_id = None
             self.log('NO SCAN FOUND', response.message)
 
-    def check(self):
-        self.check_count += 1
-        api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
-                         password=self.fortify_config.password, verify_ssl=False)
+    def log(self, action, value):
+        with open('log.txt', 'a') as log_file:
+            log_file.write("{}|{}|{}|{}\n".format(self.pid, datetime.now().isoformat(), action, value))
+        log_file.close()
 
-        response = api.get_cloudscan_job_status(self.scan_id)
-        if response.success:
-            self.log("CHECK", response.data['data']['jobState'])
-            return response.data['data']['jobState']
-        else:
-            sys.exit()
-
-    def check_timeout(self):
-        time_running = self.timeout * self.check_count
-        # Kill any agent that is 3 days old
-        if time_running > 259200:
-            self.payload['status'].append('AGENT TIMEOUT')
-            self.write_json()
-            sys.exit()
-
+    def notify(self):
+        subject = "Static Scan Notification"
+        notifier = EmailNotifier()
+        if notifier.default_to_address:
+            self.payload['notifiers'].append(notifier.default_to_address)
+        for email in self.payload['notifiers']:
+            notifier.notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
+                            ssc_url=self.payload['fortify_url'])
 
     def watch(self):
         self.log("WATCH", "START")
@@ -87,27 +100,11 @@ class AgentClient(object):
         self.payload['end'] = datetime.now().isoformat()
         return status
 
-    def notify(self):
-        subject = "Static Scan Notification"
-        notifier = EmailNotifier()
-        if notifier.default_to_address:
-            self.payload['notifiers'].append(notifier.default_to_address)
-        for email in self.payload['notifiers']:
-            notifier.notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
-                            ssc_url=self.payload['fortify_url'])
-
-    def log(self, action, value):
-        with open('log.txt', 'a') as log_file:
-            log_file.write("{}|{}|{}|{}\n".format(self.pid, datetime.now().isoformat(), action, value))
-        log_file.close()
-
     def write_json(self):
         with open('webbreaker.json', 'a') as json_file:
             json.dump(self.payload, json_file, sort_keys=True, indent=4, separators=(',', ': '))
             json_file.write('\n')
         json_file.close()
-
-
 
 
     @staticmethod
