@@ -86,6 +86,15 @@ class AgentClient(object):
             notifier.notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
                             ssc_url=self.payload['fortify_url'])
 
+    def run(self):
+        agent.find_job_id()
+        if not agent.scan_id:
+            sys.exit()
+        response = agent.watch()
+        # TODO: Test notifier
+        # agent.notify()
+        agent.write_json()
+
     def watch(self):
         self.log("WATCH", "START")
         status = self.check()
@@ -135,21 +144,12 @@ class AgentClient(object):
             return None
 
 
-
 if __name__ == '__main__':
-
     # TODO: Eventually we'll need to block output and send it to an appropriate file
     # f = open(os.devnull, 'w')
     # sys.stdout = f
     # sys.stderr = f
 
     agent = AgentClient(sys.argv[1])
-    agent.find_job_id()
-    if not agent.scan_id:
-        sys.exit()
-    response = agent.watch()
-    # TODO: Test notifier
-    # agent.notify()
-    agent.write_json()
-    sys.exit()
+    agent.run()
 
