@@ -55,14 +55,14 @@ class EmailNotifier(Notifier):
             Logger.app.error("Error sending email. {}".format(e.message))
             Logger.console.error("Error sending email, see log: {}!".format(Logger.app_logfile))
 
-    def cloudscan_notify(self, recipient, subject, git_url, ssc_url, state):
+    def cloudscan_notify(self, recipient, subject, git_url, ssc_url, state, scan_id, scan_name):
         try:
             msg = MIMEMultipart()
             msg['From'] = self.from_address
             msg['To'] = recipient
             msg['Subject'] = subject
 
-            html = str(self.email_template).format(git_url, state, ssc_url)
+            html = str(self.email_template).format(git_url, ssc_url, scan_name, scan_id, state, self.chatroom)
             msg.attach(MIMEText(html, 'html'))
 
             mail_server = smtplib.SMTP(self.smtp_host, self.smtp_port)
@@ -83,6 +83,7 @@ class EmailNotifier(Notifier):
             self.from_address = config.get("agent_emailer", "from_address")
             self.email_template = config.get("agent_emailer", "email_template")
             self.default_to_address = config.get("agent_emailer", "default_to_address")
+            self.chatroom = config.get("agent_emailer", "chatroom")
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.console.error("{} has incorrect or missing values {}".format(settings_file, noe))

@@ -84,7 +84,8 @@ class AgentClient(object):
             self.payload['notifiers'].append(notifier.default_to_address)
         for email in self.payload['notifiers']:
             notifier.cloudscan_notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
-                            ssc_url=self.payload['fortify_url'], state=self.payload['status'][-1])
+                                      ssc_url=self.payload['fortify_url'], state=self.payload['status'][-1],
+                                      scan_name=self.payload['scan'], scan_id=self.scan_id)
 
     def run(self):
         agent.find_job_id()
