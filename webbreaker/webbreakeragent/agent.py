@@ -73,7 +73,7 @@ class AgentClient(object):
             self.log('NO SCAN FOUND', response.message)
 
     def log(self, action, value):
-        with open('log.txt', 'a') as log_file:
+        with open('/tmp/webbreaker_agent.log', 'a') as log_file:
             log_file.write("{}|{}|{}|{}\n".format(self.pid, datetime.now().isoformat(), action, value))
         log_file.close()
 
@@ -110,8 +110,8 @@ class AgentClient(object):
         return status
 
     def write_json(self):
-        if os.path.isfile('webbreaker.json'):
-            with open('webbreaker.json', 'r') as json_file:
+        if os.path.isfile('/tmp/webbreaker.json'):
+            with open('/tmp/webbreaker.json', 'r') as json_file:
                 try:
                     logs = json.load(json_file)
                 except json.decoder.JSONDecodeError:
@@ -121,7 +121,7 @@ class AgentClient(object):
         else:
             logs = {'logs':[]}
         logs['logs'].append(self.payload)
-        with open('webbreaker.json', 'w') as json_file:
+        with open('/tmp/webbreaker.json', 'w') as json_file:
             json.dump(logs, json_file, sort_keys=True, indent=4, separators=(',', ': '))
         json_file.close()
 
@@ -155,10 +155,9 @@ class AgentClient(object):
 
 
 if __name__ == '__main__':
-    # TODO: Eventually we'll need to block output and send it to an appropriate file
-    # f = open(os.devnull, 'w')
-    # sys.stdout = f
-    # sys.stderr = f
+    f = open('/tmp/webbreaker_agent_error.log', 'a')
+    sys.stdout = f
+    sys.stderr = f
 
     agent = AgentClient(sys.argv[1])
     agent.run()
