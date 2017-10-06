@@ -84,15 +84,14 @@ class AgentClient(object):
             self.payload['notifiers'].append(notifier.default_to_address)
         for email in self.payload['notifiers']:
             notifier.notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
-                            ssc_url=self.payload['fortify_url'])
+                            ssc_url=self.payload['fortify_url'], state=self.payload['status'][-1])
 
     def run(self):
         agent.find_job_id()
         if not agent.scan_id:
             sys.exit()
         response = agent.watch()
-        # TODO: Test notifier
-        # agent.notify()
+        agent.notify()
         agent.write_json()
 
     def watch(self):

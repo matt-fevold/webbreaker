@@ -26,17 +26,17 @@ class EmailNotifier(object):
     def __init__(self):
         self.__read_settings__()
 
-    def notify(self, recipient, subject, git_url, ssc_url):
+    def notify(self, recipient, subject, git_url, ssc_url, state):
         try:
             msg = MIMEMultipart()
-            msg['From'] = self.emailer_settings['from_address']
+            msg['From'] = self.from_address
             msg['To'] = recipient
             msg['Subject'] = subject
 
-            html = str(self.emailer_settings['email_template']).format(git_url, ssc_url)
+            html = str(self.email_template).format(git_url, state, ssc_url)
             msg.attach(MIMEText(html, 'html'))
 
-            mail_server = smtplib.SMTP(self.emailer_settings['smtp_host'], self.emailer_settings['smtp_port'])
+            mail_server = smtplib.SMTP(self.smtp_host, self.smtp_port)
             mail_server.sendmail(msg['From'], msg['To'], msg.as_string())
 
             mail_server.quit()
