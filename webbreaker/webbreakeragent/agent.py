@@ -8,7 +8,7 @@ from datetime import datetime
 import json
 import socket
 from __init__ import __version__
-from emailer import EmailNotifier
+from webbreaker.notifiers.emailer import EmailNotifier
 from webbreaker.fortifyconfig import FortifyConfig
 from fortifyapi.fortify import FortifyApi
 
@@ -83,7 +83,7 @@ class AgentClient(object):
         if notifier.default_to_address:
             self.payload['notifiers'].append(notifier.default_to_address)
         for email in self.payload['notifiers']:
-            notifier.notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
+            notifier.cloudscan_notify(recipient=email, subject=subject, git_url=self.payload['git_url'],
                             ssc_url=self.payload['fortify_url'], state=self.payload['status'][-1])
 
     def run(self):
