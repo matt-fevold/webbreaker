@@ -146,6 +146,38 @@ class UploadJSON(object):
             return -1
         return 1
 
+class AgentVerifier(object):
+    def __init__(self, log_file):
+        if os.path.isfile(log_file):
+            with open(log_file, 'r') as json_file:
+                try:
+                    data = json.load(json_file)
+                except json.decoder.JSONDecodeError:
+                    Logger.console.error("JSONDecodeError reading from agent.json")
+                    exit(1)
+                json_file.close()
+            if self.__verify__(data) == -1:
+                exit(1)
+        else:
+            Logger.console.error("Error while reading upload payload")
+            exit(1)
+
+    def __verify__(self, data):
+        if not 'git_emails' in data:
+            Logger.console.error("No emails were found to notify. Please run 'webbreaker admin notifier --email --url [REPO URL]'")
+            return -1
+        if not 'fortify_pv_url' in data:
+            Logger.console.error("""No Fortify Project Version URL was found. Please run 'webbreaker fortify scan 
+                                            --application <some_value> --version <some_value>'""")
+            return -1
+        if not 'fortify_build_id' in data:
+            Logger.console.error("No Fortify Build ID found. Please run 'webbreaker fortify scan --build_id [BUILD_ID]'")
+            return -1
+        if not 'git_url' in data:
+            Logger.console.error("No Git Repo URL found. Please run 'webbreaker admin notifier --email --url [REPO URL]'")
+            return -1
+        return 1
+
 class GitUploader(object):
     def __init__(self, agent_url=None):
         self.upload_log = UploadJSON(os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json')))

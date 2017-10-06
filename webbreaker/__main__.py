@@ -36,7 +36,7 @@ from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info
+from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier
 from webbreaker.secretclient import SecretClient
 import re
 import os
@@ -680,6 +680,8 @@ def agent(config, start):
         Logger.console.info("Build ID: {}".format(agent_data['fortify_build_id']))
         return
     else:
+        # If any data is missing, verifier will output and exit
+        verifier = AgentVerifier('webbreaker/etc/agent.json')
         Logger.console.info("Creating agent....")
         pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', 'webbreaker/etc/agent.json'])
         return
