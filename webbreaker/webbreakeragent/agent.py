@@ -36,6 +36,7 @@ class AgentClient(object):
             self.log("CHECK", response.data['data']['jobState'])
             return response.data['data']['jobState']
         else:
+            self.log("CHECK FAILURE", 'API REQUEST FAILED')
             sys.exit()
 
     def check_timeout(self):
@@ -44,6 +45,7 @@ class AgentClient(object):
         if time_running > 259200:
             self.payload['status'].append('AGENT TIMEOUT')
             self.write_json()
+            self.log("AGENT TIMEOUT", 'AGENT KILLED AFTER {} SECONDS'.format(time_running))
             sys.exit()
 
     def find_job_id(self):
