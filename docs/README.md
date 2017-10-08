@@ -72,9 +72,9 @@ Webbreak utilizes a structure of upper-level and lower-level commands to enable 
     - list
     - upload
     - scan
-  - git
-    - email
-    - upload
+  - admin
+    - notifier
+    - agent
 
 A promper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify] [lower-level command] [OPTIONS]'
 
@@ -210,23 +210,23 @@ Retrieve and store Fortify Version url and Jenkins BuildID with command-line aut
 > webbreaker fortify scan --version important_site_auth --build_id my_latest_build --fortify_user $FORT_USER --fortify_password $FORT_PASS
 ```
 
-#### Git Email
+#### Admin Notifier
 
 Retrieve and store public emails of contributors to the webbreaker repo. Communication with the Git API requires a token stored in webbreaker.ini
 ```
-> webbreaker git email --url https://github.com/target/webbreaker
+> webbreaker admin notifier --email --git_url https://github.com/target/webbreaker
 ```
 
-#### Git Upload
+#### Admin Agent
 
-Send CloudScan notification request to WebBreaker Agent containing stored information from 'git email' and 'fortify scan'. Request will be made to the WebBreaker Agent url stored in webbreaker.ini
+View the current stored information for WebBreaker Agent based on most recent use of 'admin notifier' and 'fortify scan'
 ```
-> webbreaker git upload
+> webbreaker admin agent
 ```
 
-Send CloudScan notification request to overridden WebBreaker Agent containing stored information from 'git email' and 'fortify scan':
+Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify scan'. On scan completion the agent will notify contributors found via 'admin notifiers':
 ```
-> webbreaker git upload --webbreaker_agent https://my_webbreaker_agent.io/api/v1/fortify-cloudscan
+> webbreaker admin agent --start
 ```
 
 
@@ -373,6 +373,17 @@ to_address=webbreaker-activity@example.com
 email_template:<html>
               <head></head>
               <body></body>
+
+[agent_emailer]
+smtp_host = smtp.example.com
+smtp_port = 25
+from_address = webbreaker-no-reply@example.com
+default_to_address = security-team@example.com
+chatroom = Security Chat Room
+email_template:<html>
+              <head></head>
+              <body></body>
+              </html>
 ````
 
 ### WebInspect Settings: `webinspect_settings`
