@@ -39,7 +39,7 @@ from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier
 from webbreaker.secretclient import SecretClient
 import re
-import os
+import sys
 import subprocess
 
 handle_scan_event = None
