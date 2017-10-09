@@ -33,7 +33,7 @@ def get_console_logger():
             console_logger.handlers.pop()
 
         # Set-up the logging configs
-        ch = logging.StreamHandler(stream=sys.stdout)
+        ch = logging.StreamHandler()
         # Use the standard formatter constant
         ch.setFormatter(FORMATTER)
         # Only send stout INFO level messages
