@@ -6,7 +6,7 @@
 
 WebBreaker orchestrates web application security testing products to scale and reduce testing time, providing notifications and feedback early and often to development and other stakeholders.
 
-Increasing visibility, orchestration, and scalability of your Dynamic Application Security Testing (DAST) into your DevOps pipeline are paramount to releasing secure applications.  WebBreaker truly enables all members of the Software Security Development Life-Cycle (SDLC), with access to security testing.  Resulting in greater test coverage with increased visibility, providing Dynamic Application Security Test Orchestration (DASTO).  Current support is limited to the World's most popular commercial DAST product, WebInspect.
+Increasing visibility, orchestration, and scalability of Dynamic Application Security Testing (DAST) into your DevOps pipeline are paramount to releasing secure applications.  WebBreaker truly enables all members of the Software Security Development Life-Cycle (SDLC), with access to security testing.  Resulting in greater test coverage with increased visibility, providing Dynamic Application Security Test Orchestration (DASTO).  Current support is limited to the World's most popular commercial DAST product, WebInspect.
 
 ## System Architecture
 ![WebBreaker System Architecture](images/WebBreakerSystemArchitecture.jpg)
@@ -29,22 +29,20 @@ Increasing visibility, orchestration, and scalability of your Dynamic Applicatio
 
 ## Quick Local Installation and Configurations
 
-__Installing WebBreaker from source:__
 1. ```git clone https://github.com/target/webbreaker```
 1. ```pip install -r requirements.txt```
 1. ```python setup.py install```
-
-__Configuring WebBreaker:__
-1. _Required_: Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
-1. _Required_: Add your _WebInspect_ API server(s) to [webbreaker/etc/webinspect.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/webinspect.ini#L4)
-1. _Required_: Add your _Fortify SSC_ URL to [webbreaker/etc/fortify.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/fortify.ini#L2)
-1. _Optional_: SMTP settings on email notifications and a message template can be edited in [webbreaker/etc/email.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/email.ini#L2)
-1. _Optional_: Create your own remote GIT repo for your WebInspect [settings](https://github.com/automationdomination/WebInspect/tree/master/settings), [policies](https://github.com/automationdomination/WebInspect/tree/master/policies), and [webmacros](https://github.com/automationdomination/WebInspect/tree/master/webmacros). Simply, add the [GIT URL to the webinspect.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/webinspect.ini#L33) and their respective directories.
+1. Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
+1. Add your _WebInspect_ API server(s) to [webbreaker/etc/webinspect.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/webinspect.ini#L4)
+1. Add your _Fortify SSC_ URL to [webbreaker/etc/fortify.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/fortify.ini#L2)
 
 **NOTES:**
 
-* _Required_: As with any Python application that contains library dependencies, [pip](https://pip.pypa.io/en/stable/installing) is required for installation.
+* As with any Python application that contains library dependencies, [pip](https://pip.pypa.io/en/stable/installing) is required for installation.
 * _Optional_: Include your Python site-packages, if they are not already in your $PATH with ```export PATH=$PATH:$PYTHONPATH```.
+* _Optional_: SMTP settings on email notifications and a message template can be edited in [webbreaker/etc/email.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/email.ini#L2)
+* _Optional_: Create your own remote GIT repo for your WebInspect [settings](https://github.com/automationdomination/WebInspect/tree/master/settings), [policies](https://github.com/automationdomination/WebInspect/tree/master/policies), and [webmacros](https://github.com/automationdomination/WebInspect/tree/master/webmacros). Simply, add the [GIT URL to the webinspect.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/webinspect.ini#L33) and their respective directories.
+
 
 ## Usage
 
