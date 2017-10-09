@@ -26,8 +26,8 @@ class AgentClient(object):
             self.fortify_config = FortifyConfig()
             self.check_count = 0
             self.timeout = 15
-        except (AttributeError, UnboundLocalError) as e:
-            self.log("Agent was either misconfigured or unable to communicate with agent {0}\n".format(e))
+        except (KeyError, AttributeError, UnboundLocalError) as e:
+            self.log("Agent was either misconfigured or unable to initialize {0}\n".format(e))
 
     def check(self):
         self.check_count += 1
@@ -36,8 +36,8 @@ class AgentClient(object):
                              password=self.fortify_config.password, verify_ssl=False)
     
             response = api.get_cloudscan_job_status(self.scan_id)
-        except (AttributeError, UnboundLocalError) as e:
-            self.log("Agent was either misconfigured or unable to communicate with agent {0}\n".format(e))
+        except (KeyError, AttributeError, UnboundLocalError) as e:
+            self.log("Agent was either misconfigured or unable to communicate with Fortify SSC {0}\n".format(e))
         
         if response.success:
             self.log("CHECK", response.data['data']['jobState'])
