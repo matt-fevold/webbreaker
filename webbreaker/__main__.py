@@ -641,19 +641,20 @@ def admin(config):
               required=True,
               help="The url of the Git repo from which to find contributors. Ex: --url https://github.com/target/webbreaker")
 @pass_config
+def notifier(config, email, git_url):
     try:
         if not email:
             Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
             return
-            parser = urlparse(git_url)
-            host = "{}://{}".format(parser.scheme, parser.netloc)
-            path = parser.path
-            r = re.search('\/(.*)\/', path)
-            owner = r.group(1)
-            r = re.search('\/.*\/(.*)', path)
-            repo = r.group(1)
-            git_client = GitClient(host=host)
-            emails = git_client.get_all_emails(owner, repo)
+        parser = urlparse(git_url)
+        host = "{}://{}".format(parser.scheme, parser.netloc)
+        path = parser.path
+        r = re.search('\/(.*)\/', path)
+        owner = r.group(1)
+        r = re.search('\/.*\/(.*)', path)
+        repo = r.group(1)
+        git_client = GitClient(host=host)
+        emails = git_client.get_all_emails(owner, repo)
 
         if emails:
             write_agent_info('git_emails', emails)
