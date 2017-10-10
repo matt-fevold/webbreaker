@@ -37,10 +37,11 @@ from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info
+from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier
 from webbreaker.secretclient import SecretClient
 import re
-import os
+import sys
+import subprocess
 
 handle_scan_event = None
 reporter = None
@@ -625,50 +626,73 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
 
 
 
-@cli.group(help="""Interaction with a GitHub or GHE API. Used to gather and send information needed for WebBreaker Agent notifications.""")
+@cli.group(help="""TODO""")
 @pass_config
-def git(config):
+def admin(config):
     pass
 
 
-@git.command()
-@click.option('--url',
+@admin.command()
+@click.option('--email',
+              is_flag=True,
+              help="Optional flag which instructs WebBreaker to find contributors to notify via email")
+@click.option('--git_url',
               required=True,
               help="The url of the Git repo from which to find contributors. Ex: --url https://github.com/target/webbreaker")
 @pass_config
-def email(config, url):
-    parser = urlparse(url)
-    host = "{}://{}".format(parser.scheme, parser.netloc)
-    path = parser.path
-    r = re.search('\/(.*)\/', path)
-    owner = r.group(1)
-    r = re.search('\/.*\/(.*)', path)
-    repo = r.group(1)
-    git_client = GitClient(host=host)
-    emails = git_client.get_all_emails(owner, repo)
-    if emails:
-        write_agent_info('git_emails', emails)
-    else:
-        Logger.console.info("Unable to complete command 'git email'")
+def notifier(config, email, git_url):
+    try:
+        if not email:
+            Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
+            return
+        parser = urlparse(git_url)
+        host = "{}://{}".format(parser.scheme, parser.netloc)
+        path = parser.path
+        r = re.search('\/(.*)\/', path)
+        owner = r.group(1)
+        r = re.search('\/.*\/(.*)', path)
+        repo = r.group(1)
+        git_client = GitClient(host=host)
+        emails = git_client.get_all_emails(owner, repo)
+
+        if emails:
+            write_agent_info('git_emails', emails)
+            write_agent_info('git_url', git_url)
+        else:
+            Logger.console.info("Unable to complete command 'webbreaker admin notifier'")
+
+    except (AttributeError, UnboundLocalError) as e:
+        Logger.app.error("Unable to query git repo for email".format(e))
 
 
-
-
-
-@git.command('upload')
-@click.option('--webbreaker_agent',
+@admin.command()
+@click.option('--start',
               required=False,
-              help="Optional override of url of WebBreaker Agent to contact")
+              is_flag=True,
+              help="Optional flag which instruct WebBreaker to create an agent")
 @pass_config
-def git_upload(config, webbreaker_agent):
-    git_uploader = GitUploader(webbreaker_agent)
-    response = git_uploader.upload()
-    if response == 200:
-        Logger.console.info("Request to {} successful.".format(git_uploader.agent_url))
+def agent(config, start):
+    if not start:
+        try:
+            agent_data = read_agent_info()
+            sys.stdout.write(str("Git URL: {}\n".format(agent_data['git_url'])))
+            sys.stdout.write(str("Contributer Emails: {}\n".format(", ".join(agent_data['git_emails']))))
+            sys.stdout.write(str("SSC URL: {}\n".format(agent_data['fortify_pv_url'])))
+            sys.stdout.write(str("Build ID: {}\n".format(agent_data['fortify_build_id'])))
+            #sys.stdout.write(str("Your agent.json file is complete...\n"))
+        except TypeError as e:
+            Logger.app.error("Unable to complete command 'admin': {}".format(e))
+            sys.stdout.write(str("Unable to complete read agent configurations!\n"))
+            return
     else:
-        Logger.console.info("Request to {} was unsuccessful. Unable to complete command 'git upload'".format(git_uploader.agent_url))
-
-
+        try:
+            # If any data is missing, verifier will output and exit
+            # verifier = AgentVerifier('webbreaker/etc/agent.json')
+            pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', 'webbreaker/etc/agent.json'])
+            sys.stdout.write(str("Creating agent...."))
+        except TypeError as e:
+            Logger.app.error("Unable to complete command 'admin agent': {}".format(e))
+        return
 
 if __name__ == '__main__':
     cli()

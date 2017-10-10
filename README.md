@@ -113,13 +113,13 @@ Below is a Cheatsheet of supported commands to get you started.
     webbreaker fortify scan --version important_site_auth --build_id my_latest_build --fortify_user $FORT_USER --fortify_password $FORT_PASS
 
     Retrieve and store public emails of contributors to the webbreaker repo:
-    webbreaker git email --url https://github.com/target/webbreaker
+    webbreaker admin notifier --email --git_url https://github.com/target/webbreaker
 
-    Send CloudScan notification request to WebBreaker Agent containing stored information from 'git email' and 'fortify scan':
-    webbreaker git upload
+    View the current stored information for WebBreaker Agent based on most recent use of 'admin notifier' and 'fortify scan':
+    webbreaker admin agent
 
-    Send CloudScan notification request to overridden WebBreaker Agent containing stored information from 'git email' and 'fortify scan':
-    webbreaker git upload --webbreaker_agent https://my_webbreaker_agent.io/api/v1/fortify-cloudscan
+    Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify scan'. On scan completion the agent will notify contributors:
+    webbreaker admin agent --start
     
 ## Console Output
 

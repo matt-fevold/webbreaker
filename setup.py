@@ -16,7 +16,7 @@ except ImportError:
 requires = ['click',
             'configparser>=3.5.0',
             'dpath>=1.4.0',
-            'fortifyapi>=1.0.5',
+            'fortifyapi>=1.0.6',
             'gitpython',
             'logging',
             'httplib2',
