@@ -706,5 +706,43 @@ def agent(config, start):
             Logger.app.error("Unable to complete command 'admin agent': {}".format(e))
         return
 
+@admin.command()
+@pass_config
+@click.option('--fortify',
+              required=False,
+              is_flag=True,
+              help="Flag used to designate options as Fortify credentials")
+@click.option('--webinspect',
+              required=False,
+              is_flag=True,
+              help="Flag used to designate options as WebInspect credentials")
+@click.option('--clear',
+              required=False,
+              is_flag=True,
+              help="Clears stored credentials of either Fortify or WebInspect based on provided flag")
+@click.option('--username',
+              required=False)
+@click.option('--password',
+              required=False)
+def credentials(config, fortify, webinspect, clear, username, password):
+    if fortify:
+        if clear:
+            # delete for ini
+            pass
+        else:
+            if username and password:
+                # check validity and store
+                pass
+            else:
+                username, password = fortify_prompt()
+                # validate and store
+    elif webinspect:
+        if clear:
+            sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
+        else:
+            sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
+    else:
+        sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
+
 if __name__ == '__main__':
     cli()
