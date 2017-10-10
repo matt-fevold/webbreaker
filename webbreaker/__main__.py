@@ -59,7 +59,10 @@ def fortify_prompt():
     fortify_password = click.prompt('Fortify password', hide_input=True)
     return fortify_user, fortify_password
 
-
+def format_webinspect_server(server):
+    server = server.replace('https://', '')
+    server = server.replace('http://', '')
+    return server
 
 @click.group(help=WebBreakerHelper.help_description())
 @pass_config
@@ -300,6 +303,7 @@ def scan(config, **kwargs):
               help="The protocol used to contact the webinspect server. Default protocol is https")
 @pass_config
 def webinspect_list(config, server, scan_name, protocol):
+    server = format_webinspect_server(server)
     query_client = WebinspectQueryClient(host=server, protocol=protocol)
     try:
         if scan_name:
@@ -340,6 +344,7 @@ def webinspect_list(config, server, scan_name, protocol):
               help="The protocol used to contact the webinspect server. Default protocol is https")
 @pass_config
 def download(config, server, scan_name, scan_id, x, protocol):
+    server = format_webinspect_server(server)
     query_client = WebinspectQueryClient(host=server, protocol=protocol)
 
     try:
