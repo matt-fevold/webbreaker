@@ -641,24 +641,28 @@ def admin(config):
               required=True,
               help="The url of the Git repo from which to find contributors. Ex: --url https://github.com/target/webbreaker")
 @pass_config
-def notifier(config, email, git_url):
-    if not email:
-        Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
-        return
-    parser = urlparse(git_url)
-    host = "{}://{}".format(parser.scheme, parser.netloc)
-    path = parser.path
-    r = re.search('\/(.*)\/', path)
-    owner = r.group(1)
-    r = re.search('\/.*\/(.*)', path)
-    repo = r.group(1)
-    git_client = GitClient(host=host)
-    emails = git_client.get_all_emails(owner, repo)
-    if emails:
-        write_agent_info('git_emails', emails)
-        write_agent_info('git_url', git_url)
-    else:
-        Logger.console.info("Unable to complete command 'git email'")
+    try:
+        if not email:
+            Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
+            return
+            parser = urlparse(git_url)
+            host = "{}://{}".format(parser.scheme, parser.netloc)
+            path = parser.path
+            r = re.search('\/(.*)\/', path)
+            owner = r.group(1)
+            r = re.search('\/.*\/(.*)', path)
+            repo = r.group(1)
+            git_client = GitClient(host=host)
+            emails = git_client.get_all_emails(owner, repo)
+
+        if emails:
+            write_agent_info('git_emails', emails)
+            write_agent_info('git_url', git_url)
+        else:
+            Logger.console.info("Unable to complete command 'git email'")
+
+    except (AttributeError, UnboundLocalError) as e:
+        Logger.app.error("Unable to query git repo for email".format(e))
 
 
 @admin.command()
