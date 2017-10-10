@@ -660,7 +660,7 @@ def notifier(config, email, git_url):
             write_agent_info('git_emails', emails)
             write_agent_info('git_url', git_url)
         else:
-            Logger.console.info("Unable to complete command 'git email'")
+            Logger.console.info("Unable to complete command 'webbreaker admin notifier'")
 
     except (AttributeError, UnboundLocalError) as e:
         Logger.app.error("Unable to query git repo for email".format(e))
@@ -673,26 +673,26 @@ def notifier(config, email, git_url):
               help="Optional flag which instruct WebBreaker to create an agent")
 @pass_config
 def agent(config, start):
-    try:
-        if not start:
+    if not start:
+        try:
             agent_data = read_agent_info()
             sys.stdout.write(str("Git URL: {}\n".format(agent_data['git_url'])))
             sys.stdout.write(str("Contributer Emails: {}\n".format(", ".join(agent_data['git_emails']))))
             sys.stdout.write(str("SSC URL: {}\n".format(agent_data['fortify_pv_url'])))
             sys.stdout.write(str("Build ID: {}\n".format(agent_data['fortify_build_id'])))
             #sys.stdout.write(str("Your agent.json file is complete...\n"))
-    except TypeError as e:
-        Logger.app.error("Unable to complete command 'admin': {}".format(e))
-        sys.stdout.write(str("Unable to complete read agent configurations!\n"))
-        return
+        except TypeError as e:
+            Logger.app.error("Unable to complete command 'admin': {}".format(e))
+            sys.stdout.write(str("Unable to complete read agent configurations!\n"))
+            return
     else:
         try:
-        # If any data is missing, verifier will output and exit
+            # If any data is missing, verifier will output and exit
             # verifier = AgentVerifier('webbreaker/etc/agent.json')
             pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', 'webbreaker/etc/agent.json'])
             sys.stdout.write(str("Creating agent...."))
-        except TypeError as e:\
-            Logger.app.error("Unable to complete command 'admin': {}".format(e))
+        except TypeError as e:
+            Logger.app.error("Unable to complete command 'admin agent': {}".format(e))
         return
 
 if __name__ == '__main__':
