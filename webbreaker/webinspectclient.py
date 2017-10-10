@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
+import sys
 import json
 import ntpath
 import requests
@@ -96,11 +97,9 @@ class WebinspectClient(object):
 
         if response.success:
             scan_id = response.data['ScanId']
-            Logger.console.info('WebInspect scan launched on {0} your scan id: {1} !!\n'.format(self.url, scan_id))
-            # Logger.app.info("Request sent to {0}:\n{1}".format(self.url, overrides))
-            # Logger.app.info("Response from {0}:\n{1}".format(self.url, logger_response))
+            sys.stdout.write(str('WebInspect scan launched on {0} your scan id: {1} !!\n'.format(self.url, scan_id)))
         else:
-            Logger.app.error("No scan was launched! {}".format(response.message))
+            sys.stdout.write(str("No scan was launched! {}".format(response.message)))
             Logger.app.error("Request sent to {0}:\n{1}".format(self.url, overrides))
             Logger.app.info("Response from {0}:\n{1}".format(self.url, logger_response))
             return False
@@ -122,7 +121,7 @@ class WebinspectClient(object):
         if response.success:
             try:
                 with open('{0}.{1}'.format(self.scan_name, extension), 'wb') as f:
-                    Logger.console.info('Scan results file is available: {0}.{1}'.format(self.scan_name, extension))
+                    sys.stdout.write(str('Scan results file is available: {0}.{1}\n'.format(self.scan_name, extension)))
                     f.write(response.data)
             except UnboundLocalError as e:
                 Logger.app.error('Error saving file locally {}'.format(e))

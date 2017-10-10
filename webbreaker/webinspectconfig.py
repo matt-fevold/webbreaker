@@ -99,7 +99,7 @@ class WebInspectConfig(object):
                                        "xmlns:string", namespaces={'xmlns': 'http://spidynamics.com/schemas/scanner/1.0'}):
                 targets.add(target.text)
         except Exception as e:
-            Logger.app.error("Unable to determine scan targets {0}".format(e))
+            Logger.app.error("Unable to read the WebInspect settings file {0}".format(e))
 
         return targets
 
@@ -241,8 +241,8 @@ class WebInspectConfig(object):
         
         try:
             if not os.path.isdir(full_path):
-                Logger.console.info(
-                    "Fetching the WebInspect configurations from {}\n".format(full_path))
+                #Logger.console.info(
+                #    "Fetching the WebInspect configurations from {}\n".format(full_path))
                 check_output(['git', 'clone', self.webinspect_git, full_path])
 
             elif os.path.isdir(git_dir):
@@ -250,7 +250,7 @@ class WebInspectConfig(object):
                     "Updating your WebInspect configurations from {}".format(full_path))
                 check_output(['git','init', full_path])
                 check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
-                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
+                call(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
                 sys.stdout.flush()
             else:
                 Logger.app.error(

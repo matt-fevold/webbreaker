@@ -14,5 +14,4 @@ class Reporter(object):
             for notifier in self.notifiers:
                 notifier.notify(event)
         except (Exception, AttributeError):
-            Logger.app.error("There is something incorrect with your email configurations!")
             Logger.console.error("Error sending email, see log: {}!".format(Logger.app_logfile))
