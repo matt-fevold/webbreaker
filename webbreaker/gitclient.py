@@ -8,6 +8,7 @@ import requests.exceptions
 import requests.packages.urllib3
 import os
 import json
+import re
 try:
     import ConfigParser as configparser
 except ImportError: #Python3
@@ -110,6 +111,23 @@ def read_agent_info():
     except json.decoder.JSONDecodeError:
         Logger.console.error("Error writing {} to agent.json".format(name))
         exit(1)
+
+def format_git_url(url):
+    # if url ends in .git, remove
+    url = url.replace('.git', '')
+
+    https_matcher = re.compile('^https://.*/.*/.*')
+    http_matcher = re.compile('^http://.*/.*/.*')
+    ssh_matcher = re.compile('^git@.*:.*/.*')
+
+    if http_matcher.match(url) or https_matcher.match(url):
+        return url
+    if ssh_matcher.match(url):
+        url = url.replace('git@', '')
+        url = url.replace(':', '/')
+        url = 'https://' + url
+        return url
+    return None
 
 class UploadJSON(object):
     def __init__(self, log_file):

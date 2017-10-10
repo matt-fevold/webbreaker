@@ -37,7 +37,7 @@ from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier
+from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier, format_git_url
 from webbreaker.secretclient import SecretClient
 import re
 import sys
@@ -60,13 +60,14 @@ def fortify_prompt():
     return fortify_user, fortify_password
 
 
+
 @click.group(help=WebBreakerHelper.help_description())
 @pass_config
 def cli(config):
     # Show something pretty to start
     f = Figlet(font='slant')
     sys.stdout.write(str("{0}Version {1}\n".format(f.renderText('WebBreaker'), version)))
-    sys.stdout.write(str("Logging to files: {}".format(Logger.app_logfile)))
+    sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
 
 @cli.group(help="""WebInspect is dynamic application security testing software for assessing security of Web
 applications and Web services.""")
@@ -645,21 +646,27 @@ def notifier(config, email, git_url):
         if not email:
             Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
             return
-        parser = urlparse(git_url)
-        host = "{}://{}".format(parser.scheme, parser.netloc)
-        path = parser.path
-        r = re.search('\/(.*)\/', path)
-        owner = r.group(1)
-        r = re.search('\/.*\/(.*)', path)
-        repo = r.group(1)
-        git_client = GitClient(host=host)
-        emails = git_client.get_all_emails(owner, repo)
-
-        if emails:
-            write_agent_info('git_emails', emails)
-            write_agent_info('git_url', git_url)
         else:
-            Logger.console.info("Unable to complete command 'webbreaker admin notifier'")
+            git_url = format_git_url(git_url)
+            if not git_url:
+                Logger.console.info("The git_url provided is invalid")
+                return
+            else:
+                parser = urlparse(git_url)
+                host = "{}://{}".format(parser.scheme, parser.netloc)
+                path = parser.path
+                r = re.search('\/(.*)\/', path)
+                owner = r.group(1)
+                r = re.search('\/.*\/(.*)', path)
+                repo = r.group(1)
+                git_client = GitClient(host=host)
+                emails = git_client.get_all_emails(owner, repo)
+
+                if emails:
+                    write_agent_info('git_emails', emails)
+                    write_agent_info('git_url', git_url)
+                else:
+                    Logger.console.info("Unable to complete command 'webbreaker admin notifier'")
 
     except (AttributeError, UnboundLocalError) as e:
         Logger.app.error("Unable to query git repo for email".format(e))
