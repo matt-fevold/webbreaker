@@ -70,8 +70,8 @@ class AgentClient(object):
                     self.log('SCAN FOUND', self.scan_id)
                     self.payload['status'].append(scan['jobState'])
                     return
-            for i in range(0,2):
-                time.sleep(30)
+            for i in range(0,6):
+                time.sleep(15)
                 response = api.get_cloudscan_jobs()
                 for scan in response.data['data']:
                     if scan['scaBuildId'] == self.payload['scan']:
