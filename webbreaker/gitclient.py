@@ -109,7 +109,7 @@ def read_agent_info():
         return data
 
     except json.decoder.JSONDecodeError:
-        Logger.console.error("Error writing {} to agent.json".format(name))
+        Logger.console.error("Error reading from agent.json")
         exit(1)
 
 def format_git_url(url):
