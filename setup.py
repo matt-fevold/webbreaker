@@ -78,7 +78,8 @@ try:
         url="https://github.com/target/webbreaker",
         packages=find_packages(exclude=['docs', 'images', 'tests*']),
         include_package_data=True,
-        zip_safe=False,
+        zip_safe=True,
+        #package_data={'etc': ['*.ini']},
         install_requires=requires,
         entry_points={
                     'console_scripts':[
