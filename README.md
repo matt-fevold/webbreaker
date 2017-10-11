@@ -120,7 +120,18 @@ Below is a Cheatsheet of supported commands to get you started.
 
     Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify scan'. On scan completion the agent will notify contributors:
     webbreaker admin agent --start
-    
+
+    Encrypt and store new Fortify credentials. User will be prompted for username and password.
+    webbreaker admin credentials --fortify
+
+    Encrypt and store new Fortify credentials passed as environment variables
+    webbreaker admin credentials --fortify --username $FORT_USER --password $FORT_PASS
+
+    Clear cuurent stored Fortify credentials.
+    webbreaker admin credentials --fortify --clear
+
+
+
 ## Console Output
 
 ![WebBreaker](images/webbreaker-screen.jpg)

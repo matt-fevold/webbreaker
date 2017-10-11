@@ -75,6 +75,7 @@ Webbreak utilizes a structure of upper-level and lower-level commands to enable 
   - admin
     - notifier
     - agent
+    - credentials
 
 A promper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify] [lower-level command] [OPTIONS]'
 
@@ -229,7 +230,22 @@ Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify
 > webbreaker admin agent --start
 ```
 
+#### Admin Credentials
 
+Encrypt and store new Fortify credentials. User will be prompted for username and password. Credentials are validated before being stored.
+```
+> webbreaker admin credentials --fortify
+```
+
+Encrypt and store new Fortify credentials passed as environment variables. Credentials are validated before being stored.
+```
+> webbreaker admin credentials --fortify --username $FORT_USER --password $FORT_PASS
+```
+
+Clear cuurent stored Fortify credentials.
+```
+> webbreaker admin credentials --fortify --clear
+```
 
 
 ## Logging
@@ -253,10 +269,11 @@ Software Security Center (SSC) configuration file `webbreaker/etc/fortify.ini` a
 #### Example
 ```
 [fortify]
-fortify_url=http://localhost:8080/ssc
-project_template=Prioritized High Risk Issue Template
-application_name=WEBINSPECT
-fortify_secret=XXX
+fortify_url = http://localhost:8080/ssc
+project_template = Prioritized High Risk Issue Template
+application_name = WEBINSPECT
+fortify_username =
+fortify_password =
 ```
 
 ### WebInspect Configuration: `webinspect_config`
@@ -340,8 +357,6 @@ Webbreaker configuration file `webbreaker/etc/webbreaker.ini` stores Git API aut
 ```
 [git]
 token = this_is_my_super_secret_token
-[agent]
-webbreaker_agent = https://my_webbreaker_agent.io/api/v1/fortify-cloudscan
 ```
 
 ### Logging Configuration: `logging_config`

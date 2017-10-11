@@ -37,7 +37,7 @@ from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier
+from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier, format_git_url
 from webbreaker.secretclient import SecretClient
 import re
 import sys
@@ -59,6 +59,10 @@ def fortify_prompt():
     fortify_password = click.prompt('Fortify password', hide_input=True)
     return fortify_user, fortify_password
 
+def format_webinspect_server(server):
+    server = server.replace('https://', '')
+    server = server.replace('http://', '')
+    return server
 
 @click.group(help=WebBreakerHelper.help_description())
 @pass_config
@@ -66,7 +70,7 @@ def cli(config):
     # Show something pretty to start
     f = Figlet(font='slant')
     sys.stdout.write(str("{0}Version {1}\n".format(f.renderText('WebBreaker'), version)))
-    sys.stdout.write(str("Logging to files: {}".format(Logger.app_logfile)))
+    sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
 
 @cli.group(help="""WebInspect is dynamic application security testing software for assessing security of Web
 applications and Web services.""")
@@ -299,6 +303,7 @@ def scan(config, **kwargs):
               help="The protocol used to contact the webinspect server. Default protocol is https")
 @pass_config
 def webinspect_list(config, server, scan_name, protocol):
+    server = format_webinspect_server(server)
     query_client = WebinspectQueryClient(host=server, protocol=protocol)
     try:
         if scan_name:
@@ -339,6 +344,7 @@ def webinspect_list(config, server, scan_name, protocol):
               help="The protocol used to contact the webinspect server. Default protocol is https")
 @pass_config
 def download(config, server, scan_name, scan_id, x, protocol):
+    server = format_webinspect_server(server)
     query_client = WebinspectQueryClient(host=server, protocol=protocol)
 
     try:
@@ -385,62 +391,29 @@ def fortify_list(config, fortify_user, fortify_password, application):
     fortify_config = FortifyConfig()
     try:
         if not fortify_user or not fortify_password:
-            Logger.console.info("No Fortify username or password provided. Checking fortify.ini for secret")
-            if fortify_config.token or fortify_config.has_auth_creds():
-                Logger.console.info("Fortify secret found in fortify.ini")
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, token=fortify_config.token,
-                                               fortify_username=fortify_config.username, fortify_password=fortify_config.password)
-                fortify_config.write_token(fortify_client.token)
+            Logger.console.info("No Fortify username or password provided. Checking fortify.ini for credentials")
+            if fortify_config.has_auth_creds():
+                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_config.username,
+                                               fortify_password=fortify_config.password)
             else:
-                Logger.console.info("Fortify secret not found in fortify.ini")
+                Logger.console.info("Fortify credentials not found")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_user,
                                                fortify_password=fortify_password)
-                fortify_config.write_token(fortify_client.token)
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
-                Logger.console.info("Fortify secret written to fortify.ini")
+                Logger.console.info("Fortify credentials stored")
             if application:
-                reauth = fortify_client.list_application_versions(application)
-                if reauth == -1 and fortify_config.token:
-                    Logger.console.info("Fortify secret invalid...reauthorizing")
-                    if fortify_config.has_auth_creds():
-                        fortify_user = fortify_config.username
-                        fortify_password = fortify_config.password
-                    else:
-                        fortify_user, fortify_password = fortify_prompt()
-                    fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_user,
-                                                   fortify_password=fortify_password)
-                    fortify_config.write_username(fortify_user)
-                    fortify_config.write_password(fortify_password)
-                    fortify_config.write_token(fortify_client.token)
-                    Logger.console.info("Fortify secret written to fortify.ini")
-                    Logger.console.info("Attempting to rerun 'fortify list --application'")
-                    fortify_client.list_application_versions(application)
+                fortify_client.list_application_versions(application)
+
             else:
-                reauth = fortify_client.list_versions()
-                if reauth == -1 and fortify_config.token:
-                    Logger.console.info("Fortify secret invalid...reauthorizing")
-                    if fortify_config.has_auth_creds():
-                        fortify_user = fortify_config.username
-                        fortify_password = fortify_config.password
-                    else:
-                        fortify_user, fortify_password = fortify_prompt()
-                    fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_user,
-                                                   fortify_password=fortify_password)
-                    fortify_config.write_username(fortify_user)
-                    fortify_config.write_password(fortify_password)
-                    fortify_config.write_token(fortify_client.token)
-                    Logger.console.info("Fortify secret written to fortify.ini")
-                    Logger.console.info("Attempting to rerun 'fortify list'")
-                    fortify_client.list_versions()
+                fortify_client.list_versions()
         else:
             fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_user,
                                            fortify_password=fortify_password)
-            fortify_config.write_token(fortify_client.token)
             fortify_config.write_username(fortify_user)
             fortify_config.write_password(fortify_password)
-            Logger.console.info("Fortify secret written to fortify.ini")
+            Logger.console.info("Fortify credentials stored")
             if application:
                 fortify_client.list_application_versions(application)
             else:
@@ -473,16 +446,15 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
     try:
         if not fortify_user or not fortify_password:
             Logger.console.info("No Fortify username or password provided. Checking fortify.ini for secret")
-            if fortify_config.token or fortify_config.has_auth_creds():
-                Logger.console.info("Fortify secret found in fortify.ini")
+            if fortify_config.has_auth_creds():
+                Logger.console.info("Fortify credentials found in fortify.ini")
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
-                                               application_name=fortify_config.application_name,
-                                               token=fortify_config.token, scan_name=version, extension=x,
-                                               fortify_username=fortify_config.username, fortify_password=fortify_config.password)
-                fortify_config.write_token(fortify_client.token)
+                                               application_name=fortify_config.application_name, scan_name=version,
+                                               extension=x, fortify_username=fortify_config.username,
+                                               fortify_password=fortify_config.password)
             else:
-                Logger.console.info("Fortify secret not found in fortify.ini")
+                Logger.console.info("Fortify credentials not found in fortify.ini")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
@@ -490,20 +462,18 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
                                                fortify_username=fortify_user,
                                                fortify_password=fortify_password, scan_name=version,
                                                extension=x)
-                fortify_config.write_token(fortify_client.token)
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
-                Logger.console.info("Fortify secret written to fortify.ini")
+                Logger.console.info("Fortify credentials stored")
         else:
             fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                            project_template=fortify_config.project_template,
                                            application_name=fortify_config.application_name,
                                            fortify_username=fortify_user,
                                            fortify_password=fortify_password, scan_name=version, extension=x)
-            fortify_config.write_token(fortify_client.token)
             fortify_config.write_username(fortify_user)
             fortify_config.write_password(fortify_password)
-            Logger.console.info("Fortify secret written to fortify.ini")
+            Logger.console.info("Fortify credentials stored")
 
         reauth = fortify_client.upload_scan(file_name=scan_name)
 
@@ -511,30 +481,6 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
             # The given application doesn't exist
             Logger.console.critical("Fortify Application {} does not exist. Unable to upload scan.".format(application))
 
-        if reauth == -1 and fortify_config.token:
-            Logger.console.info("Fortify secret invalid...reauthorizing")
-            if fortify_config.has_auth_creds():
-                fortify_user = fortify_config.username
-                fortify_password = fortify_config.password
-            else:
-                fortify_user, fortify_password = fortify_prompt()
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           project_template=fortify_config.project_template,
-                                           application_name=fortify_config.application_name,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password, scan_name=version, extension=x)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            fortify_config.write_token(fortify_client.token)
-
-            Logger.console.info("Fortify secret written to fortify.ini")
-            Logger.console.info("Attempting to re-run 'fortify upload'")
-            app_error = fortify_client.upload_scan(file_name=scan_name)
-
-            if app_error == -2:
-                # The given application doesn't exist
-                Logger.console.critical(
-                    "Fortify Application {} does not exist. Unable to upload scan.".format(application))
     except:
         Logger.console.critical("Unable to complete command 'fortify upload'")
 
@@ -559,47 +505,25 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
 
     if not fortify_user or not fortify_password:
         Logger.console.info("No Fortify username or password provided. Checking fortify.ini for secret")
-        if fortify_config.token or fortify_config.has_auth_creds():
-            Logger.console.info("Fortify secret found in fortify.ini")
+        if fortify_config.has_auth_creds():
+            Logger.console.info("Fortify credentials found in fortify.ini")
             fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                            project_template=fortify_config.project_template,
-                                           application_name=fortify_config.application_name,
-                                           token=fortify_config.token, scan_name=version,
+                                           application_name=fortify_config.application_name, scan_name=version,
                                            fortify_username=fortify_config.username, fortify_password=fortify_config.password)
-            fortify_config.write_token(fortify_client.token)
         else:
-            Logger.console.info("Fortify secret not found in fortify.ini")
+            Logger.console.info("Fortify credentials not found in fortify.ini")
             fortify_user, fortify_password = fortify_prompt()
             fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                            project_template=fortify_config.project_template,
                                            application_name=fortify_config.application_name,
                                            fortify_username=fortify_user,
                                            fortify_password=fortify_password, scan_name=version)
-            fortify_config.write_token(fortify_client.token)
             fortify_config.write_username(fortify_user)
             fortify_config.write_password(fortify_password)
-            Logger.console.info("Fortify secret written to fortify.ini")
+            Logger.console.info("Fortify credentials stored")
 
         pv_url = fortify_client.build_pv_url()
-
-        if pv_url == -1:
-            Logger.console.info("Fortify secret invalid...reauthorizing")
-            if fortify_config.has_auth_creds():
-                fortify_user = fortify_config.username
-                fortify_password = fortify_config.password
-            else:
-                fortify_user, fortify_password = fortify_prompt()
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           project_template=fortify_config.project_template,
-                                           application_name=fortify_config.application_name,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password, scan_name=version)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            fortify_config.write_token(fortify_client.token)
-            Logger.console.info("Fortify secret written to fortify.ini")
-            Logger.console.info("Attempting to rerun 'fortify scan'")
-            pv_url = fortify_client.build_pv_url()
 
         if pv_url and pv_url != -1:
             write_agent_info('fortify_pv_url', pv_url)
@@ -613,10 +537,9 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
                                        application_name=fortify_config.application_name,
                                        fortify_username=fortify_user,
                                        fortify_password=fortify_password, scan_name=version)
-        fortify_config.write_token(fortify_client.token)
         fortify_config.write_username(fortify_user)
         fortify_config.write_password(fortify_password)
-        Logger.console.info("Fortify secret written to fortify.ini")
+        Logger.console.info("Fortify credentials stored")
         pv_url = fortify_client.build_pv_url()
         if pv_url and pv_url != -1:
             write_agent_info('fortify_pv_url', pv_url)
@@ -626,7 +549,7 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
 
 
 
-@cli.group(help="""TODO""")
+@cli.group(help="""Administrative commands involving credentials and notifiers""")
 @pass_config
 def admin(config):
     pass
@@ -645,21 +568,27 @@ def notifier(config, email, git_url):
         if not email:
             Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
             return
-        parser = urlparse(git_url)
-        host = "{}://{}".format(parser.scheme, parser.netloc)
-        path = parser.path
-        r = re.search('\/(.*)\/', path)
-        owner = r.group(1)
-        r = re.search('\/.*\/(.*)', path)
-        repo = r.group(1)
-        git_client = GitClient(host=host)
-        emails = git_client.get_all_emails(owner, repo)
-
-        if emails:
-            write_agent_info('git_emails', emails)
-            write_agent_info('git_url', git_url)
         else:
-            Logger.console.info("Unable to complete command 'webbreaker admin notifier'")
+            git_url = format_git_url(git_url)
+            if not git_url:
+                Logger.console.info("The git_url provided is invalid")
+                return
+            else:
+                parser = urlparse(git_url)
+                host = "{}://{}".format(parser.scheme, parser.netloc)
+                path = parser.path
+                r = re.search('\/(.*)\/', path)
+                owner = r.group(1)
+                r = re.search('\/.*\/(.*)', path)
+                repo = r.group(1)
+                git_client = GitClient(host=host)
+                emails = git_client.get_all_emails(owner, repo)
+
+                if emails:
+                    write_agent_info('git_emails', emails)
+                    write_agent_info('git_url', git_url)
+                else:
+                    Logger.console.info("Unable to complete command 'webbreaker admin notifier'")
 
     except (AttributeError, UnboundLocalError) as e:
         Logger.app.error("Unable to query git repo for email".format(e))
@@ -689,10 +618,63 @@ def agent(config, start):
             # If any data is missing, verifier will output and exit
             # verifier = AgentVerifier('webbreaker/etc/agent.json')
             pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', 'webbreaker/etc/agent.json'])
-            sys.stdout.write(str("Creating agent...."))
+            sys.stdout.write(str("WebBreaker agent started successfully.\n"))
         except TypeError as e:
             Logger.app.error("Unable to complete command 'admin agent': {}".format(e))
         return
+
+@admin.command()
+@pass_config
+@click.option('--fortify',
+              required=False,
+              is_flag=True,
+              help="Flag used to designate options as Fortify credentials")
+@click.option('--webinspect',
+              required=False,
+              is_flag=True,
+              help="Flag used to designate options as WebInspect credentials")
+@click.option('--clear',
+              required=False,
+              is_flag=True,
+              help="Clears stored credentials of either Fortify or WebInspect based on provided flag")
+@click.option('--username',
+              required=False)
+@click.option('--password',
+              required=False)
+def credentials(config, fortify, webinspect, clear, username, password):
+    if fortify:
+        fortify_config = FortifyConfig()
+        if clear:
+            fortify_config.clear_credentials()
+        else:
+            if username and password:
+                try:
+                    fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
+                                                   fortify_username=username, fortify_password=password)
+                    fortify_config.write_username(username)
+                    fortify_config.write_password(password)
+                    sys.stdout.write(str("Credentials stored successfully\n"))
+                except ValueError as e:
+                    sys.stdout.write(str("Unable to validate Fortify credentials. Credentials were not stored\n"))
+
+
+            else:
+                username, password = fortify_prompt()
+                try:
+                    fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
+                                                   fortify_username=username, fortify_password=password)
+                    fortify_config.write_username(username)
+                    fortify_config.write_password(password)
+                    sys.stdout.write(str("Credentials stored successfully\n"))
+                except ValueError as e:
+                    sys.stdout.write(str("Unable to validate Fortify credentials. Credentials were not stored\n"))
+    elif webinspect:
+        if clear:
+            sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
+        else:
+            sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
+    else:
+        sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
 
 if __name__ == '__main__':
     cli()

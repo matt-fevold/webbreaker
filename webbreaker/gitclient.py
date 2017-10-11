@@ -8,6 +8,7 @@ import requests.exceptions
 import requests.packages.urllib3
 import os
 import json
+import re
 try:
     import ConfigParser as configparser
 except ImportError: #Python3
@@ -19,8 +20,11 @@ except NameError:  # Python 3
 
 class GitClient(object):
     def __init__(self, host):
-        self.host = host
-        self.token = self.get_token()
+        try:
+            self.host = host
+            self.token = self.get_token()
+        except configparser.NoSectionError as e:
+            Logger.app.error("You are missing a git OAuth Token in your webbreaker.ini: {}".format(e))
 
     def get_user_email(self, login):
         gitapi = GitApi(host=self.host, token=self.token, verify_ssl=False)
@@ -85,6 +89,7 @@ def write_agent_info(name, value):
         Logger.console.error("Error writing {} to agent.json".format(name))
         exit(1)
 
+
 def read_agent_info():
     json_file_path = os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json'))
     try:
@@ -108,8 +113,25 @@ def read_agent_info():
         return data
 
     except json.decoder.JSONDecodeError:
-        Logger.console.error("Error writing {} to agent.json".format(name))
+        Logger.console.error("Error reading from agent.json")
         exit(1)
+
+def format_git_url(url):
+    # if url ends in .git, remove
+    url = url.replace('.git', '')
+
+    https_matcher = re.compile('^https://.*/.*/.*')
+    http_matcher = re.compile('^http://.*/.*/.*')
+    ssh_matcher = re.compile('^git@.*:.*/.*')
+
+    if http_matcher.match(url) or https_matcher.match(url):
+        return url
+    if ssh_matcher.match(url):
+        url = url.replace('git@', '')
+        url = url.replace(':', '/')
+        url = 'https://' + url
+        return url
+    return None
 
 class UploadJSON(object):
     def __init__(self, log_file):

@@ -31,7 +31,6 @@ class FortifyConfig(object):
             self.ssc_url = config.get("fortify", "ssc_url")
 
             secret_client = SecretClient()
-            self.token = secret_client.get('fortify', 'fortify', 'fortify_token')
             self.username = secret_client.get('fortify', 'fortify', 'fortify_username')
             self.password = secret_client.get('fortify', 'fortify', 'fortify_password')
 
@@ -40,11 +39,9 @@ class FortifyConfig(object):
         except configparser.Error as e:
             Logger.app.error("Error reading {} {}".format(config_file, e))
 
-    def write_token(self, token):
-        self.token = token
-
+    def clear_credentials(self):
         secret_client = SecretClient()
-        secret_client.set('fortify', 'fortify', 'fortify_token', token)
+        secret_client.clear_credentials('fortify', 'fortify', 'fortify_username', 'fortify_password')
 
     def write_username(self, username):
         self.username = username
