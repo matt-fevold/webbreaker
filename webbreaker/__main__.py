@@ -618,7 +618,7 @@ def agent(config, start):
             # If any data is missing, verifier will output and exit
             # verifier = AgentVerifier('webbreaker/etc/agent.json')
             pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', 'webbreaker/etc/agent.json'])
-            sys.stdout.write(str("Agent created successfully"))
+            sys.stdout.write(str("WebBreaker agent started successfully.\n"))
         except TypeError as e:
             Logger.app.error("Unable to complete command 'admin agent': {}".format(e))
         return

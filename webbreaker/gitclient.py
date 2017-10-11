@@ -20,8 +20,11 @@ except NameError:  # Python 3
 
 class GitClient(object):
     def __init__(self, host):
-        self.host = host
-        self.token = self.get_token()
+        try:
+            self.host = host
+            self.token = self.get_token()
+        except configparser.NoSectionError as e:
+            Logger.app.error("You are missing a git OAuth Token in your webbreaker.ini: {}".format(e))
 
     def get_user_email(self, login):
         gitapi = GitApi(host=self.host, token=self.token, verify_ssl=False)
@@ -85,6 +88,7 @@ def write_agent_info(name, value):
     except json.decoder.JSONDecodeError:
         Logger.console.error("Error writing {} to agent.json".format(name))
         exit(1)
+
 
 def read_agent_info():
     json_file_path = os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json'))
