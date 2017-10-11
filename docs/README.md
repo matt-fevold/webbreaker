@@ -229,7 +229,22 @@ Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify
 > webbreaker admin agent --start
 ```
 
+### Admin Credentials
 
+Encrypt and store new Fortify credentials. User will be prompted for username and password. Credentials are validated before being stored.
+```
+> webbreaker admin credentials --fortify
+```
+
+Encrypt and store new Fortify credentials passed as environment variables. Credentials are validated before being stored.
+```
+> webbreaker admin credentials --fortify --username $FORT_USER --password $FORT_PASS
+```
+
+Clear cuurent stored Fortify credentials.
+```
+> webbreaker admin credentials --fortify --clear
+```
 
 
 ## Logging
@@ -256,7 +271,8 @@ Software Security Center (SSC) configuration file `webbreaker/etc/fortify.ini` a
 fortify_url=http://localhost:8080/ssc
 project_template=Prioritized High Risk Issue Template
 application_name=WEBINSPECT
-fortify_secret=XXX
+fortify_username =
+fortify_password =
 ```
 
 ### WebInspect Configuration: `webinspect_config`
