@@ -75,6 +75,7 @@ Webbreak utilizes a structure of upper-level and lower-level commands to enable 
   - admin
     - notifier
     - agent
+    - credentials
 
 A promper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify] [lower-level command] [OPTIONS]'
 
@@ -229,7 +230,7 @@ Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify
 > webbreaker admin agent --start
 ```
 
-### Admin Credentials
+#### Admin Credentials
 
 Encrypt and store new Fortify credentials. User will be prompted for username and password. Credentials are validated before being stored.
 ```
@@ -268,9 +269,9 @@ Software Security Center (SSC) configuration file `webbreaker/etc/fortify.ini` a
 #### Example
 ```
 [fortify]
-fortify_url=http://localhost:8080/ssc
-project_template=Prioritized High Risk Issue Template
-application_name=WEBINSPECT
+fortify_url = http://localhost:8080/ssc
+project_template = Prioritized High Risk Issue Template
+application_name = WEBINSPECT
 fortify_username =
 fortify_password =
 ```
