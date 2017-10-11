@@ -726,16 +726,22 @@ def agent(config, start):
               required=False)
 def credentials(config, fortify, webinspect, clear, username, password):
     if fortify:
+        fortify_config = FortifyConfig()
         if clear:
-            # delete for ini
-            pass
+            fortify_config.clear_credentials()
         else:
             if username and password:
-                # check validity and store
-                pass
+                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, token=fortify_config.token,
+                                               fortify_username=username, fortify_password=password)
+                fortify_config.write_username(username)
+                fortify_config.write_password(password)
+
             else:
                 username, password = fortify_prompt()
-                # validate and store
+                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, token=fortify_config.token,
+                                               fortify_username=username, fortify_password=password)
+                fortify_config.write_username(username)
+                fortify_config.write_password(password)
     elif webinspect:
         if clear:
             sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))

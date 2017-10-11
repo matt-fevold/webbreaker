@@ -40,6 +40,10 @@ class FortifyConfig(object):
         except configparser.Error as e:
             Logger.app.error("Error reading {} {}".format(config_file, e))
 
+    def clear_credentials(self):
+        secret_client = SecretClient()
+        secret_client.clear_credentials('fortify', 'fortify', 'fortify_username', 'fortify_password')
+
     def write_token(self, token):
         self.token = token
 

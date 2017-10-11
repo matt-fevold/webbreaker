@@ -70,6 +70,24 @@ class SecretClient(object):
             sys.exit(1)
         return True
 
+    def clear_credentials(self, ini, section, username_key, password_key):
+        config_file = self.__get_ini_file__(ini)
+        try:
+            self.config.read(config_file)
+            self.config.set(section, username_key, '')
+            self.config.set(section, password_key, '')
+            with open(config_file, 'w') as new_config:
+                self.config.write(new_config)
+
+        except (configparser.NoOptionError, CalledProcessError) as noe:
+            Logger.app.error(
+                "{} has incorrect or missing values, see log file {}".format(config_file, Logger.app_logfile))
+            sys.exit(1)
+        except configparser.Error as e:
+            Logger.console.error("Error reading {}, see log file: {}".format(config_file, Logger.app_logfile))
+            Logger.app.error("Error reading {} {}".format(config_file, e))
+            sys.exit(1)
+        return True
 
     def __encrypt__(self, value):
         try:
