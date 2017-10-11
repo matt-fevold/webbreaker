@@ -9,6 +9,7 @@ branches:
   except:
     - gh-pages
     - master
+    - hotfix-issue-46
     
 install:
 # work-around to install cryptography dependency of known setup-tools bug
@@ -19,4 +20,26 @@ install:
   
 # command to run tests
 script: pytest
+
+before_deploy:
+- test $TRAVIS_TEST_RESULT = 0 \# check that build passed successfully
+  && pip install -r requirements.txt \
+  && python setup.py build \
+  && python setup.py publish \
+  && python setup.py install \
+  && cd dist \
+  && cd $TRAVIS_BUILD_DIR \
+  && unzip webbreaker-$TRAVIS_BRANCH.zip dist
+
+deploy:
+  provider: releases
+  api_key:
+    secure: YOUR_API_KEY_ENCRYPTED
+  file: file: webbreaker-$TRAVIS_BRANCH.zip
+  skip_cleanup: true
+  on:
+    condition: $PRODBUILDCOMPLETE = true
+    repo: target/webbreaker
+    all_branches: true
+    tags: true
   
