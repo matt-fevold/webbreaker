@@ -357,8 +357,6 @@ Webbreaker configuration file `webbreaker/etc/webbreaker.ini` stores Git API aut
 ```
 [git]
 token = this_is_my_super_secret_token
-[agent]
-webbreaker_agent = https://my_webbreaker_agent.io/api/v1/fortify-cloudscan
 ```
 
 ### Logging Configuration: `logging_config`
