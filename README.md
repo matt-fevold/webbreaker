@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/target/webbreaker.svg?branch=fortify_upload)](https://travis-ci.org/target/webbreaker/builds)
 [![Release](http://img.shields.io/github/release/target/webbreaker.svg)](https://github.com/target/webbreaker/releases/latest)
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
-<a href="https://codeclimate.com/github/target/webbreaker/coverage" target="_blank"><img src="https://codeclimate.com/github/target/webbreaker/badges/coverage.svg" /></a> <a href="https://codeclimate.com/github/target/webbreaker" target="_blank"><img src="https://codeclimate.com/github/target/webbreaker/badges/gpa.svg" /></a>
 
 ## Introduction
 
