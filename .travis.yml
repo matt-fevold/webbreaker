@@ -1,45 +1,31 @@
 sudo: false
 language: python
 python:
-  - "2.7"
-  - "3.6"
-  - "nightly"
-
+- '2.7'
+- '3.6'
+- nightly
 branches:
   except:
-    - gh-pages
-    - master
-    - hotfix-issue-46
-    
-install:
-# work-around to install cryptography dependency of known setup-tools bug
-  - pip install -r requirements.txt
-  - python setup.py -q build
-  - python setup.py -q install
-  - pip install tox-travis
-  
-# command to run tests
-script: pytest
-
-before_deploy:
-- test $TRAVIS_TEST_RESULT = 0 \# check that build passed successfully
-  && pip install -r requirements.txt \
-  && python setup.py build \
-  && python setup.py publish \
-  && python setup.py install \
-  && cd dist \
-  && cd $TRAVIS_BUILD_DIR \
-  && unzip webbreaker-$TRAVIS_BRANCH.zip dist
-
+  - gh-pages
+  - master
+script:
+- sudo apt-get install -y zlib1g-dev p7zip-rar p7zip-full unace unrar zip unzip sharutils
+  rar uudeview mpack arj cabextract file-roller
+- pip install wheel
+- pip install tox-travis
+- pytest
+- sh build.sh
+notifications:
+  email:
+    recipients:
+    - brandon.spruth2@target.com
+    on_success: change
+    on_failure: always
 deploy:
   provider: releases
   api_key:
-    secure: YOUR_API_KEY_ENCRYPTED
-  file: file: webbreaker-$TRAVIS_BRANCH.zip
-  skip_cleanup: true
+    secure: MpetQNPt7UCpb4TXPZbADTcraPg9SUUGE+OOwpt62xmUAOPHf55vT6JUdgCJZzzrPEMXPAjIx9S7o53ppum8I7+1mDtvvG8U/xibv92Jz1n0+Pg3Z+v4n7EP2qIl3ZkT/rI8f2FWCDwM1cvUV370odqhINnYb/ztgzr4l7R3fvbT9za2WmSvVedWkei4u8xg0MUgZImKG4X1Hi93ZEtUmSdbD6wWJ9UYO66tR4DcGmTl+BtGfRk1DmtDbJKrTVpO5aD1lfafoe7cF4i6bIHh0mz3OridV/B15pf+zQf70I7a083tLx/ZfCRsxLlxSeuZgpVc0yJvd7/pY9DEjs9e05uwLxGaNSrj9rPlB2dJjxRBqlg+25r4GX5BtXP1TqAiA9wHx0XnL4wbu/LOKvFYO6sMuRD7O7ofbudU9VMA9IOxxYzPtnE68KeqYCboAWV0YljIV+OI0zUkR1sKnHnwBhWvWwcB9q+KappY775Wf/v9/zkCwVlIIEU76520RW+nMBD+gUqyWAXXaeRVA4k/JvMQdu6YDLUyT7QbVG65J5E9EccBh/8uxvWyUlgGVA+skVhfhVC1k43GP6Ebn/Nlcl4T+TNWzTRPQNQoqVS0jkWTe1oClhvokHutMaRCqRp5jyPFnbJj3NLlxPEHjdBo76cN8+VN14xxpIl/0Rlmfh0=
+  file: dist/webbreaker-1.99.32.zip
   on:
-    condition: $PRODBUILDCOMPLETE = true
     repo: target/webbreaker
-    all_branches: true
-    tags: true
-  
+    branch: hotfix-issue-46
