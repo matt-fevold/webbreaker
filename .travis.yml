@@ -19,6 +19,7 @@ notifications:
   email:
     recipients:
     - brandon.spruth2@target.com
+    - matthew.dunaj@target.com
     on_success: change
     on_failure: always
 deploy:
@@ -29,4 +30,5 @@ deploy:
   file: dist/*.zip
   on:
     repo: target/webbreaker
-    branch: hotfix-issue-46
+    branch: master
+    tags: true
