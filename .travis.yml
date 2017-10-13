@@ -1,13 +1,10 @@
 sudo: false
 language: python
 python:
-- '2.7'
-- '3.6'
 - nightly
 branches:
   except:
   - gh-pages
-  - master
 script:
 - sudo apt-get install -y zlib1g-dev p7zip-rar p7zip-full unace unrar zip unzip sharutils
   rar uudeview mpack arj cabextract file-roller
