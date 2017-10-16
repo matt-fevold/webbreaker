@@ -6,7 +6,7 @@ try:
     import ConfigParser as configparser
 except ImportError: #Python3
     import configparser
-import os
+import os, sys
 from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.notifiers import emailer
 from webbreaker.webbreakerlogger import Logger
@@ -24,7 +24,12 @@ except NameError:  # Python 3
 class WebBreakerConfig(object):
     def parse_fortify_settings(self):
         fortify_dict = {}
-        fortify_setting = os.path.abspath(os.path.join('webbreaker', 'etc', 'fortify.ini'))
+        #fortify_setting = os.path.abspath(os.path.join('webbreaker', 'etc', 'fortify.ini'))
+        fortify_setting = os.path.join('webbreaker', 'etc', 'fortify.ini')
+        sys.path.append(os.path.join('webbreaker', 'etc', 'fortify.ini'))
+
+
+        print(fortify_setting)
         if os.path.exists(fortify_setting):
             fortify_dict = {}
             config.read(fortify_setting)
@@ -43,7 +48,8 @@ class WebBreakerConfig(object):
 
     def parse_emailer_settings(self):
         emailer_dict = {}
-        emailer_setting = os.path.abspath(os.path.join('webbreaker', 'etc', 'email.ini'))
+        #emailer_setting = os.path.abspath(os.path.join('webbreaker', 'etc', 'email.ini'))
+        emailer_setting = os.path.join('webbreaker', 'etc', 'email.ini')
         if os.path.exists(emailer_setting):
             config.read(emailer_setting)
 
@@ -65,8 +71,6 @@ class WebBreakerConfig(object):
     def create_reporter(self):
 
         notifiers = []
-
-
         emailer_settings = self.parse_emailer_settings()
         notifiers.append(emailer.EmailNotifier(emailer_settings))
 

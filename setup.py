@@ -62,10 +62,14 @@ if sys.argv[-1] == 'build':
     os.system('python setup.py sdist bdist_wheel')
     sys.exit(0)
 
+if sys.argv[-1] == 'publish':
+    os.system('python setup.py sdist --formats=zip')
+    sys.exit(0)
+
 try:
     setup(
         name='webbreaker',
-        description='Application to automate Dynamic Application Security Test Orchestration (DASTO).',
+        description='Client application for Dynamic Application Security Test Orchestration (DASTO).',
         long_description=open('README.md').read(),
         version=version,
         author='Brandon Spruth, Jim Nelson, Matthew Dunaj',
@@ -74,14 +78,7 @@ try:
         url="https://github.com/target/webbreaker",
         packages=find_packages(exclude=['docs', 'images', 'tests*']),
         include_package_data=True,
-        zip_safe=False,
-        #py_modules=['webbreaker.webbreakercli'],
-        package_data={'configs': ['webbreaker/etc/logging.ini',
-                                  'webbreaker/etc/fortify.ini',
-                                  'webbreaker/etc/email.ini',
-                                  'webbreaker/etc/webinspect.ini',
-                                  'images/WebBreakerArchitecture.jpg']
-                      },
+        zip_safe=True,
         install_requires=requires,
         entry_points={
                     'console_scripts':[

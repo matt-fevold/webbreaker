@@ -20,7 +20,6 @@ try: #Python3
     import urllib.request as urllib
 except:
     import urllib
-import sys
 import datetime
 import requests.exceptions
 import json
