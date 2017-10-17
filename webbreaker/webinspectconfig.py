@@ -250,7 +250,7 @@ class WebInspectConfig(object):
                     "Updating your WebInspect configurations from {}".format(full_path))
                 check_output(['git','init', full_path])
                 check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
-                call(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
+                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
                 sys.stdout.flush()
             else:
                 Logger.app.error(
