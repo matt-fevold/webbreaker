@@ -59,17 +59,13 @@ if sys.argv[-1] == 'secret':
     sys.exit(0)
 
 if sys.argv[-1] == 'build':
-    os.system('python setup.py sdist bdist_wheel')
-    sys.exit(0)
-
-if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist --formats=zip')
+    os.system('python setup.py sdist --formats=zip bdist_wheel')
     sys.exit(0)
 
 try:
     setup(
         name='webbreaker',
-        description='Client application for Dynamic Application Security Test Orchestration (DASTO).',
+        description='Client for Dynamic Application Security Test Orchestration (DASTO).',
         long_description=open('README.md').read(),
         version=version,
         author='Brandon Spruth, Jim Nelson, Matthew Dunaj',

@@ -6,8 +6,7 @@ branches:
   except:
   - gh-pages
 script:
-- sudo apt-get install -y zlib1g-dev p7zip-rar p7zip-full unace unrar zip unzip sharutils
-  rar uudeview mpack arj cabextract file-roller
+- sudo apt-get install -y zlib1g-dev p7zip-rar p7zip-full unace zip unzip sharutils
 - pip install wheel
 - pip install tox-travis
 - pytest
