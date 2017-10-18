@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/target/webbreaker.svg?branch=fortify_upload)](https://travis-ci.org/target/webbreaker/builds)
+[![Build Status](https://travis-ci.org/target/webbreaker.svg?branch=master)](https://travis-ci.org/target/webbreaker/builds)
 [![Release](http://img.shields.io/github/release/target/webbreaker.svg)](https://github.com/target/webbreaker/releases/latest)
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
 
