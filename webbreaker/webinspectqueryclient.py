@@ -16,7 +16,7 @@ requests.packages.urllib3.disable_warnings()
 class WebinspectQueryClient(object):
     def __init__(self, host, protocol):
         self.host = protocol + '://' + host
-        Logger.console.info("Using webinspect server: -->{}<-- for query".format(self.host))
+        Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
 
     def get_scan_by_name(self, scan_name):
         """
@@ -60,7 +60,8 @@ class WebinspectQueryClient(object):
         response = api.list_scans()
         if response.success:
             for scan in response.data:
-                Logger.console.info("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
+                print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
+                Logger.app.info("Successfully exported webinspect list")
         else:
             Logger.app.critical("{}".format(response.message))
 

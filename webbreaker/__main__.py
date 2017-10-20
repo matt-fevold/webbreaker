@@ -4,7 +4,7 @@
 __author__ = "Brandon Spruth (brandon.spruth2@target.com), Jim Nelson (jim.nelson2@target.com)," \
              "Matt Dunaj (matthew.dunaj@target.com)"
 __copyright__ = "(C) 2017 Target Brands, Inc."
-__contributors__ = ["Brandon Spruth", "Jim Nelson", "Matthew Dunaj"]
+__contributors__ = ["Brandon Spruth", "Jim Nelson", "Matthew Dunaj", "Kyler Witting"]
 __status__ = "Production"
 __license__ = "MIT"
 
@@ -308,18 +308,20 @@ def webinspect_list(config, server, scan_name, protocol):
         if scan_name:
             results = query_client.get_scan_by_name(scan_name)
             if len(results):
-                Logger.console.info("Scans matching the name {} found.".format(scan_name))
-                Logger.console.info("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                Logger.console.info("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+                print ("Scans matching the name {} found.".format(scan_name))
+                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
                 for match in results:
-                    Logger.console.info(
+                    print(
                         "{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
+                Logger.app.info("Successfully exported webinspect list: {}".format(scan_name))
             else:
-                Logger.console.info("No scans matching the name {} were found.".format(scan_name))
+                Logger.app.error("No scans matching the name {} were found.".format(scan_name))
+
         else:
             query_client.list_scans()
     except:
-        Logger.console.info("Unable to complete command 'webinspect list'")
+        Logger.app.error("Unable to complete command 'webinspect list'")
 
 
 @webinspect.command()
