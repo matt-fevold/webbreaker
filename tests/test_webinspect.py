@@ -21,6 +21,10 @@ def general_exception():
     raise Exception('Test Failure')
 
 
+def print_suc():
+    print "success"
+    return
+
 # def test_webinspect_scan_scan_name(runner):
 #     result = runner.invoke(webbreaker,  ['scan', '--scan_name'])
 #     assert result.exit_code == 0
@@ -97,33 +101,93 @@ def test_webinspect_scan(runner):
 #     assert result.exit_code == 0
 #
 
-def test_webinspect_download(runner):
-    result = runner.invoke(webbreaker, ['download', '--server', '--scan_name'])
-    assert result.exit_code == 2
 
+@mock.patch('webbreaker.__main__.WebinspectQueryClient')
+def test_webinspect_download_req_no_scans_found(test_mock, runner, caplog):
+    test_mock.return_value.get_scan_by_name.return_value = []
+    test_mock.return_value.export_scan_results.return_value = None
+    test_mock.get_scan_by_name()
+    test_mock.export_scan_results()
+
+    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', 'No scans matching the name test-name where found on this host'),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectQueryClient')
+def test_webinspect_download_req_one_scan_found(test_mock, runner, caplog):
+    test_mock.return_value.get_scan_by_name.return_value = [{'Name': 'test-name', 'ID': 1234, 'Status': 'test'}]
+    test_mock.return_value.export_scan_results.return_value = None
+    test_mock.get_scan_by_name()
+    test_mock.export_scan_results()
+
+    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', 'Scan matching the name test-name found.'),
+        ('__webbreaker__', 'INFO', 'Downloading scan test-name'),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectQueryClient')
+def test_webinspect_download_req_many_scans_found(test_mock, runner, caplog):
+    test_mock.return_value.get_scan_by_name.return_value = [{'Name': 'test-name', 'ID': 1234, 'Status': 'test'}, {'Name': 'test-name2', 'ID': 12345, 'Status': 'test2'}]
+    test_mock.get_scan_by_name()
+
+    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', 'Multiple scans matching the name test-name found.'),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectQueryClient')
+def test_webinspect_download_req_exception(test_mock, runner, caplog):
+    test_mock.return_value.get_scan_by_name.side_effect = general_exception
+    test_mock.get_scan_by_name()
+
+    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Unable to complete command 'webinspect download'"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
 
 # def test_webinspect_download_scan_name(runner):
-#     result = runner.invoke(webbreaker,  ['download', '--scan_name'])
+#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '--scan_name'])
 #     assert result.exit_code == 0
 #
 #
 # def test_webinspect_download_scan_id(runner):
-#     result = runner.invoke(webbreaker,  ['download', '--scan_id'])
+#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '--scan_id'])
 #     assert result.exit_code == 0
 #
 #
 # def test_webinspect_download_x(runner):
-#     result = runner.invoke(webbreaker,  ['download', '-x'])
+#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '-x'])
 #     assert result.exit_code == 0
 #
 #
 # def test_webinspect_download_protocol(runner):
-#     result = runner.invoke(webbreaker,  ['download', '--protocol'])
+#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '--protocol'])
 #     assert result.exit_code == 0
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
-def test_webinspect_list_no_scan_name_success(test_mock, runner, caplog):
+def test_webinspect_list_req_success(test_mock, runner, caplog):
     test_mock.return_value.list_scans.return_value = None
 
     result = runner.invoke(webbreaker, ['webinspect', 'list', '--server', 'test-server'])
@@ -136,7 +200,7 @@ def test_webinspect_list_no_scan_name_success(test_mock, runner, caplog):
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
-def test_webinspect_list_no_scan_name_failure(test_mock, runner, caplog):
+def test_webinspect_list_req_exception(test_mock, runner, caplog):
     test_mock.return_value.list_scans.side_effect = general_exception
 
     result = runner.invoke(webbreaker, ['webinspect', 'list', '--server', 'test-server'])
@@ -151,7 +215,7 @@ def test_webinspect_list_no_scan_name_failure(test_mock, runner, caplog):
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
 def test_webinspect_list_scan_name_match(test_mock, runner, caplog):
-    test_mock.return_value.get_scan_by_name.return_value = [{'Name': 'test', 'ID': 1234, 'Status': 'test'}]
+    test_mock.return_value.get_scan_by_name.return_value = [{'Name': 'test-name', 'ID': 1234, 'Status': 'test'}]
     test_mock.get_scan_by_name()
 
     result = runner.invoke(webbreaker,
@@ -173,8 +237,6 @@ def test_webinspect_list_scan_name_no_match(test_mock, runner, caplog):
     result = runner.invoke(webbreaker,
                            ['webinspect', 'list', '--server', 'test-server', '--scan_name', 'test-name'])
 
-    print(result.output)
-    print(caplog)
     caplog.check(
         ('__webbreaker__', 'ERROR', 'No scans matching the name test-name were found.'),
     )
