@@ -42,11 +42,10 @@ class WebinspectQueryClient(object):
         if response.success:
             try:
                 with open('{0}.{1}'.format(scan_name, extension), 'wb') as f:
-                    Logger.console.info('Scan results file is available: {0}.{1}'.format(scan_name, extension))
+                    Logger.app.info('Scan results file is available: {0}.{1}'.format(scan_name, extension))
                     f.write(response.data)
             except UnboundLocalError as e:
                 Logger.app.error('Error saving file locally {}'.format(e))
-                Logger.console.error('Error saving file locally see log: {}'.format(Logger.app_logfile))
         else:
             Logger.app.error('Unable to retrieve scan results. {} '.format(response.message))
 
