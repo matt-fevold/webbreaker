@@ -61,6 +61,7 @@ def get_app_logger(name=None):
         fh = logging.FileHandler(logger_map[name], mode='a')
         fh.setFormatter(formatter)
         fh.setLevel(logging.DEBUG)
+        fh.setLevel(logging.INFO)
         app_logger.addHandler(fh)
     except TypeError as e:
         sys.stdout.write(str("App logger error: {}!\n".format(e)))

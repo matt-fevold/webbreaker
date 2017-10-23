@@ -16,7 +16,7 @@ requests.packages.urllib3.disable_warnings()
 class WebinspectQueryClient(object):
     def __init__(self, host, protocol):
         self.host = protocol + '://' + host
-        Logger.console.info("Using webinspect server: -->{}<-- for query".format(self.host))
+        Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
 
     def get_scan_by_name(self, scan_name):
         """
@@ -42,11 +42,10 @@ class WebinspectQueryClient(object):
         if response.success:
             try:
                 with open('{0}.{1}'.format(scan_name, extension), 'wb') as f:
-                    Logger.console.info('Scan results file is available: {0}.{1}'.format(scan_name, extension))
+                    Logger.app.info('Scan results file is available: {0}.{1}'.format(scan_name, extension))
                     f.write(response.data)
             except UnboundLocalError as e:
                 Logger.app.error('Error saving file locally {}'.format(e))
-                Logger.console.error('Error saving file locally see log: {}'.format(Logger.app_logfile))
         else:
             Logger.app.error('Unable to retrieve scan results. {} '.format(response.message))
 
@@ -60,7 +59,8 @@ class WebinspectQueryClient(object):
         response = api.list_scans()
         if response.success:
             for scan in response.data:
-                Logger.console.info("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
+                print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
+                Logger.app.info("Successfully exported webinspect list")
         else:
             Logger.app.critical("{}".format(response.message))
 
