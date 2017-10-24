@@ -7,15 +7,15 @@ branches:
   - gh-pages
 script:
 - sudo apt-get install -y zlib1g-dev p7zip-rar p7zip-full unace zip unzip sharutils
-- pip install wheel
-- pip install tox-travis
-- pytest
+- pip install -U tox
 - sh build.sh
+- tox
 notifications:
   email:
     recipients:
     - brandon.spruth2@target.com
     - matthew.dunaj@target.com
+    - Kyler.Witting@target.com
     on_success: change
     on_failure: always
 deploy:
