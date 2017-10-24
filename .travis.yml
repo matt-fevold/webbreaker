@@ -1,13 +1,14 @@
 sudo: false
 language: python
 python:
-- nightly
+  - "2.7"
+  - "3.4"
+install: pip install tox-travis
 branches:
   except:
   - gh-pages
 script:
 - sudo apt-get install -y zlib1g-dev p7zip-rar p7zip-full unace zip unzip sharutils
-- pip install -U tox
 - sh build.sh
 - tox
 notifications:
