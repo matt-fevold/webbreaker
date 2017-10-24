@@ -21,10 +21,6 @@ def general_exception():
     raise Exception('Test Failure')
 
 
-def print_suc():
-    print "success"
-    return
-
 # def test_webinspect_scan_scan_name(runner):
 #     result = runner.invoke(webbreaker,  ['scan', '--scan_name'])
 #     assert result.exit_code == 0

@@ -14,22 +14,21 @@ except ImportError:
 
 requires = ['click',
             'configparser>=3.5.0',
+            'cryptography>=1.8.0',
             'dpath>=1.4.0',
             'fortifyapi>=1.0.6',
             'gitpython',
-            'logging',
             'httplib2',
-            'ndg-httpsclient',
             'mock',
+            'ndg-httpsclient',
             'pyasn1',
             'pyfiglet>=0.7.5',
             'pyOpenSSL',
             'pytest-runner',
-            'testfixtures',
-            'cryptography>=1.8.0',
-            'webinspectapi>=1.0.15',
             'requests',
-            'validators']
+            'testfixtures',
+            'validators',
+            'webinspectapi>=1.0.15']
 
 
 def set_secret():

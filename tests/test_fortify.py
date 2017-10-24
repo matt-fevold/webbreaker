@@ -8,9 +8,9 @@ def runner():
     return CliRunner()
 
 
-def test_fortify_list(runner):
-    result = runner.invoke(fortify, ['list'])
-    assert result.exit_code == -1
+# def test_fortify_list(runner):
+#     result = runner.invoke(fortify, ['list'])
+#     assert result.exit_code == -1
 
 
 # def test_fortify_list_user(runner):
@@ -23,9 +23,9 @@ def test_fortify_list(runner):
 #     assert result.exit_code == 0
 
 
-def test_fortify_list_user_password(runner):
-    result = runner.invoke(fortify, ['list', '--fortify_user', '--fortify_password'])
-    assert result.exit_code == -1
+# def test_fortify_list_user_password(runner):
+#     result = runner.invoke(fortify, ['list', '--fortify_user', '--fortify_password'])
+#     assert result.exit_code == -1
 
 
 # def test_fortify_list_application(runner):
