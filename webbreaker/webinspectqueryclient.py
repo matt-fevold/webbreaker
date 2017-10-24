@@ -60,7 +60,7 @@ class WebinspectQueryClient(object):
         if response.success:
             for scan in response.data:
                 print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
-                Logger.app.info("Successfully exported webinspect list")
+            Logger.app.info("Successfully exported webinspect list")
         else:
             Logger.app.critical("{}".format(response.message))
 
