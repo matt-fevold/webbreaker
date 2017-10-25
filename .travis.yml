@@ -4,10 +4,10 @@ python:
   - "2.7"
   - "3.6"
 install:
-  - pip install tox-travis
-  - pip install -rrequirements.txt
+  - pip install tox-travis -rrequirements.txt
+  - python setup.py build
 script:
-- tox
+  - tox
 notifications:
   email:
     recipients:
@@ -25,5 +25,4 @@ deploy:
   skip_cleanup: true
   on:
     repo: target/webbreaker
-    branch: master
     tags: true
