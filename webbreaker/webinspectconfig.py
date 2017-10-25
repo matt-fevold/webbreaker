@@ -238,23 +238,39 @@ class WebInspectConfig(object):
     def fetch_webinspect_configs(self):
         full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
         git_dir = os.path.abspath(os.path.join(full_path, '.git'))
+
+        split_path = os.path.split(full_path)
+        base_path = split_path[0]
         
         try:
-            if not os.path.isdir(full_path):
-                #Logger.console.info(
-                #    "Fetching the WebInspect configurations from {}\n".format(full_path))
-                check_output(['git', 'clone', self.webinspect_git, full_path])
+            print("Cur : {}".format(os.path.dirname(__file__)))
+            print("WebD: {}\n".format(self.webinspect_dir))
 
-            elif os.path.isdir(git_dir):
-                Logger.console.info(
-                    "Updating your WebInspect configurations from {}".format(full_path))
-                check_output(['git','init', full_path])
-                check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
-                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
-                sys.stdout.flush()
+            print("Head: {}".format(base_path))
+            print("Full: {}".format(full_path))
+            print("Git:  {}\n".format(git_dir))
+
+            print("Base Path is dir: {}".format(os.path.isdir(base_path)))
+            print("Full Path is dir: {}".format(os.path.isdir(full_path)))
+            print("Git Path is dir:  {}\n".format(os.path.isdir(git_dir)))
+
+            if os.path.isdir(base_path):
+                if os.path.isdir(git_dir):
+                    print("First IF: 1")
+                    print ("Updating your WebInspect configurations from {}".format(full_path))
+                    check_output(['git', 'init', full_path])
+                    check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
+                    check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
+                    sys.stdout.flush()
+                    print("First IF: 2\n")
+                if not os.path.isdir(full_path):
+                    print("First IF NOT: 1")
+                    check_output(['git', 'clone', self.webinspect_git, full_path])
+                    print("First IF NOT: 2\n")
+                else:
+                    Logger.app.error(
+                        "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
             else:
-                Logger.app.error(
-                    "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
-                
+                print("The base path is not a directory. Impossible to clone there.")
         except (CalledProcessError, AttributeError) as e:
-            Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!".format(e))
+            Logger.app.error("Uh oh something is wrong with your WebInspect configurations!! {}".format(e))
