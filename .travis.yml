@@ -3,6 +3,7 @@ language: python
 python:
   - "2.7"
   - "3.6"
+  - "nightly"
 install:
   - pip install tox-travis -rrequirements.txt
   - python setup.py build
@@ -11,9 +12,9 @@ script:
 notifications:
   email:
     recipients:
-#    - brandon.spruth2@target.com
-#    - matthew.dunaj@target.com
-#    - Kyler.Witting@target.com
+    - brandon.spruth2@target.com
+    - matthew.dunaj@target.com
+    - Kyler.Witting@target.com
     on_success: change
     on_failure: always
 deploy:
