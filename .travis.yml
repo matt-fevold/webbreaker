@@ -5,14 +5,15 @@ python:
   - "3.6"
 install:
   - pip install tox-travis
+  - pip install -rrequirements.txt
 script:
-  - tox
+- tox
 notifications:
   email:
     recipients:
-    - brandon.spruth2@target.com
-    - matthew.dunaj@target.com
-    - Kyler.Witting@target.com
+#    - brandon.spruth2@target.com
+#    - matthew.dunaj@target.com
+#    - Kyler.Witting@target.com
     on_success: change
     on_failure: always
 deploy:
