@@ -4,9 +4,6 @@ python:
   - "2.7"
   - "3.6"
 install: pip install tox-travis
-branches:
-  except:
-  - gh-pages
 script:
 - sudo apt-get install -y zlib1g-dev p7zip-rar p7zip-full unace zip unzip sharutils
 - sh build.sh
