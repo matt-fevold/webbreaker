@@ -212,10 +212,10 @@ class FortifyClient(object):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
         response = api.get_project_versions()
         if response.success:
-            Logger.console.info("{0:^5} {1:30}".format('ID', 'Name'))
-            Logger.console.info("{0:5} {1:30}".format('-'*5, '-'*30))
+            Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
+            Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
             for version in response.data['data']:
-                Logger.console.info("{0:^5} {1:30}".format(version['id'], version['name']))
+                Logger.console.info("{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
         elif not response.success and "401" in response.message:
             return response.response_code
         return None
@@ -224,11 +224,11 @@ class FortifyClient(object):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
         response = api.get_project_versions()
         if response.success:
-            Logger.console.info("{0:^5} {1:30}".format('ID', 'Name'))
-            Logger.console.info("{0:5} {1:30}".format('-' * 5, '-' * 30))
+            Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application','Version'))
+            Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
             for version  in response.data['data']:
                 if version['project']['name'] == application:
-                    Logger.console.info("{0:^5} {1:30}".format(version['id'], version['name']))
+                    Logger.console.info("{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
         elif not response.success and "401" in response.message:
             return response.response_code
         return None
