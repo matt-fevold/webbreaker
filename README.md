@@ -133,7 +133,7 @@ Below is a Cheatsheet of supported commands to get you started.
 
 
 ## Testing
-We have testing integration with tox (detox) and currently test Python 3.6 and 2.7. See the [full testing documentation](https://target.github.io/webbreaker/#testing).
+Our automated testing is ran with detox on Python 3.6 and 2.7. See the [full testing documentation](https://target.github.io/webbreaker/#testing).
 
 ## Console Output
 
