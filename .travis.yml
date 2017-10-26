@@ -25,4 +25,5 @@ deploy:
   skip_cleanup: true
   on:
     repo: target/webbreaker
+    branch: master
     tags: true
