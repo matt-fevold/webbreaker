@@ -33,8 +33,9 @@ class SecretClient(object):
         self.config.read(config_file)
         try:
             encryp_value = self.config.get(section, key)
-        except configparser.NoSectionError:
-            return None
+        except configparser.NoSectionError as e:
+            Logger.app.error("Error: {}".format(e))
+
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.console.error("{} has incorrect or missing values {}".format(config_file, noe))
         except configparser.Error as e:
@@ -50,7 +51,6 @@ class SecretClient(object):
             Logger.console.info("Incorrect user name or password!")
 
         return encryp_value
-
 
     def set(self, ini, section, key, value):
         encryp_value = self.__encrypt__(value)
@@ -100,8 +100,6 @@ class SecretClient(object):
             Logger.app.error(e)
             sys.exit(1)
 
-
-
     def __decrypt__(self, encryp_value):
         encryption_version = re.search('e\$(.*)\$.*', encryp_value).group(1)
         if encryption_version == 'Fernet':
@@ -109,24 +107,20 @@ class SecretClient(object):
             try:
                 cipher = Fernet(self.fernet_key)
                 decryp_value = cipher.decrypt(encryp_value.encode()).decode()
-            except ValueError as e:
-                Logger.console.error(
-                    "Error decrypting the Fortify secret.  Exiting now, see log {}!".format(Logger.app_logfile))
-                Logger.app.debug(e)
+            except Exception as e:
+                Logger.app.error(
+                    "Error decrypting the Fortify secret.  Exiting now, see log {}".format(Logger.app_logfile))
+                Logger.app.error("Error: {}".format(e))
                 sys.exit(1)
         else:
-            Logger.console.error("Error decrypting.  Unsupported encryption version")
+            Logger.app.error("Error decrypting.  Unsupported encryption version")
             sys.exit(1)
-
         return decryp_value
-
-
 
     def __read_fernet_secret__(self):
         try:
             with open(".webbreaker", 'r') as secret_file:
                 fernet_key = secret_file.readline().strip()
-            Logger.app.debug("Fernet key found.")
             return fernet_key
         except IOError:
             Logger.console.error("Error retrieving Fernet key, file does not exist. Please run 'python "
