@@ -24,15 +24,15 @@ def general_exception():
 # def test_webinspect_scan_scan_name(runner):
 #     result = runner.invoke(webbreaker,  ['scan', '--scan_name'])
 #     assert result.exit_code == 0
-
-
-def test_webinspect_scan(runner):
-    result = runner.invoke(webbreaker, ['scan', '--settings tmp'])
-    click.echo('CLI output is: \n\n' + result.output)
-    assert result.exit_code == 2
-
-
-# def test_webinspect_scan_size(runner):
+#
+#
+# def test_webinspect_scan(runner):
+#     result = runner.invoke(webbreaker, ['scan', '--settings tmp'])
+#     click.echo('CLI output is: \n\n' + result.output)
+#     assert result.exit_code == 2
+#
+#
+# # def test_webinspect_scan_size(runner):
 #     result = runner.invoke(webbreaker,  ['scan', '--size'])
 #     assert result.exit_code == 0
 #
@@ -105,7 +105,8 @@ def test_webinspect_download_req_no_scans_found(test_mock, runner, caplog):
     test_mock.get_scan_by_name()
     test_mock.export_scan_results()
 
-    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
 
     caplog.check(
         ('__webbreaker__', 'ERROR', 'No scans matching the name test-name where found on this host'),
@@ -122,7 +123,8 @@ def test_webinspect_download_req_one_scan_found(test_mock, runner, caplog):
     test_mock.get_scan_by_name()
     test_mock.export_scan_results()
 
-    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
 
     caplog.check(
         ('__webbreaker__', 'INFO', 'Scan matching the name test-name found.'),
@@ -135,10 +137,12 @@ def test_webinspect_download_req_one_scan_found(test_mock, runner, caplog):
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
 def test_webinspect_download_req_many_scans_found(test_mock, runner, caplog):
-    test_mock.return_value.get_scan_by_name.return_value = [{'Name': 'test-name', 'ID': 1234, 'Status': 'test'}, {'Name': 'test-name2', 'ID': 12345, 'Status': 'test2'}]
+    test_mock.return_value.get_scan_by_name.return_value = [{'Name': 'test-name', 'ID': 1234, 'Status': 'test'},
+                                                            {'Name': 'test-name2', 'ID': 12345, 'Status': 'test2'}]
     test_mock.get_scan_by_name()
 
-    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
 
     caplog.check(
         ('__webbreaker__', 'INFO', 'Multiple scans matching the name test-name found.'),
@@ -153,7 +157,8 @@ def test_webinspect_download_req_exception(test_mock, runner, caplog):
     test_mock.return_value.get_scan_by_name.side_effect = general_exception
     test_mock.get_scan_by_name()
 
-    result = runner.invoke(webbreaker, ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
 
     caplog.check(
         ('__webbreaker__', 'ERROR', "Unable to complete command 'webinspect download'"),
@@ -161,25 +166,6 @@ def test_webinspect_download_req_exception(test_mock, runner, caplog):
     caplog.uninstall()
 
     assert result.exit_code == 0
-
-# def test_webinspect_download_scan_name(runner):
-#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '--scan_name'])
-#     assert result.exit_code == 0
-#
-#
-# def test_webinspect_download_scan_id(runner):
-#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '--scan_id'])
-#     assert result.exit_code == 0
-#
-#
-# def test_webinspect_download_x(runner):
-#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '-x'])
-#     assert result.exit_code == 0
-#
-#
-# def test_webinspect_download_protocol(runner):
-#     result = runner.invoke(webbreaker,  ['webinspect', 'download', '--protocol'])
-#     assert result.exit_code == 0
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
@@ -283,3 +269,5 @@ def test_webinspect_list_protocol_change_success(test_mock, runner, caplog):
     caplog.uninstall()
 
     assert result.exit_code == 0
+
+# TODO: webbreaker webinespect download
