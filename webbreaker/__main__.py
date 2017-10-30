@@ -175,6 +175,9 @@ def scan(config, **kwargs):
             webinspect_config.webinspect_git, Logger.app_logfile))
         Logger.app.critical("{} does not have permission to access the git repo: {}".format(
         webinspect_config.webinspect_git, e))
+    except Exception as e:
+        Logger.app.error("Error: {}".format(e))
+        sys.exit(2)
 
     # ...and settings...
     try:
@@ -269,6 +272,7 @@ def scan(config, **kwargs):
     if scan_id:
         Logger.app.debug("Scan log: {}".format(webinspect_client.get_scan_log(scan_guid=scan_id)))
 
+    # TODO
     # And wrap up by writing out the issues we found
     # this should be moved into a function...probably a whole 'nother class, tbh
     if scan_id:
@@ -284,8 +288,7 @@ def scan(config, **kwargs):
                     issue['end_date'] = end_date
                     outfile.write(json.dumps(issue) + '\n')
 
-    # That's it. We're done.
-    Logger.console.critical("Webbreaker has completed.")
+    Logger.app.info("Webbreaker WebInspect has completed.")
 
 
 @webinspect.command('list')

@@ -21,15 +21,15 @@ def general_exception():
     raise Exception('Test Failure')
 
 
-# def test_webinspect_scan_scan_name(runner):
-#     result = runner.invoke(webbreaker,  ['scan', '--scan_name'])
+# def test_webinspect_scan_req(runner):
+#     result = runner.invoke(webbreaker, ['webinspect', 'scan', '--settings', 'Default'])
+#     print(result.output)
 #     assert result.exit_code == 0
 #
 #
-# def test_webinspect_scan(runner):
-#     result = runner.invoke(webbreaker, ['scan', '--settings tmp'])
-#     click.echo('CLI output is: \n\n' + result.output)
-#     assert result.exit_code == 2
+# def test_webinspect_scan_scan_name(runner):
+#     result = runner.invoke(webbreaker,  ['scan', '--scan_name'])
+#     assert result.exit_code == 0
 #
 #
 # # def test_webinspect_scan_size(runner):

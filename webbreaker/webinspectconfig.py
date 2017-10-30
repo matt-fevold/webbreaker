@@ -272,5 +272,7 @@ class WebInspectConfig(object):
                         "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
             else:
                 print("The base path is not a directory. Impossible to clone there.")
+                raise Exception("Invalid Base")
         except (CalledProcessError, AttributeError) as e:
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!! {}".format(e))
+
