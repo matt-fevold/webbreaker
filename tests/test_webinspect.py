@@ -1,9 +1,16 @@
 import pytest
 import mock
-import click
+import logging
 
 from testfixtures import LogCapture
 from webbreaker.__main__ import cli as webbreaker
+
+import json
+from mock import mock_open
+
+
+# Disable debugging for log clarity in testing
+logging.disable(logging.DEBUG)
 
 
 @pytest.fixture(scope="module")
@@ -19,6 +26,30 @@ def caplog():
 
 def general_exception():
     raise Exception('Test Failure')
+
+
+# Move hard coded values to params
+class WebInspectResponseTest(object):
+    """Container for all WebInspect API responses, even errors."""
+
+    def __init__(self):
+        self.message = "This was only a test!"
+        self.success = True
+        self.response_code = "200"
+        self.data = {"ScanId": "FakeScanID", "ScanStatus": "complete"}
+
+    def __str__(self):
+        if self.data:
+            return str(self.data)
+        else:
+            return self.message
+
+    def data_json(self, pretty=False):
+        """Returns the data as a valid JSON string."""
+        if pretty:
+            return json.dumps(self.data, sort_keys=True, indent=4, separators=(',', ': '))
+        else:
+            return json.dumps(self.data)
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
@@ -196,3 +227,37 @@ def test_webinspect_list_protocol_change_success(test_mock, runner, caplog):
 # TODO: webbreaker webinespect download
 
 # TODO: webinspect scan [OPTIONS]
+# Write a test for False success and failure in create_scan. Just change WebInspectResponseTest() to False
+
+
+@mock.patch('webbreaker.webinspectclient.WebInspectJitScheduler')
+@mock.patch('webbreaker.webinspectclient.webinspectapi.WebInspectApi')
+@mock.patch('webbreaker.webinspectclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.__main__.open', new_callable=mock_open, read_data="data")
+def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock, runner, caplog):
+    endpoint_mock.return_value.get_endpoint.return_value = "test.hq.target.com"
+    endpoint_mock.has_auth_creds()
+
+    scan_mock.return_value.create_scan.return_value = WebInspectResponseTest()
+    scan_mock.create_scan()
+    scan_mock.return_value.get_current_status.return_value = WebInspectResponseTest()
+    scan_mock.get_current_status()
+    scan_mock.return_value.export_scan_format.return_value = WebInspectResponseTest()
+    scan_mock.export_scan_format()
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'scan'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', "Finding endpoints. Expect up to two minute delay"),
+        ('__webbreaker__', 'INFO', "Launching a scan"),
+        ('__webbreaker__', 'INFO', "Execution is waiting on scan status change"),
+        ('__webbreaker__', 'INFO', "Scan status has changed to complete."),
+        ('__webbreaker__', 'INFO', "Exporting scan: FakeScanID as fpr"),
+        ('__webbreaker__', 'INFO', "Exporting scan: FakeScanID as xml"),
+        ('__webbreaker__', 'INFO', "Webbreaker WebInspect has completed."),
+    )
+    caplog.uninstall()
+
+    print(result.output)
+    assert result.exit_code == 0
