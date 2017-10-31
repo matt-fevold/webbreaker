@@ -200,7 +200,6 @@ def scan(config, **kwargs):
         Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
         exit(1)
 
-    # Default does not trigger this, skip in testing
     # if a scan policy has been specified, we need to make sure we can find/use it
     if webinspect_client.scan_policy:
         # two happy paths: either the provided policy refers to an existing builtin policy, or it refers to
