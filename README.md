@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/target/webbreaker.svg?branch=master)](https://travis-ci.org/target/webbreaker/builds)
 [![Release](http://img.shields.io/github/release/target/webbreaker.svg)](https://github.com/target/webbreaker/releases/latest)
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
+[![Open Hub statistics](https://www.openhub.net/p/webbreaker/widgets/project_thin_badge.gif)](https://www.openhub.net/p/webbreaker)
 
 ## Introduction
 
@@ -30,8 +31,7 @@ Increasing visibility, orchestration, and scalability of Dynamic Application Sec
 ## Quick Local Installation and Configurations
 
 1. ```git clone https://github.com/target/webbreaker```
-1. ```pip install -r requirements.txt```
-1. ```python setup.py install```
+1. ```./build.sh```
 1. Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
 1. Add your _WebInspect_ API server(s) to [webbreaker/etc/webinspect.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/webinspect.ini#L4)
 1. Add your _Fortify SSC_ URL to [webbreaker/etc/fortify.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/fortify.ini#L2)
