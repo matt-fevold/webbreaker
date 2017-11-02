@@ -55,11 +55,20 @@ Below is a Cheatsheet of supported commands to get you started.
 ---
 
 
-    List all WebInspect scans:
-    webbreaker webinspect list --server webinspect-1.example.com:8083
+    List all WebInspect servers found in webinspect.ini:
+    webbreaker webinspect servers
+
+    List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com:
+    webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083
     
-    Query WebInspect scans:
-    webbreaker webinspect list --server webinspect-1.example.com:8083 --scan_name important_site
+    List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com matching "important_site":
+    webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083 --scan_name important_site
+
+    List all WebInspect scans on all servers:
+    webbreaker webinspect list
+
+    List all WebInspect scans on all servers matching "important_site":
+    webbreaker webinspect list --scan_name important_site
     
     List with http:
     webbreaker webinspect list --server webinspect-1.example.com:8083 --protocol http
@@ -85,6 +94,7 @@ Below is a Cheatsheet of supported commands to get you started.
     Scan with local WebInspect settings:
     webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth
     
+
     Initial Fortify SSC listing with authentication (SSC token is managed for 1-day):
     webbreaker fortify list --fortify_user matt --fortify_password abc123
     

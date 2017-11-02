@@ -304,8 +304,11 @@ def scan(config, **kwargs):
 
 @webinspect.command('list')
 @click.option('--server',
-              required=True,
-              help="URL of webinspect server. For example --server sample.webinspect.com:8083")
+              required=False,
+              multiple=True,
+              help="Optional URL of webinspect server. If not provided, all servers will be "
+                      "queried. Can be provided multiple times. " 
+                      "Ex) --server sample.webinspect.com:8083 --server sample.webinspect2.com:8083")
 @click.option('--scan_name',
               required=False,
               help="Only list scans matching this scan_name")
@@ -316,24 +319,48 @@ def scan(config, **kwargs):
               help="The protocol used to contact the webinspect server. Default protocol is https")
 @pass_config
 def webinspect_list(config, server, scan_name, protocol):
-    server = format_webinspect_server(server)
-    query_client = WebinspectQueryClient(host=server, protocol=protocol)
-    if scan_name:
-        results = query_client.get_scan_by_name(scan_name)
-        if len(results):
-            print ("Scans matching the name {} found.".format(scan_name))
-            print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-            print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-            for match in results:
-                print(
-                    "{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
-            Logger.app.info("Successfully exported webinspect list: {}".format(scan_name))
-        else:
-            Logger.app.error("No scans matching the name {} were found.".format(scan_name))
-
+    if len(server):
+        servers = []
+        for s in server:
+            servers.append(format_webinspect_server(s))
     else:
-        query_client.list_scans()
+        servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
 
+    for server in servers:
+        query_client = WebinspectQueryClient(host=server, protocol=protocol)
+        if scan_name:
+            results = query_client.get_scan_by_name(scan_name)
+            if results and len(results):
+                print ("Scans matching the name {} found on {}".format(scan_name, server))
+                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+                for match in results:
+                    print("{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
+            else:
+                Logger.app.error("No scans matching the name {} were found on {}".format(scan_name, server))
+
+        else:
+            results = query_client.list_scans()
+            if results and len(results):
+                print("Scans found on {}".format(server))
+                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+                for scan in results:
+                    print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
+            else:
+                print("No scans found on {}".format(server))
+
+        print('\n\n\n')
+
+@webinspect.command('servers')
+@pass_config
+def servers_list(config):
+    servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
+    print('\n\nFound WebInspect Servers')
+    print('-' * 30)
+    for server in servers:
+        print(server)
+    print('\n')
 
 
 @webinspect.command()

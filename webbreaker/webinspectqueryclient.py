@@ -58,9 +58,7 @@ class WebinspectQueryClient(object):
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
         response = api.list_scans()
         if response.success:
-            for scan in response.data:
-                print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
-            Logger.app.info("Successfully exported webinspect list")
+            return response.data
         else:
             Logger.app.critical("{}".format(response.message))
 

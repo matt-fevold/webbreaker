@@ -27,6 +27,7 @@
 [Verbose Cheatsheet: Webinspect `webinspect_cheatsheet`](#verbose-cheatsheet-webinspect)
 
 - [Scan: `webinspect_scan`](#webinspect-scan)
+- [Servers: `webinspect_servers`](#webinspect-servers)
 - [List: `webinspect_list`](#webinspect-list)
 - [Download: `webinspect_download`](#webinspect-download)
 
@@ -82,6 +83,7 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
 - webbreaker
     - webinspect
         - scan
+        - servers
         - list
         - download
     - fortify
@@ -327,21 +329,46 @@ Launch a scan using a settings file found by absolute path instead of one downlo
 ```
 webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth
 ```
+### WebInspect Servers `webinspect_servers`
+List all servers found in webbreaker/etc/webinspect.ini
+```
+webbreaker webinspect servers
+```
 
 #### WebInspect List `webinspect_list`
 List all scans (scan name, scan id, and scan status) found on the server webinspect-server-1.example.com:8083
 ```
-python webbreaker webinspect list --server webinspect-server-1.example.com:8083
+webbreaker webinspect list --server webinspect-server-1.example.com:8083
 ```
 
-List all scans (scan name, scan id, and scan status) found on the server webinspect-server-1.example.com:8083 whose scan name matches the query 'important_site'
+List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 whose scan name matches the query 'important_site'
 ```
 webbreaker webinspect list --server webinspect-server-1.example.com:8083 --scan_name important_site
 ```
 
+List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 and webinspect-server-2.example.com:8083
+```
+webbreaker webinspect list --server webinspect-server-1.example.com:8083 --server webinspect-server-2.example.com:8083
+```
+
+List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 and webinspect-server-2.example.com:8083 whose scan name matches the query 'important_site'
+```
+webbreaker webinspect list --server webinspect-server-1.example.com:8083 --server webinspect-server-2.example.com:8083 --scan_name important_site
+```
+
+List all scans (scan name, scan id, and scan status) found on all servers listed in webbreaker/etc/webinspect.ini
+```
+webbreaker webinspect list
+```
+
+List all scans (scan name, scan id, and scan status) containing the query 'important_site' found on all servers listed in webbreaker/etc/webinspect.ini
+```
+webbreaker webinspect list --scan_name important_site
+```
+
 List all scans (scan name, scan id, and scan status) found on the server webinspect-server-1.example.com:8083. Interaction with server will use http instead of https.
 ```
-$ webbreaker webinspect list --server webinspect-server-1.example.com:8083 --protocol http
+webbreaker webinspect list --server webinspect-server-1.example.com:8083 --protocol http
 ```
 #### WebInspect Downlaod `webinspect_download`
 For these examples, assume the server has scans with names important_site_auth, important_site_api, important_site_internal
