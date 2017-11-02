@@ -121,9 +121,8 @@ class WebinspectClient(object):
             try:
                 with open('{0}.{1}'.format(self.scan_name, extension), 'wb') as f:
                     Logger.app.debug(str('Scan results file is available: {0}.{1}\n'.format(self.scan_name, extension)))
+                    f.write(response.data)
                     print(str('Scan results file is available: {0}.{1}\n'.format(self.scan_name, extension)))
-                    output = str(response.data)
-                    f.write(output)
             except UnboundLocalError as e:
                 Logger.app.error('Error saving file locally {}'.format(e))
         else:
