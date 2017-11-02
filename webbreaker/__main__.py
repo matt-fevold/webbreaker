@@ -12,11 +12,11 @@ try:
     from signal import *
     from urlparse import urlparse
     # from urllib.parse import urlparse
-except ImportError: #Python3
+except ImportError:  # Python3
     import html.entities as htmlentitydefs
     from urllib.parse import urlparse
     import html.parser as HTMLParser
-try: #Python3
+try:  # Python3
     import urllib.request as urllib
 except:
     import urllib
@@ -33,10 +33,10 @@ from webbreaker.webinspectclient import WebinspectClient
 from webbreaker.webinspectqueryclient import WebinspectQueryClient
 from webbreaker.fortifyclient import FortifyClient
 from webbreaker.fortifyconfig import FortifyConfig
-from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier, format_git_url
+from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier, \
+    format_git_url
 from webbreaker.secretclient import SecretClient
 import re
 import sys
@@ -50,6 +50,7 @@ class Config(object):
     def __init__(self):
         self.debug = False
 
+
 pass_config = click.make_pass_decorator(Config, ensure=True)
 
 
@@ -58,10 +59,12 @@ def fortify_prompt():
     fortify_password = click.prompt('Fortify password', hide_input=True)
     return fortify_user, fortify_password
 
+
 def format_webinspect_server(server):
     server = server.replace('https://', '')
     server = server.replace('http://', '')
     return server
+
 
 @click.group(help=WebBreakerHelper.help_description())
 @pass_config
@@ -70,6 +73,7 @@ def cli(config):
     f = Figlet(font='slant')
     sys.stdout.write(str("{0}Version {1}\n".format(f.renderText('WebBreaker'), version)))
     sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
+
 
 @cli.group(help="""WebInspect is dynamic application security testing software for assessing security of Web
 applications and Web services.""")
@@ -84,10 +88,10 @@ def webinspect(config):
               required=False,
               help="Specify name of scan --scan_name ${BUILD_TAG}")
 @click.option('--settings',
-                type=str,
-                default='Default',
-                required=True,
-                help="""Specify name of settings file, without the .xml extension. WebBreaker will 
+              type=str,
+              default='Default',
+              required=True,
+              help="""Specify name of settings file, without the .xml extension. WebBreaker will 
                  by default try to locate this file in in the repo found in webinspect.ini. If your 
                  file is not in the repo, you may instead pass an absolute path to the file""")
 @click.option('--size',
@@ -166,22 +170,24 @@ def scan(config, **kwargs):
     ops['allowed_hosts'] = list(kwargs['allowed_hosts'])
     ops['workflow_macros'] = list(kwargs['workflow_macros'])
 
-
     # ...as well as pulling down webinspect server config files from github...
     try:
-        webinspect_config.fetch_webinspect_configs()
+        webinspect_config.fetch_webinspect_configs(ops)
     except GitCommandError as e:
         Logger.console.critical("{} does not have permission to access the git repo, see log {}".format(
             webinspect_config.webinspect_git, Logger.app_logfile))
         Logger.app.critical("{} does not have permission to access the git repo: {}".format(
-        webinspect_config.webinspect_git, e))
+            webinspect_config.webinspect_git, e))
+        sys.exit(1)
+    except Exception as e:
+        Logger.app.critical("Error: {}".format(e))
+        sys.exit(1)
 
     # ...and settings...
     try:
         webinspect_settings = webinspect_config.parse_webinspect_options(ops)
     except AttributeError as e:
-        Logger.console.info("Your configuration or settings are incorrect see log {}!!!".format(Logger.app_logfile))
-        Logger.app.error("Your configuration or settings are incorrect see log {}!!!".format(e))
+        Logger.app.error("Your configuration or settings are incorrect see log {}!!!".format(Logger.app_logfile))
 
     # OK, we're ready to actually do something now
 
@@ -189,7 +195,8 @@ def scan(config, **kwargs):
     try:
         webinspect_client = WebinspectClient(webinspect_settings)
     except (UnboundLocalError, EnvironmentError) as e:
-        Logger.console.critical("Incorrect WebInspect configurations found!! See log {}".format(str(Logger.app_logfile)))
+        Logger.console.critical(
+            "Incorrect WebInspect configurations found!! See log {}".format(str(Logger.app_logfile)))
         Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
         exit(1)
 
@@ -199,33 +206,39 @@ def scan(config, **kwargs):
         # a local policy we need to first upload and then use.
 
         if str(webinspect_client.scan_policy).lower() in [str(x[0]).lower() for x in webinspect_config.mapped_policies]:
-            idx = [x for x, y in enumerate(webinspect_config.mapped_policies) if y[0] == str(webinspect_client.scan_policy).lower()]
+            idx = [x for x, y in enumerate(webinspect_config.mapped_policies) if
+                   y[0] == str(webinspect_client.scan_policy).lower()]
             policy_guid = webinspect_config.mapped_policies[idx[0]][1]
-            Logger.console.info("Provided scan_policy {} listed as builtin policyID {}".format(webinspect_client.scan_policy, policy_guid))
-            Logger.console.info("Checking to make sure a policy with that ID exists in WebInspect.")
+            Logger.app.info(
+                "Provided scan_policy {} listed as builtin policyID {}".format(webinspect_client.scan_policy,
+                                                                               policy_guid))
+            Logger.app.info("Checking to make sure a policy with that ID exists in WebInspect.")
             if not webinspect_client.policy_exists(policy_guid):
-                Logger.console.error(
-                    "Scan policy {} cannot be located on the WebInspect server. Stopping".format(webinspect_client.scan_policy))
+                Logger.app.error(
+                    "Scan policy {} cannot be located on the WebInspect server. Stopping".format(
+                        webinspect_client.scan_policy))
                 exit(1)
             else:
-                Logger.console.info("Found policy {} in WebInspect.".format(policy_guid))
+                Logger.app.info("Found policy {} in WebInspect.".format(policy_guid))
         else:
             # Not a builtin. Assume that caller wants the provided policy to be uploaded
-            Logger.console.info("Provided scan policy is not built-in, so will assume it needs to be uploaded.")
+            Logger.app.info("Provided scan policy is not built-in, so will assume it needs to be uploaded.")
             webinspect_client.upload_policy()
             policy = webinspect_client.get_policy_by_name(webinspect_client.scan_policy)
             if policy:
                 policy_guid = policy['uniqueId']
             else:
-                Logger.console.info("The policy name is either incorrect or it is not available in {}."
-                                    .format('etc/webinspect/policies'))
+                Logger.app.error("The policy name is either incorrect or it is not available in {}."
+                                 .format('etc/webinspect/policies'))
                 exit(1)
 
         # Change the provided policy name into the corresponding policy id for scan creation.
         policy_id = webinspect_client.get_policy_by_guid(policy_guid)['id']
         webinspect_client.scan_policy = policy_id
+        Logger.app.debug("New scan policy has been set")
 
     # Upload whatever configurations have been provided...
+    # All skipped unless explicitly declared in CLI
     if webinspect_client.webinspect_upload_settings:
         webinspect_client.upload_settings()
 
@@ -236,56 +249,58 @@ def scan(config, **kwargs):
     if webinspect_client.webinspect_upload_policy and not webinspect_client.scan_policy:
         webinspect_client.upload_policy()
 
+    Logger.app.info("Launching a scan")
     # ... And launch a scan.
     try:
         scan_id = webinspect_client.create_scan()
+        if scan_id:
+            Logger.app.debug("Starting scan handling")
+            Logger.app.info("Execution is waiting on scan status change")
+            with scan_running():
+                webinspect_client.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
+            status = webinspect_client.get_scan_status(scan_id)
+            Logger.app.info("Scan status has changed to {0}.".format(status))
 
-        global handle_scan_event
-        handle_scan_event = create_scan_event_handler(webinspect_client, scan_id, webinspect_settings)
-        handle_scan_event('scan_start')
-
-        with scan_running():
-            webinspect_client.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
-
-        status = webinspect_client.get_scan_status(scan_id)
-        Logger.console.critical("Scan status has changed to {0}.".format(status))
-        if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
-            Logger.console.critical('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
-            handle_scan_event('scan_end')
+            if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
+                Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
+                handle_scan_event('scan_end')
+                exit(1)
+        else:
             exit(1)
-
         webinspect_client.export_scan_results(scan_id, 'fpr')
         webinspect_client.export_scan_results(scan_id, 'xml')
-        handle_scan_event('scan_end')
 
-        Logger.console.critical('Scan is complete.')
     except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
         Logger.console.error(
             "Unable to connect to WebInspect {0}, see log: {1}".format(webinspect_settings['webinspect_url'],
                                                                        Logger.app_logfile))
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
+    except Exception as e:
+        Logger.app.error("General Error: {}".format(e))
 
-    if scan_id:
-        Logger.app.debug("Scan log: {}".format(webinspect_client.get_scan_log(scan_guid=scan_id)))
+    # # TODO
+    # # And wrap up by writing out the issues we found
+    # # this should be moved into a function...probably a whole 'nother class, tbh
+    # if scan_id:
+    #     Logger.app.debug("Scan log: {}".format(webinspect_client.get_scan_log(scan_guid=scan_id)))
+    #     with open('/tmp/' + webinspect_client.scan_name + '.issues', 'w') as outfile:
+    #         end_date = str(datetime.datetime.now())
+    #         sessions = json.loads(webinspect_client.get_scan_issues(scan_guid=scan_id))
+    #         # inject scan-level data into each issue
+    #         for session in sessions:
+    #             print(24)
+    #             issues = session['issues']
+    #             print(25)
+    #             for issue in issues:
+    #                 print(26)
+    #                 issue['scan_name'] = webinspect_settings['webinspect_settings']
+    #                 issue['scan_policy'] = webinspect_settings['webinspect_overrides_scan_policy']
+    #                 issue['end_date'] = end_date
+    #                 output = str(json.dumps(issue))
+    #                 outfile.write(output + '\n')
 
-    # And wrap up by writing out the issues we found
-    # this should be moved into a function...probably a whole 'nother class, tbh
-    if scan_id:
-        with open('/tmp/' + webinspect_client.scan_name + '.issues', 'w') as outfile:
-            end_date = str(datetime.datetime.now())
-            sessions = json.loads(webinspect_client.get_scan_issues(scan_guid=scan_id))
-            # inject scan-level data into each issue
-            for session in sessions:
-                issues = session['issues']
-                for issue in issues:
-                    issue['scan_name'] = webinspect_settings['webinspect_settings']
-                    issue['scan_policy'] = webinspect_settings['webinspect_overrides_scan_policy']
-                    issue['end_date'] = end_date
-                    outfile.write(json.dumps(issue) + '\n')
-
-    # That's it. We're done.
-    Logger.console.critical("Webbreaker has completed.")
+    Logger.app.info("Webbreaker WebInspect has completed.")
 
 
 @webinspect.command('list')
@@ -392,35 +407,43 @@ def fortify_list(config, fortify_user, fortify_password, application):
     fortify_config = FortifyConfig()
     try:
         if not fortify_user or not fortify_password:
-            Logger.console.info("No Fortify username or password provided. Checking fortify.ini for credentials")
+            Logger.app.info("No Fortify username or password provided. Checking fortify.ini for credentials")
             if fortify_config.has_auth_creds():
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_config.username,
+                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
+                                               fortify_username=fortify_config.username,
                                                fortify_password=fortify_config.password)
+                Logger.app.info("Fortify username and password successfully found in fortify.ini")
             else:
-                Logger.console.info("Fortify credentials not found")
+                Logger.app.info("Fortify credentials not found in fortify.ini")
                 fortify_user, fortify_password = fortify_prompt()
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_user,
+                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
+                                               fortify_username=fortify_user,
                                                fortify_password=fortify_password)
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
-                Logger.console.info("Fortify credentials stored")
+                Logger.app.info("Fortify credentials stored")
             if application:
                 fortify_client.list_application_versions(application)
-
             else:
                 fortify_client.list_versions()
         else:
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url, fortify_username=fortify_user,
+            Logger.app.info("Importing Fortify credentials")
+            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
+                                           fortify_username=fortify_user,
                                            fortify_password=fortify_password)
             fortify_config.write_username(fortify_user)
             fortify_config.write_password(fortify_password)
-            Logger.console.info("Fortify credentials stored")
+            Logger.app.info("Fortify credentials stored")
             if application:
                 fortify_client.list_application_versions(application)
             else:
                 fortify_client.list_versions()
+        Logger.app.info("Fortify list has successfully completed")
+
+    except ValueError:
+        Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
     except (AttributeError, UnboundLocalError) as e:
-        Logger.console.critical("Unable to complete command 'fortify list'")
+        Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
 
 
 @fortify.command()
@@ -511,7 +534,8 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
             fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                            project_template=fortify_config.project_template,
                                            application_name=fortify_config.application_name, scan_name=version,
-                                           fortify_username=fortify_config.username, fortify_password=fortify_config.password)
+                                           fortify_username=fortify_config.username,
+                                           fortify_password=fortify_config.password)
         else:
             Logger.console.info("Fortify credentials not found in fortify.ini")
             fortify_user, fortify_password = fortify_prompt()
@@ -549,7 +573,6 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
             Logger.console.critical("Unable to complete command 'fortify scan'")
 
 
-
 @cli.group(help="""Administrative commands involving credentials and notifiers""")
 @pass_config
 def admin(config):
@@ -567,7 +590,8 @@ def admin(config):
 def notifier(config, email, git_url):
     try:
         if not email:
-            Logger.console.info("'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
+            Logger.console.info(
+                "'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
             return
         else:
             git_url = format_git_url(git_url)
@@ -609,7 +633,7 @@ def agent(config, start):
             sys.stdout.write(str("Contributer Emails: {}\n".format(", ".join(agent_data['git_emails']))))
             sys.stdout.write(str("SSC URL: {}\n".format(agent_data['fortify_pv_url'])))
             sys.stdout.write(str("Build ID: {}\n".format(agent_data['fortify_build_id'])))
-            #sys.stdout.write(str("Your agent.json file is complete...\n"))
+            # sys.stdout.write(str("Your agent.json file is complete...\n"))
         except TypeError as e:
             Logger.app.error("Unable to complete command 'admin': {}".format(e))
             sys.stdout.write(str("Unable to complete read agent configurations!\n"))
@@ -623,6 +647,7 @@ def agent(config, start):
         except TypeError as e:
             Logger.app.error("Unable to complete command 'admin agent': {}".format(e))
         return
+
 
 @admin.command()
 @pass_config
@@ -676,6 +701,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
             sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
     else:
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
+
 
 if __name__ == '__main__':
     cli()

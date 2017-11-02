@@ -19,15 +19,12 @@ class WebInspectJitScheduler(object):
 
         try:
             endpoint = self.__get_available_endpoints__()
-            if not endpoint:
-                Logger.console.info("No available endpoints discovered!")
-                return None
-
-                Logger.console.info("JIT Scheduler has selected endpoint {}.".format(endpoint[0]))
+            if endpoint:
+                Logger.app.info("JIT Scheduler has selected endpoint {}.".format(endpoint[0]))
+            else:
+                Logger.app.error("No available endpoints discovered!")
             return endpoint[0]
-
-        except:  # Ugly. Not sure what to expect for problems, so Pokemon handling, catch'em all :(
-            e = sys.exc_info()[0]
+        except Exception as e:  # Ugly. Not sure what to expect for problems, so Pokemon handling, catch'em all :(
             Logger.app.error("Error finding endpoints. {}".format(e))
             return None
 

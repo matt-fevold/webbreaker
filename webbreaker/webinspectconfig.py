@@ -39,6 +39,7 @@ class WebInspectSize(object):
 
 class WebInspectConfig(object):
     def __init__(self):
+        Logger.app.debug("Starting webinspect config initialization")
         try:
             webinspect_dict = self.__get_webinspect_settings__()
             self.endpoints = webinspect_dict['endpoints']
@@ -50,8 +51,10 @@ class WebInspectConfig(object):
         except KeyError as e:
             Logger.console.error("Your configurations file or scan setting is incorrect see log: {}!!!".format(Logger.app_logfile))
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
+        Logger.app.debug("Completed webinspect config initialization")
 
     def __get_webinspect_settings__(self):
+        Logger.app.debug("Getting webinspect settings from ini")
         webinspect_dict = {}
         webinspect_setting = os.path.abspath(os.path.join('webbreaker', 'etc', 'webinspect.ini'))
 
@@ -76,7 +79,7 @@ class WebInspectConfig(object):
             Logger.app.error("{} has incorrect or missing values {}".format(webinspect_setting, noe))
         except configparser.Error as e:
             Logger.app.error("Error reading webinspect settings {} {}".format(webinspect_setting, e))
-
+        Logger.app.debug("Got webinspect settings from ini")
         return webinspect_dict
 
     def __getScanTargets__(self, settings_file_path):
@@ -232,29 +235,39 @@ class WebInspectConfig(object):
         except argparse.ArgumentError as e:
             Logger.app.error("There was an error in the options provided!: ".format(e))
 
+        Logger.app.debug("Completed webinspect settings parse")
         return webinspect_dict
 
     # TODO: Move to the WebInspectHelper class
-    def fetch_webinspect_configs(self):
+    def fetch_webinspect_configs(self, options):
+
         full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
         git_dir = os.path.abspath(os.path.join(full_path, '.git'))
-        
-        try:
-            if not os.path.isdir(full_path):
-                #Logger.console.info(
-                #    "Fetching the WebInspect configurations from {}\n".format(full_path))
-                check_output(['git', 'clone', self.webinspect_git, full_path])
 
-            elif os.path.isdir(git_dir):
-                Logger.console.info(
-                    "Updating your WebInspect configurations from {}".format(full_path))
-                check_output(['git','init', full_path])
-                check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
-                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
-                sys.stdout.flush()
+        split_path = os.path.split(full_path)
+        base_path = split_path[0]
+
+        try:
+            if options['settings'] == 'Default':
+                Logger.app.debug("Default settings were used")
+            elif os.path.isdir(base_path):
+                if os.path.isdir(git_dir):
+                    Logger.app.info("Updating your WebInspect configurations from {}".format(full_path))
+                    check_output(['git', 'init', full_path])
+                    check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
+                    check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
+                    sys.stdout.flush()
+                if not os.path.isdir(full_path):
+                    Logger.app.info("Cloning your specified WebInspect configurations to {}".format(full_path))
+                    check_output(['git', 'clone', self.webinspect_git, full_path])
+                else:
+                    Logger.app.error(
+                        "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
             else:
-                Logger.app.error(
-                    "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
-                
+                Logger.app.error("The base path is not a directory. Impossible to clone there.")
+                raise Exception("Invalid Base")
         except (CalledProcessError, AttributeError) as e:
-            Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!".format(e))
+            Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!\nError: {}".format(e))
+        Logger.app.debug("Completed webinspect config fetch")
+
+

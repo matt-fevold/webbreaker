@@ -16,17 +16,17 @@ requests.packages.urllib3.disable_warnings()
 
 
 class WebinspectClient(object):
-    def __init__(self, webinspect_setting, endpoint=None):
+    def __init__(self, webinspect_setting):
+        Logger.app.debug("Starting webinespect client initialization")
 
-        # Select an appropriate endpoint if none was provided.
+        config = WebInspectConfig()
+        lb = WebInspectJitScheduler(endpoints=config.endpoints,
+                                    size_list=config.sizing,
+                                    size_needed=webinspect_setting['webinspect_scan_size'])
+        Logger.app.info("Finding endpoints. Expect up to two minute delay")
+        endpoint = lb.get_endpoint()
         if not endpoint:
-            config = WebInspectConfig()
-            lb = WebInspectJitScheduler(endpoints=config.endpoints, size_list=config.sizing,
-                                        size_needed=webinspect_setting['webinspect_scan_size'])
-            endpoint = lb.get_endpoint()
-            if not endpoint:
-                raise EnvironmentError("Scheduler found no available endpoints.")
-
+            raise EnvironmentError("Scheduler found no available endpoints.")
         self.url = endpoint
         self.settings = webinspect_setting['webinspect_settings']
         self.scan_name = webinspect_setting['webinspect_scan_name']
@@ -44,20 +44,21 @@ class WebinspectClient(object):
         self.scan_size = webinspect_setting['webinspect_scan_size']
         self.runenv = WebBreakerHelper.check_run_env()
 
-        Logger.console.debug("url: {}".format(self.url))
-        Logger.console.debug("settings: {}".format(self.settings))
-        Logger.console.debug("scan_name: {}".format(self.scan_name))
-        Logger.console.debug("upload_settings: {}".format(self.webinspect_upload_settings))
-        Logger.console.debug("upload_policy: {}".format(self.webinspect_upload_policy))
-        Logger.console.debug("upload_webmacros: {}".format(self.webinspect_upload_webmacros))
-        Logger.console.debug("workflow_macros: {}".format(self.workflow_macros))
-        Logger.console.debug("allowed_hosts: {}".format(self.allowed_hosts))
-        Logger.console.debug("scan_mode: {}".format(self.scan_mode))
-        Logger.console.debug("scan_scope: {}".format(self.scan_scope))
-        Logger.console.debug("login_macro: {}".format(self.login_macro))
-        Logger.console.debug("scan_policy: {}".format(self.scan_policy))
-        Logger.console.debug("scan_start: {}".format(self.scan_start))
-        Logger.console.debug("start_urls: {}".format(self.start_urls))
+        Logger.app.debug("Completed webinspect client initialization")
+        Logger.app.debug("url: {}".format(self.url))
+        Logger.app.debug("settings: {}".format(self.settings))
+        Logger.app.debug("scan_name: {}".format(self.scan_name))
+        Logger.app.debug("upload_settings: {}".format(self.webinspect_upload_settings))
+        Logger.app.debug("upload_policy: {}".format(self.webinspect_upload_policy))
+        Logger.app.debug("upload_webmacros: {}".format(self.webinspect_upload_webmacros))
+        Logger.app.debug("workflow_macros: {}".format(self.workflow_macros))
+        Logger.app.debug("allowed_hosts: {}".format(self.allowed_hosts))
+        Logger.app.debug("scan_mode: {}".format(self.scan_mode))
+        Logger.app.debug("scan_scope: {}".format(self.scan_scope))
+        Logger.app.debug("login_macro: {}".format(self.login_macro))
+        Logger.app.debug("scan_policy: {}".format(self.scan_policy))
+        Logger.app.debug("scan_start: {}".format(self.scan_start))
+        Logger.app.debug("start_urls: {}".format(self.start_urls))
 
     def __settings_exists__(self):
         try:
@@ -70,9 +71,8 @@ class WebinspectClient(object):
                         return True
 
         except (ValueError, UnboundLocalError) as e:
-            Logger.app.error("Unable to determine if setting file exists {}".format(e))
-            Logger.console.error("Unable to determine if setting file exists, scan will continue without setting!")
-
+            Logger.app.error("Unable to determine if setting file exists, scan will continue without setting!"
+                             "Error: {}".format(e))
         return False
 
     def create_scan(self):
@@ -80,6 +80,7 @@ class WebinspectClient(object):
         Launches and monitors a scan
         :return: If scan was able to launch, scan_id. Otherwise none.
         """
+        Logger.app.debug("Creating Scan in webinspect client")
         overrides = json.dumps(webinspectjson.formatted_settings_payload(self.settings, self.scan_name, self.runenv,
                                                                          self.scan_mode, self.scan_scope,
                                                                          self.login_macro,
@@ -91,29 +92,27 @@ class WebinspectClient(object):
         response = api.create_scan(overrides)
 
         logger_response = json.dumps(response, default=lambda o: o.__dict__, sort_keys=True)
-        Logger.console.info("Request sent to WebInspect server: {}".format(self.url))
         Logger.app.debug("Request sent to {0}:\n{1}".format(self.url, overrides))
-        Logger.app.debug("Response from {0}:\n{1}".format(self.url, logger_response))
+        Logger.app.debug("Response from {0}:\n{1}\n".format(self.url, logger_response))
 
         if response.success:
             scan_id = response.data['ScanId']
             sys.stdout.write(str('WebInspect scan launched on {0} your scan id: {1} !!\n'.format(self.url, scan_id)))
         else:
-            sys.stdout.write(str("No scan was launched! {}".format(response.message)))
-            Logger.app.error("Request sent to {0}:\n{1}".format(self.url, overrides))
-            Logger.app.info("Response from {0}:\n{1}".format(self.url, logger_response))
+            Logger.app.error("No scan was launched!")
+            Logger.app.error("{}".format(response.message))
             return False
-
         return scan_id
 
     def export_scan_results(self, scan_id, extension):
         """
         Save scan results to file
         :param scan_id:
+        :param extension:
         :return:
         """
         # Export scan as a xml for Threadfix or other Vuln Management System
-        Logger.console.debug('Exporting scan: {} as {}'.format(scan_id, extension))
+        Logger.app.info('Exporting scan: {} as {}'.format(scan_id, extension))
         detail_type = 'Full' if extension == 'xml' else None
         api = webinspectapi.WebInspectApi(self.url, verify_ssl=False)
         response = api.export_scan_format(scan_id, extension, detail_type)
@@ -121,8 +120,10 @@ class WebinspectClient(object):
         if response.success:
             try:
                 with open('{0}.{1}'.format(self.scan_name, extension), 'wb') as f:
-                    sys.stdout.write(str('Scan results file is available: {0}.{1}\n'.format(self.scan_name, extension)))
-                    f.write(response.data)
+                    Logger.app.debug(str('Scan results file is available: {0}.{1}\n'.format(self.scan_name, extension)))
+                    print(str('Scan results file is available: {0}.{1}\n'.format(self.scan_name, extension)))
+                    output = str(response.data)
+                    f.write(output)
             except UnboundLocalError as e:
                 Logger.app.error('Error saving file locally {}'.format(e))
         else:
@@ -159,7 +160,7 @@ class WebinspectClient(object):
             api = webinspectapi.WebInspectApi(self.url, verify_ssl=False)
             response = api.get_scan_issues(scan_guid)
             if response.success:
-                return response.data_json(pretty=pretty)
+                return response.data_json(pretty=True)
             else:
                 return None
         except (ValueError, UnboundLocalError) as e:
@@ -261,7 +262,7 @@ class WebinspectClient(object):
                 api = webinspectapi.WebInspectApi(self.url, verify_ssl=False)
                 response = api.delete_policy(response.data['uniqueId'])
                 if response.success:
-                    Logger.console.debug("Deleted policy {} from server".format(ntpath.basename(self.webinspect_upload_policy).split('.')[0]))
+                    Logger.app.debug("Deleted policy {} from server".format(ntpath.basename(self.webinspect_upload_policy).split('.')[0]))
         except (ValueError, UnboundLocalError) as e:
             Logger.app.error("Verify if deletion of existing policy failed: {}".format(e))
 

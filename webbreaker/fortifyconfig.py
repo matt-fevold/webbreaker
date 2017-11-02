@@ -26,18 +26,20 @@ class FortifyConfig(object):
         config_file = os.path.abspath(os.path.join('webbreaker', 'etc', 'fortify.ini'))
         try:
             config.read(config_file)
-            self.application_name = config.get("fortify", "application_name")
-            self.project_template = config.get("fortify", "project_template")
             self.ssc_url = config.get("fortify", "ssc_url")
+            self.project_template = config.get("fortify", "project_template")
+            self.application_name = config.get("fortify", "application_name")
 
             secret_client = SecretClient()
             self.username = secret_client.get('fortify', 'fortify', 'fortify_username')
             self.password = secret_client.get('fortify', 'fortify', 'fortify_password')
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
-            Logger.console.error("{} has incorrect or missing values {}".format(config_file, noe))
+            Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
         except configparser.Error as e:
             Logger.app.error("Error reading {} {}".format(config_file, e))
+        except Exception as e:
+            Logger.app.error("Unknown Error: {}".format(e))
 
     def clear_credentials(self):
         secret_client = SecretClient()
@@ -54,7 +56,7 @@ class FortifyConfig(object):
         secret_client.set('fortify', 'fortify', 'fortify_password', password)
 
     def has_auth_creds(self):
-        if self.username and self.password:
+        if self.username and self.password and self.ssc_url:
             return True
         else:
             return False
