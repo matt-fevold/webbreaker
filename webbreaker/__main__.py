@@ -276,8 +276,7 @@ def scan(config, **kwargs):
                                                                        Logger.app_logfile))
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-    except Exception as e:
-        Logger.app.error("General Error: {}".format(e))
+
 
     # # TODO
     # # And wrap up by writing out the issues we found
@@ -319,24 +318,22 @@ def scan(config, **kwargs):
 def webinspect_list(config, server, scan_name, protocol):
     server = format_webinspect_server(server)
     query_client = WebinspectQueryClient(host=server, protocol=protocol)
-    try:
-        if scan_name:
-            results = query_client.get_scan_by_name(scan_name)
-            if len(results):
-                print ("Scans matching the name {} found.".format(scan_name))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for match in results:
-                    print(
-                        "{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
-                Logger.app.info("Successfully exported webinspect list: {}".format(scan_name))
-            else:
-                Logger.app.error("No scans matching the name {} were found.".format(scan_name))
-
+    if scan_name:
+        results = query_client.get_scan_by_name(scan_name)
+        if len(results):
+            print ("Scans matching the name {} found.".format(scan_name))
+            print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+            print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+            for match in results:
+                print(
+                    "{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
+            Logger.app.info("Successfully exported webinspect list: {}".format(scan_name))
         else:
-            query_client.list_scans()
-    except:
-        Logger.app.error("Unable to complete command 'webinspect list'")
+            Logger.app.error("No scans matching the name {} were found.".format(scan_name))
+
+    else:
+        query_client.list_scans()
+
 
 
 @webinspect.command()
@@ -363,29 +360,27 @@ def download(config, server, scan_name, scan_id, x, protocol):
     server = format_webinspect_server(server)
     query_client = WebinspectQueryClient(host=server, protocol=protocol)
 
-    try:
-        if not scan_id:
-            results = query_client.get_scan_by_name(scan_name)
-            if len(results) == 0:
-                Logger.app.error("No scans matching the name {} where found on this host".format(scan_name))
-            elif len(results) == 1:
-                scan_id = results[0]['ID']
-                Logger.app.info("Scan matching the name {} found.".format(scan_name))
-                Logger.app.info("Downloading scan {}".format(scan_name))
-                query_client.export_scan_results(scan_id, scan_name, x)
-            else:
-                Logger.app.info("Multiple scans matching the name {} found.".format(scan_name))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for result in results:
-                    print("{0:80} {1:40} {2:10}".format(result['Name'], result['ID'], result['Status']))
+    if not scan_id:
+        results = query_client.get_scan_by_name(scan_name)
+        if len(results) == 0:
+            Logger.app.error("No scans matching the name {} where found on this host".format(scan_name))
+        elif len(results) == 1:
+            scan_id = results[0]['ID']
+            Logger.app.info("Scan matching the name {} found.".format(scan_name))
+            Logger.app.info("Downloading scan {}".format(scan_name))
+            query_client.export_scan_results(scan_id, scan_name, x)
         else:
-            if query_client.get_scan_status(scan_id):
-                query_client.export_scan_results(scan_id, scan_name, x)
-            else:
-                Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
-    except:
-        Logger.app.error("Unable to complete command 'webinspect download'")
+            Logger.app.info("Multiple scans matching the name {} found.".format(scan_name))
+            print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+            print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+            for result in results:
+                print("{0:80} {1:40} {2:10}".format(result['Name'], result['ID'], result['Status']))
+    else:
+        if query_client.get_scan_status(scan_id):
+            query_client.export_scan_results(scan_id, scan_name, x)
+        else:
+            Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
+
 
 
 @cli.group(help="""Collaborative web application for managing WebInspect and Fortify SCA security bugs

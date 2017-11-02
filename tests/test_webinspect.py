@@ -114,12 +114,10 @@ def test_webinspect_download_req_exception(test_mock, runner, caplog):
     result = runner.invoke(webbreaker,
                            ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
 
-    caplog.check(
-        ('__webbreaker__', 'ERROR', "Unable to complete command 'webinspect download'"),
-    )
+    caplog.check()
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == -1
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
@@ -141,12 +139,10 @@ def test_webinspect_list_req_exception(test_mock, runner, caplog):
 
     result = runner.invoke(webbreaker, ['webinspect', 'list', '--server', 'test-server'])
 
-    caplog.check(
-        ('__webbreaker__', 'ERROR', "Unable to complete command 'webinspect list'"),
-    )
+    caplog.check()
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == -1
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
@@ -189,12 +185,10 @@ def test_webinspect_list_scan_name_error(test_mock, runner, caplog):
     result = runner.invoke(webbreaker,
                            ['webinspect', 'list', '--server', 'test-server', '--scan_name', 'test-name'])
 
-    caplog.check(
-        ('__webbreaker__', 'ERROR', "Unable to complete command 'webinspect list'"),
-    )
+    caplog.check()
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == -1
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
