@@ -81,7 +81,9 @@ ADD . /opt/webbreaker
 
 # Install webbreaker for both venv
 RUN source /root/venv27/bin/activate \
-&& python setup.py install 
+&& python setup.py install \
+&& source /root/venv36/bin/activate \		
+&& python setup.py install
 
 ONBUILD venv27
 
