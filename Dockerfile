@@ -30,7 +30,6 @@ RUN pip install --upgrade pip \
 	virtualenv \ 
 && virtualenv -p python2.7 /root/venv27 \
 && virtualenv -p python3.6 /root/venv36	\
-<<<<<<< HEAD
 && echo 'source /root/venv27/bin/activate' >> ~/.bashrc \
 && echo 'alias venv27="source /root/venv27/bin/activate"' >> ~/.bashrc \
 && echo 'alias venv36="source /root/venv36/bin/activate"' >> ~/.bashrc \
@@ -83,8 +82,6 @@ ADD . /opt/webbreaker
 # Install webbreaker for both venv
 RUN source /root/venv27/bin/activate \
 && python setup.py install 
-#&& source /root/venv36/bin/activate \
-#&& python setup.py install
 
 ONBUILD venv27
 
