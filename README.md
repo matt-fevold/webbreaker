@@ -146,27 +146,15 @@ Below is a Cheatsheet of supported commands to get you started.
 Our automated testing is performed with tox and detox on Python 3.6 and 2.7. See the [full testing documentation](https://target.github.io/webbreaker/#testing).
 
 ## Docker 
-Docker creation commands. The docker container will provide a dev testing environment to confirm the validity of changes in a somke test.
+Build a development and/or testing environment by running the docker commands below from the root directory of the repo, virtualenv environments are named `venv27` for Python 2.7 or `venv36` for Python 3.6.
 
-### Usage
-Run the command from main directory of webbreaker, where the Dockerfile is located. 
-
-This will create an image that has python2.7 and python3.6 virtualenv setup. It will then create, start, run, and connect you to the docker terminal.
-The docker terminal will have you start in venv python2.7, in the /opt/webbreaker directory. Where the most recent changes you made will be replicated. Feel free to start typing webbreaker commands immediately 
-
-Do not make changes inside the container, they will not be replicated outside the container. 
-
-To swtich between virtualenv just use the commands `venv27` or `venv36`
-
-Exit the container session just like any SSH session.
 ```
 docker build -t test_env:centos . \
 && docker create -it --name test_env test_env:centos  \
 && docker start test_env \
 && docker exec -it test_env bash
 ```
-
-After exiting make sure to tear down the container. You will not be able to create a new container with the same name until this is done.
+To remove the environment gracefully, perform the following command:
 ```
 docker stop test_env && docker rm test_env
 ```
