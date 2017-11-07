@@ -49,22 +49,8 @@ if sys.argv[-1] == 'build':
 
 try:
     setup(
-        name='webbreaker',
-        description='Client for Dynamic Application Security Test Orchestration (DASTO).',
-        long_description=open('README.md').read(),
-        version=version,
         author='Brandon Spruth, Jim Nelson, Matthew Dunaj, Kyler Witting',
         author_email='brandon.spruth2@target.com, jim.nelson2@target.com, matthew.dunaj@target.com, kyler.witting@target.com',
-        license='MIT',
-        url="https://github.com/target/webbreaker",
-        packages=find_packages(exclude=['docs', 'images', 'tests*']),
-        include_package_data=True,
-        install_requires=requires,
-        entry_points={
-                    'console_scripts':[
-                        'webbreaker = webbreaker.__main__:cli',
-                    ],
-                },
         classifiers=[
             'Programming Language :: Python',
             'Development Status :: 4 - Beta',
@@ -79,7 +65,21 @@ try:
             'Programming Language :: Python :: 3.0',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: Implementation ::CPython'],
+        description='Client for Dynamic Application Security Test Orchestration (DASTO).',
+        entry_points={
+            'console_scripts': [
+                'webbreaker = webbreaker.__main__:cli',
+            ],
+        },
+        include_package_data=True,
+        install_requires=requires,
+        license='MIT',
+        long_description=open('README.md').read(),
+        name='webbreaker',
+        packages=find_packages(exclude=['docs', 'images', 'tests*']),
         tests_require=['pytest'],
+        url="https://github.com/target/webbreaker",
+        version=version,
     )
 finally:
     if not os.path.isfile('.webbreaker'):
