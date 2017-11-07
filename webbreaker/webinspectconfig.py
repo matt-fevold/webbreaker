@@ -244,28 +244,22 @@ class WebInspectConfig(object):
         full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
         git_dir = os.path.abspath(os.path.join(full_path, '.git'))
 
-        split_path = os.path.split(full_path)
-        base_path = split_path[0]
 
         try:
             if options['settings'] == 'Default':
                 Logger.app.debug("Default settings were used")
-            elif os.path.isdir(base_path):
-                if os.path.isdir(git_dir):
-                    Logger.app.info("Updating your WebInspect configurations from {}".format(full_path))
-                    check_output(['git', 'init', full_path])
-                    check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
-                    check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
-                    sys.stdout.flush()
-                if not os.path.isdir(full_path):
-                    Logger.app.info("Cloning your specified WebInspect configurations to {}".format(full_path))
-                    check_output(['git', 'clone', self.webinspect_git, full_path])
-                else:
-                    Logger.app.error(
-                        "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
+            elif os.path.isdir(git_dir):
+                Logger.app.info("Updating your WebInspect configurations from {}".format(full_path))
+                check_output(['git', 'init', full_path])
+                check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
+                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
+                sys.stdout.flush()
+            elif not os.path.isdir(full_path):
+                Logger.app.info("Cloning your specified WebInspect configurations to {}".format(full_path))
+                check_output(['git', 'clone', self.webinspect_git, full_path])
             else:
-                Logger.app.error("The base path is not a directory. Impossible to clone there.")
-                raise Exception("Invalid Base")
+                Logger.app.error(
+                    "No GIT Repo was declared in your webinspect.ini, therefore nothing will be cloned!")
         except (CalledProcessError, AttributeError) as e:
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!\nError: {}".format(e))
         Logger.app.debug("Completed webinspect config fetch")
