@@ -2,6 +2,7 @@
 [![Release](http://img.shields.io/github/release/target/webbreaker.svg)](https://github.com/target/webbreaker/releases/latest)
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
 [![Open Hub statistics](https://www.openhub.net/p/webbreaker/widgets/project_thin_badge.gif)](https://www.openhub.net/p/webbreaker)
+[![Coverage Status](https://coveralls.io/repos/github/target/webbreaker/badge.svg)](https://coveralls.io/github/target/webbreaker)
 
 ## Introduction
 
