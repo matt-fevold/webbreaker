@@ -122,6 +122,21 @@ Below is a Cheatsheet of supported commands to get you started.
     Retrieve and store Fortify Version url and Jenkins BuildID with command-line authentication:
     webbreaker fortify scan --version important_site_auth --build_id my_latest_build --fortify_user $FORT_USER --fortify_password $FORT_PASS
 
+    List all teams (ID and Name) found in ThreadFix
+    webbreaker threadfix teams
+
+    List all applications (ID and Name) found in ThreadFix that belong to the team with ID=123
+    webbreaker threadfix applications --team_id 123
+
+    List all scans (ID Scanner, and Filename) found in ThreadFix that belong to the application with ID=345
+    webbreaker threadfix scans --app_id 345
+
+    Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345
+    webbreaker threadfix upload --app_id 345 --scan_file my_app_scan.xml
+
+    Create a new application, with a given name and url, in ThreadFix under the team with ID=123
+    webbreaker threadfix create_app --team_id 123 --name new_marketing_app --url http://marketing.ourapp.com
+
     Retrieve and store public emails of contributors to the webbreaker repo:
     webbreaker admin notifier --email --git_url https://github.com/target/webbreaker
 

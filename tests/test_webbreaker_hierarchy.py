@@ -21,6 +21,9 @@ def test_main_hierarchy(runner):
     result = runner.invoke(webbreaker, ['admin'])
     assert result.exit_code == 0
 
+    result = runner.invoke(webbreaker, ['threadfix'])
+    assert result.exit_code == 0
+
 
 def test_webinspect_hierarchy(runner):
     result = runner.invoke(webbreaker, ['webinspect', 'download', '--help'])
@@ -55,4 +58,20 @@ def test_admin_hierarchy(runner):
     assert result.exit_code == 0
 
     result = runner.invoke(webbreaker, ['admin', 'notifier', '--help'])
+    assert result.exit_code == 0
+
+def test_threadfix_hierarchy(runner):
+    result = runner.invoke(webbreaker, ['threadfix', 'teams', '--help'])
+    assert result.exit_code == 0
+
+    result = runner.invoke(webbreaker, ['threadfix', 'applications', '--help'])
+    assert result.exit_code == 0
+
+    result = runner.invoke(webbreaker, ['threadfix', 'scans', '--help'])
+    assert result.exit_code == 0
+
+    result = runner.invoke(webbreaker, ['threadfix', 'upload', '--help'])
+    assert result.exit_code == 0
+
+    result = runner.invoke(webbreaker, ['threadfix', 'create_app', '--help'])
     assert result.exit_code == 0
