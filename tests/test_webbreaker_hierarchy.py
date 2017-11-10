@@ -43,6 +43,9 @@ def test_fortify_hierarchy(runner):
     result = runner.invoke(webbreaker, ['fortify', 'upload', '--help'])
     assert result.exit_code == 0
 
+    result = runner.invoke(webbreaker, ['fortify', 'download', '--help'])
+    assert result.exit_code == 0
+
 
 def test_admin_hierarchy(runner):
     result = runner.invoke(webbreaker, ['admin', 'agent', '--help'])
