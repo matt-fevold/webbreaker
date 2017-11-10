@@ -38,6 +38,8 @@ from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier, \
     format_git_url
 from webbreaker.secretclient import SecretClient
+from webbreaker.threadfixclient import ThreadFixClient
+from webbreaker.threadfixconfig import ThreadFixConfig
 import re
 import sys
 import subprocess
@@ -277,7 +279,6 @@ def scan(config, **kwargs):
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
 
-
     # # TODO
     # # And wrap up by writing out the issues we found
     # # this should be moved into a function...probably a whole 'nother class, tbh
@@ -307,8 +308,8 @@ def scan(config, **kwargs):
               required=False,
               multiple=True,
               help="Optional URL of webinspect server. If not provided, all servers will be "
-                      "queried. Can be provided multiple times. " 
-                      "Ex) --server sample.webinspect.com:8083 --server sample.webinspect2.com:8083")
+                   "queried. Can be provided multiple times. "
+                   "Ex) --server sample.webinspect.com:8083 --server sample.webinspect2.com:8083")
 @click.option('--scan_name',
               required=False,
               help="Only list scans matching this scan_name")
@@ -351,6 +352,7 @@ def webinspect_list(config, server, scan_name, protocol):
                 print("No scans found on {}".format(server))
 
         print('\n\n\n')
+
 
 @webinspect.command('servers')
 @pass_config
@@ -409,7 +411,6 @@ def download(config, server, scan_name, scan_id, x, protocol):
             Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
 
 
-
 @cli.group(help="""Collaborative web application for managing WebInspect and Fortify SCA security bugs
 across the entire secure SDLC-from development to QA and through production.""")
 @pass_config
@@ -428,7 +429,15 @@ def fortify(config):
 def fortify_list(config, fortify_user, fortify_password, application):
     fortify_config = FortifyConfig()
     try:
-        if not fortify_user or not fortify_password:
+        if fortify_user and fortify_password:
+            Logger.app.info("Importing Fortify credentials")
+            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
+                                           fortify_username=fortify_user,
+                                           fortify_password=fortify_password)
+            fortify_config.write_username(fortify_user)
+            fortify_config.write_password(fortify_password)
+            Logger.app.info("Fortify credentials stored")
+        else:
             Logger.app.info("No Fortify username or password provided. Checking fortify.ini for credentials")
             if fortify_config.has_auth_creds():
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
@@ -444,24 +453,11 @@ def fortify_list(config, fortify_user, fortify_password, application):
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
                 Logger.app.info("Fortify credentials stored")
-            if application:
-                fortify_client.list_application_versions(application)
-            else:
-                fortify_client.list_versions()
+        if application:
+            fortify_client.list_application_versions(application)
         else:
-            Logger.app.info("Importing Fortify credentials")
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            Logger.app.info("Fortify credentials stored")
-            if application:
-                fortify_client.list_application_versions(application)
-            else:
-                fortify_client.list_versions()
+            fortify_client.list_versions()
         Logger.app.info("Fortify list has successfully completed")
-
     except ValueError:
         Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
     except (AttributeError, UnboundLocalError) as e:
@@ -781,6 +777,109 @@ def credentials(config, fortify, webinspect, clear, username, password):
             sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
     else:
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
+
+
+@cli.group(help="Interaction with a ThreadFix API")
+@pass_config
+def threadfix(config):
+    pass
+
+
+@threadfix.command(help="List all teams (ID and Name) found on ThreadFix")
+@pass_config
+def teams(config):
+    threadfix_config = ThreadFixConfig()
+    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    teams = threadfix_client.list_teams()
+    if teams:
+        print("{0:^10} {1:30}".format('ID', 'Name'))
+        print("{0:10} {1:30}".format('-' * 10, '-' * 30))
+        for team in teams:
+            print("{0:^10} {1:30}".format(team['id'], team['name']))
+        Logger.app.info("Successfully listed threadfix teams")
+        print('\n\n')
+    else:
+        Logger.app.error("No teams were found")
+
+
+@threadfix.command(help="List all applications (ID and Name) found on ThreadFix belonging to a certain team")
+@pass_config
+@click.option('--team_id',
+              required=True,
+              help="ID of ThreadFix team you want to list applications of")
+def applications(config, team_id):
+    threadfix_config = ThreadFixConfig()
+    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    apps = threadfix_client.list_apps_by_team(team_id)
+    if apps:
+        print("{0:^10} {1:30}".format('ID', 'Name'))
+        print("{0:10} {1:30}".format('-' * 10, '-' * 30))
+        for app in apps:
+            print("{0:^10} {1:30}".format(app['id'], app['name']))
+        Logger.app.info("Successfully listed threadfix applications")
+        print('\n\n')
+    else:
+        Logger.app.error("No applications were found for team_id {}".format(team_id))
+
+
+@threadfix.command(help="Create a new application in ThreadFix")
+@pass_config
+@click.option('--team_id',
+              required=True,
+              help="ID of ThreadFix team this application will belong to")
+@click.option('--name',
+              required=True,
+              help="Name of new application")
+@click.option('--url',
+              required=False,
+              default=None,
+              help="Option URL of new application")
+def create_app(config, team_id, name, url):
+    threadfix_config = ThreadFixConfig()
+    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    created_app = threadfix_client.create_application(team_id, name, url)
+    if created_app:
+        Logger.app.info("Application successfully created with id {}".format(created_app['id']))
+    else:
+        Logger.app.error("Application was not created")
+
+
+@threadfix.command(help="List all scans (ID, Scanner, and Filename) of a certain application in ThreadFix")
+@pass_config
+@click.option('--app_id',
+              required=True,
+              help="ID of ThreadFix Application to list scans of")
+def scans(config, app_id):
+    threadfix_config = ThreadFixConfig()
+    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    scans = threadfix_client.list_scans_by_app(app_id)
+    if scans:
+        print("{0:^10} {1:30} {2:30}".format('ID', 'Scanner Name', 'Filename'))
+        print("{0:10} {1:30} {2:30}".format('-' * 10, '-' * 30, '-' * 30))
+        for scan in scans:
+            print("{0:^10} {1:30} {2:30}".format(scan['id'], scan['scannerName'], scan['filename']))
+        Logger.app.info("Successfully listed threadfix scans")
+        print('\n\n')
+    else:
+        Logger.app.error("No scans were found for app_id {}".format(app_id))
+
+
+@threadfix.command(name='upload', help="Upload a local scan file to an application in ThreadFix")
+@pass_config
+@click.option('--app_id',
+              required=True,
+              help="ID of ThreadFix Application to upload this scan to")
+@click.option('--scan_file',
+              required=True,
+              help="File to be upload. Ex) --scan_file my_scan.xml")
+def threadfix_upload(config, app_id, scan_file):
+    threadfix_config = ThreadFixConfig()
+    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    upload_resp = threadfix_client.upload_scan(app_id, scan_file)
+    if upload_resp:
+        Logger.app.info("{}".format(upload_resp))
+    else:
+        Logger.app.error("Scan file failed to upload")
 
 
 if __name__ == '__main__':

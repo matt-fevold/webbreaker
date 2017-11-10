@@ -23,6 +23,7 @@
 - [WebInspect `webinspect_config`](#webinspect-config)
 - [Fortify `fortify_config`](#fortify-config)
 - [WebBreaker `webbreaker_config`](#webbreaker-config)
+- [ThreadFix `threadfix_config`](#threadfix-config)
 
 [Verbose Cheatsheet: Webinspect `webinspect_cheatsheet`](#verbose-cheatsheet-webinspect)
 
@@ -37,6 +38,14 @@
 - [Download: `fortify_download`](#fortify_download)
 - [Upload: `fortify_upload`](#fortify-upload)
 - [Scan: `fortify_scan`](#fortify-scan)
+
+[Verbose Cheatsheet: ThreadFix `threadfix_cheatsheet`](#verbose-cheatsheet-threadfix)
+
+- [Teams: `threadfix_teams`](#threadfix_teams)
+- [Applications: `threadfix_applications`](#threadfix_applications)
+- [Scans: `threadfix_scans`](#threadfix_scans)
+- [Upload: `threadfix_upload`](#threadfix_upload)
+- [Create App: `threadfix_create_app`](#threadfix_create_app)
 
 [Verbose Cheatsheet: Admin `admin_cheatsheet`](#verbose-cheatsheet-admin)
 
@@ -96,6 +105,12 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
         - notifier
         - agent
         - credentials
+    - threadfix
+        - teams
+        - applications
+        - scans
+        - upload
+        - create_app
 
 A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|admin] [lower-level command] [OPTIONS]'
 
@@ -105,13 +120,15 @@ WebBreaker may be implemented with Elastic Stack for log aggregation. Recommende
 ### Testing `testing`
 #### Requirements
 1. Be in your project root to run tests. 
-    * ```pip install -rrequirements.txt -rtests/requirements.txt```
+    * ```pip install -rrequirements.txt```
 2. Python2.7 and Python3.6 are currently tested in our tox.ini file
     * If you want to test it against your current version python, you can the other ways to test. Tox is suggested though. 
     
 #### Tox
-We use detox instead of tox for the speed of concurrent testing.
+We use detox instead of tox for the speed of concurrent testing. With the speed of testing, comes a lack of coverage output
 * ```detox```
+
+Tox will allow you to see the coverage.py results.
 * ```tox```
 
 #### Other ways to test
@@ -314,6 +331,19 @@ Webbreaker configuration file `webbreaker/etc/webbreaker.ini` stores Git API aut
 token = this_is_my_super_secret_token
 ```
 
+### ThreadFix `threadfix_config`
+
+#### File
+*webbreaker/etc/threadfix.ini*
+
+#### Example
+````
+[threadfix]
+host = https://our-threadfix.com/threadfix/
+api_key = aBcDeFgHiJkLmNoPqRsTuVwXyZ123456789
+
+````
+
 ## Verbose Cheatsheet: Webinspect `webinspect_cheatsheet`
 ### WebInspect Scan `webinspect_scan`
 Launch a scan using the settings file important_site_auth.xml (WebBreaker assumes the .xml extension)
@@ -474,6 +504,37 @@ webbreaker fortify scan --application my_other_app --version important_site_auth
 Retrieve and store Fortify Version url and Jenkins BuildID with command-line authentication. Authentication to Fortify will use the username and password I have stored as environment variables
 ```
 webbreaker fortify scan --version important_site_auth --build_id my_latest_build --fortify_user $FORT_USER --fortify_password $FORT_PASS
+```
+
+## Verbose Cheatsheet: ThreadFix `threadfix_cheatsheet`
+#### ThreadFix Teams `threadfix_teams`
+List all teams (ID and Name) found in ThreadFix
+```
+webbreaker threadfix teams
+```
+
+#### ThreadFix Applications `threadfix_applications`
+List all applications (ID and Name) found in ThreadFix that belong to the team with ID=123
+```
+webbreaker threadfix applications --team_id 123
+```
+
+#### ThreadFix Scans `threadfix_scans`
+List all scans (ID Scanner, and Filename) found in ThreadFix that belong to the application with ID=345
+```
+webbreaker threadfix scans --app_id 345
+```
+
+#### ThreadFix Upload `threadfix_upload`
+Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345
+```
+webbreaker threadfix upload --app_id 345 --scan_file my_app_scan.xml
+```
+
+#### ThreadFix Create App `threadfix_create_app`
+Create a new application, with a given name and url, in ThreadFix under the team with ID=123
+```
+webbreaker threadfix create_app --team_id 123 --name new_marketing_app --url http://marketing.ourapp.com
 ```
 
 ## Verbose Cheatsheet: Admin `admin_cheatsheet`

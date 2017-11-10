@@ -8,10 +8,10 @@ import sys
 import os
 
 FORMATTER = logging.Formatter('%(message)s')
-DATETIME_SUFFIX = datetime.datetime.now().strftime("%m-%d-%Y-%H%M%S")
-APP_LOG = os.path.abspath(os.path.join('/tmp/', 'webbreaker-' + DATETIME_SUFFIX + '.log'))
-DEBUG_LOG = os.path.abspath(os.path.join('/tmp/', 'webbreaker-debug-' + DATETIME_SUFFIX + '.log'))
-STOUT_LOG = os.path.abspath(os.path.join('/tmp', 'webbreaker-out' + DATETIME_SUFFIX + '.log'))
+DATETIME_SUFFIX = datetime.datetime.now().strftime("%m-%d-%Y")
+APP_LOG = os.path.abspath(os.path.join('log', 'webbreaker-' + DATETIME_SUFFIX + '.log'))
+DEBUG_LOG = os.path.abspath(os.path.join('log', 'webbreaker-debug-' + DATETIME_SUFFIX + '.log'))
+STOUT_LOG = os.path.abspath(os.path.join('log', 'webbreaker-out' + DATETIME_SUFFIX + '.log'))
 
 
 def singleton(cls):

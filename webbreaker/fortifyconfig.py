@@ -3,7 +3,7 @@
 
 try:
     import ConfigParser as configparser
-except ImportError: #Python3
+except ImportError:  # Python3
     import configparser
 import os
 import sys
@@ -38,8 +38,6 @@ class FortifyConfig(object):
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
         except configparser.Error as e:
             Logger.app.error("Error reading {} {}".format(config_file, e))
-        except Exception as e:
-            Logger.app.error("Unknown Error: {}".format(e))
 
     def clear_credentials(self):
         secret_client = SecretClient()

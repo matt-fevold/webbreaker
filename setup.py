@@ -5,43 +5,28 @@
 import sys
 import os
 from webbreaker import __version__ as version
-from cryptography.fernet import Fernet
+from pip.req import parse_requirements
+from pip.download import PipSession
 
 try:
     from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 
-requires = ['click',
-            'configparser>=3.5.0',
-            'cryptography>=1.8.0',
-            'dpath>=1.4.0',
-            'fortifyapi>=1.0.6',
-            'gitpython',
-            'httplib2',
-            'mock',
-            'ndg-httpsclient',
-            'pyasn1',
-            'pyfiglet>=0.7.5',
-            'pyOpenSSL',
-            'pytest-runner',
-            'requests',
-            'testfixtures',
-            'validators',
-            'webinspectapi>=1.0.15']
+links = []
+requires = []
 
-
-def set_secret():
-    key = Fernet.generate_key()
-    with open(".webbreaker", 'w') as secret_file:
-        secret_file.write(key.decode())
-    os.chmod('.webbreaker', 0o400)
-    print("New secret has been set.")
-
-
-if sys.argv[-1] == 'secret':
-    set_secret()
-    sys.exit(0)
+# Compatibility with requirements.txt and setuptools bug with cryptography module
+if os.path.isfile('requirements.txt'):
+    requirements = parse_requirements('requirements.txt',
+                                      session=PipSession())
+    for item in requirements:
+        if getattr(item, 'url', None):
+            links.append(str(item.url))
+        if getattr(item, 'link', None):
+            links.append(str(item.link))
+        if item.req:
+            requires.append(str(item.req))
 
 if sys.argv[-1] == 'build':
     os.system('python setup.py sdist --formats=zip bdist_wheel')
@@ -50,7 +35,8 @@ if sys.argv[-1] == 'build':
 try:
     setup(
         author='Brandon Spruth, Jim Nelson, Matthew Dunaj, Kyler Witting',
-        author_email='brandon.spruth2@target.com, jim.nelson2@target.com, matthew.dunaj@target.com, kyler.witting@target.com',
+        author_email='brandon.spruth2@target.com, jim.nelson2@target.com, matthew.dunaj@target.com,'
+                     'kyler.witting@target.com',
         classifiers=[
             'Programming Language :: Python',
             'Development Status :: 4 - Beta',
@@ -73,6 +59,7 @@ try:
         },
         include_package_data=True,
         install_requires=requires,
+        links=links,
         license='MIT',
         long_description=open('README.md').read(),
         name='webbreaker',
@@ -81,6 +68,26 @@ try:
         url="https://github.com/target/webbreaker",
         version=version,
     )
+
 finally:
+    def set_secret():
+        try:
+            from cryptography.fernet import Fernet
+            lib = __import__('cryptography')
+        except (ModuleNotFoundError, UnboundLocalError):
+            print(sys.exc_info())
+        else:
+            globals()['cryptography'] = lib
+
+            key = Fernet.generate_key()
+            with open(".webbreaker", 'w') as secret_file:
+                secret_file.write(key.decode())
+            os.chmod('.webbreaker', 0o400)
+            print("New secret has been set.")
+
+    if sys.argv[-1] == 'secret':
+        set_secret()
+        sys.exit(0)
+
     if not os.path.isfile('.webbreaker'):
         set_secret()
