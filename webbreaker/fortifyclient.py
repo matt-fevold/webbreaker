@@ -232,6 +232,28 @@ class FortifyClient(object):
             return response.response_code
         return None
 
+    def find_version_id(self, application, version_name):
+        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
+        response = api.get_project_versions()
+        if response.success:
+            for version  in response.data['data']:
+                if version['project']['name'] == application:
+                    if version['name'] == version_name:
+                        return version['id']
+        return False
+
+    def download_scan(self, version_id):
+        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
+        response, file_name = api.download_artifact_scan(version_id)
+        if response.success:
+            file_content = response.data
+            with open(file_name, 'wb') as f:
+                f.write(file_content)
+            return file_name
+        else:
+            Logger.app.error("Error downloading scan file: {}".format(response.message))
+            return False
+
     def build_pv_url(self):
         try:
             version_id = self.__get_project_version__()
