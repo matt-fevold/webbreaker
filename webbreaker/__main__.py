@@ -428,7 +428,15 @@ def fortify(config):
 def fortify_list(config, fortify_user, fortify_password, application):
     fortify_config = FortifyConfig()
     try:
-        if not fortify_user or not fortify_password:
+        if fortify_user and fortify_password:
+            Logger.app.info("Importing Fortify credentials")
+            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
+                                           fortify_username=fortify_user,
+                                           fortify_password=fortify_password)
+            fortify_config.write_username(fortify_user)
+            fortify_config.write_password(fortify_password)
+            Logger.app.info("Fortify credentials stored")
+        else:
             Logger.app.info("No Fortify username or password provided. Checking fortify.ini for credentials")
             if fortify_config.has_auth_creds():
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
@@ -444,24 +452,11 @@ def fortify_list(config, fortify_user, fortify_password, application):
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
                 Logger.app.info("Fortify credentials stored")
-            if application:
-                fortify_client.list_application_versions(application)
-            else:
-                fortify_client.list_versions()
+        if application:
+            fortify_client.list_application_versions(application)
         else:
-            Logger.app.info("Importing Fortify credentials")
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            Logger.app.info("Fortify credentials stored")
-            if application:
-                fortify_client.list_application_versions(application)
-            else:
-                fortify_client.list_versions()
+            fortify_client.list_versions()
         Logger.app.info("Fortify list has successfully completed")
-
     except ValueError:
         Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
     except (AttributeError, UnboundLocalError) as e:

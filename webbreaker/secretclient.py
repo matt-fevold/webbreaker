@@ -3,7 +3,7 @@
 
 try:
     import ConfigParser as configparser
-except ImportError: #Python3
+except ImportError:  # Python3
     import configparser
 from subprocess import CalledProcessError
 import os
@@ -13,20 +13,16 @@ from webbreaker.webbreakerlogger import Logger
 from cryptography.fernet import Fernet
 
 
-
-
-
 class SecretClient(object):
     def __init__(self):
         self.fernet_key = self.__read_fernet_secret__()
         self.webbreaker_ini = os.path.abspath(os.path.join('webbreaker', 'etc', 'webbreaker.ini'))
         self.fortify_ini = os.path.abspath(os.path.join('webbreaker', 'etc', 'fortify.ini'))
         self.webinspect_ini = os.path.abspath(os.path.join('webbreaker', 'etc', 'webinspect.ini'))
-        try: # Python 2
+        try:  # Python 2
             self.config = configparser.SafeConfigParser()
-        except NameError: # Python 3
+        except NameError:  # Python 3
             self.config = configparser.ConfigParser()
-
 
     def get(self, ini, section, key):
         config_file = self.__get_ini_file__(ini)
@@ -62,7 +58,8 @@ class SecretClient(object):
                 self.config.write(new_config)
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
-            Logger.app.error("{} has incorrect or missing values, see log file {}".format(config_file, Logger.app_logfile))
+            Logger.app.error(
+                "{} has incorrect or missing values, see log file {}".format(config_file, Logger.app_logfile))
             sys.exit(1)
         except configparser.Error as e:
             Logger.console.error("Error reading {}, see log file: {}".format(config_file, Logger.app_logfile))

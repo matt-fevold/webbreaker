@@ -103,13 +103,15 @@ WebBreaker may be implemented with Elastic Stack for log aggregation. Recommende
 ### Testing `testing`
 #### Requirements
 1. Be in your project root to run tests. 
-    * ```pip install -rrequirements.txt -rtests/requirements.txt```
+    * ```pip install -rrequirements.txt```
 2. Python2.7 and Python3.6 are currently tested in our tox.ini file
     * If you want to test it against your current version python, you can the other ways to test. Tox is suggested though. 
     
 #### Tox
-We use detox instead of tox for the speed of concurrent testing.
+We use detox instead of tox for the speed of concurrent testing. With the speed of testing, comes a lack of coverage output
 * ```detox```
+
+Tox will allow you to see the coverage.py results.
 * ```tox```
 
 #### Other ways to test

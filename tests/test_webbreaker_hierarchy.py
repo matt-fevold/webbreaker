@@ -32,6 +32,9 @@ def test_webinspect_hierarchy(runner):
     result = runner.invoke(webbreaker, ['webinspect', 'scan', '--help'])
     assert result.exit_code == 0
 
+    result = runner.invoke(webbreaker, ['webinspect', 'servers', '--help'])
+    assert result.exit_code == 0
+
 
 def test_fortify_hierarchy(runner):
     result = runner.invoke(webbreaker, ['fortify', 'list', '--help'])

@@ -30,7 +30,7 @@ def test_fortify_list_success(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
     client_mock.return_value.list_versions.return_value = None
-    client_mock.list_application_versions()
+    client_mock.list_versions()
 
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
