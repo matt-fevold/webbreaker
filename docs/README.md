@@ -35,6 +35,7 @@
 [Verbose Cheatsheet: Fortify `fortify_cheatsheet`](#verbose-cheatsheet-fortify)
 
 - [List: `fortify_list`](#fortify-list)
+- [Download: `fortify_download`](#fortify_download)
 - [Upload: `fortify_upload`](#fortify-upload)
 - [Scan: `fortify_scan`](#fortify-scan)
 
@@ -99,6 +100,7 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
         - list
         - upload
         - scan
+        - download
     - admin
         - notifier
         - agent
@@ -446,6 +448,22 @@ List all versions found on Fortify (using the url listed in fortify.ini) that be
 **Note: Fortify applications are also sometimes refered to as projects**
 ```
 webbreaker fortify list --application webinspect
+```
+
+#### Fortify Download `fortify_download`
+Download lastest .fpr scan from Fortify SSC with application/project & version name
+```
+webbreaker fortify download --application my_other_app --version important_site_auth
+```
+
+Download lastest .fpr scan from Fortify SSC with application/project from fortify.ini & version name
+```
+webbreaker fortify download --version important_site_auth
+```
+
+Download lastest .fpr scan from Fortify SSC with application/project & version name and command-line authentication
+```
+webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version important_site_auth
 ```
 
 #### Fortify Upload `fortify_upload`

@@ -113,6 +113,15 @@ Below is a Cheatsheet of supported commands to get you started.
     Upload to Fortify SSC with application/project & version name:
     webbreaker fortify upload --application my_other_app --version important_site_auth --scan_name auth_scan
 
+    Download lastest .fpr scan from Fortify SSC with application/project & version name:
+    webbreaker fortify download --application my_other_app --version important_site_auth
+
+    Download lastest .fpr scan from Fortify SSC with application/project from fortify.ini & version name:
+    webbreaker fortify download --version important_site_auth
+
+    Download lastest .fpr scan from Fortify SSC with application/project & version name and command-line authentication:
+    webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version important_site_auth
+
     Retrieve and store Fortify Version url and Jenkins BuildID:
     webbreaker fortify scan --version important_site_auth --build_id my_latest_build
 

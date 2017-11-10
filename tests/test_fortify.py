@@ -236,5 +236,68 @@ def test_fortify_list_application_exception(client_mock, test_mock, runner, capl
 
     assert result.exit_code == 0
 
+@mock.patch('webbreaker.__main__.FortifyConfig')
+@mock.patch('webbreaker.__main__.FortifyClient')
+def test_fortify_download_success(client_mock, test_mock, runner, caplog):
+    test_mock.return_value.has_auth_creds.return_value = True
+    test_mock.has_auth_creds()
+    client_mock.return_value.find_version_id.return_value = 123
+    client_mock.find_version_id()
+    client_mock.return_value.download_scan.return_value = 'testfile.fpr'
+    client_mock.download_scan()
+
+    result = runner.invoke(webbreaker, ['fortify', 'download', '--version', 'test_version'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking fortify.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in fortify.ini'),
+        ('__webbreaker__', 'INFO', 'Scan file for version 123 successfully written to testfile.fpr'),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+@mock.patch('webbreaker.__main__.FortifyConfig')
+@mock.patch('webbreaker.__main__.FortifyClient')
+def test_fortify_download_failure(client_mock, test_mock, runner, caplog):
+    test_mock.return_value.has_auth_creds.return_value = True
+    test_mock.has_auth_creds()
+    client_mock.return_value.find_version_id.return_value = 123
+    client_mock.find_version_id()
+    client_mock.return_value.download_scan.return_value = False
+    client_mock.download_scan()
+
+    result = runner.invoke(webbreaker, ['fortify', 'download', '--version', 'test_version'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking fortify.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in fortify.ini'),
+        ('__webbreaker__', 'ERROR', 'Scan download for version 123 has failed'),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+@mock.patch('webbreaker.__main__.FortifyConfig')
+@mock.patch('webbreaker.__main__.FortifyClient')
+def test_fortify_download_version_id_failure(client_mock, test_mock, runner, caplog):
+    test_mock.return_value.has_auth_creds.return_value = True
+    test_mock.has_auth_creds()
+    client_mock.return_value.find_version_id.return_value = False
+    client_mock.find_version_id()
+    client_mock.return_value.download_scan.return_value = False
+    client_mock.download_scan()
+
+    result = runner.invoke(webbreaker, ['fortify', 'download', '--application', 'test_app', '--version', 'test_version'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking fortify.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in fortify.ini'),
+        ('__webbreaker__', 'ERROR', 'No version matching test_version found under test_app in Fortify'),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
 # TODO: Test webbreaker fortifiy upload
 # TODO: Test webbreaker fortify scan
