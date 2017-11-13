@@ -157,7 +157,7 @@ Below is a Cheatsheet of supported commands to get you started.
 Our automated testing is performed with tox and detox on Python 3.6 and 2.7. See the [full testing documentation](https://target.github.io/webbreaker/#testing).
 
 ## Docker 
-Build a development and/or testing environment by running the docker commands below from the root directory of the repo, virtualenv environments are named `venv27` for Python 2.7 or `venv36` for Python 3.6.
+Run WebBreaker in Docker from the repo's root directory, the pre-configured virtualenv environments are `venv27` for Python 2.7 or `venv36` for Python 3.6.  Examples are illustrated below.
 
 ```
 docker build -t test_env:centos . \
