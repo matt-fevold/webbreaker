@@ -136,6 +136,7 @@ class SecretClient(object):
                 Logger.app.error(
                     "Error decrypting the Fortify secret.  Exiting now, see log {}".format(Logger.app_logfile))
                 Logger.app.error("Error: {}".format(e))
+                Logger.app.error("If error persists, run 'webbreaker admin secret'")
                 sys.exit(1)
         else:
             Logger.app.error("Error decrypting.  Unsupported encryption version")
@@ -151,8 +152,7 @@ class SecretClient(object):
                 fernet_key = secret_file.readline().strip()
             return fernet_key
         except IOError:
-            Logger.console.error("Error retrieving Fernet key, file does not exist. Please run 'python "
-                                 "setup.py secret' to reset")
+            Logger.console.error("Error retrieving Fernet key.")
             sys.exit(1)
 
     def __get_ini_file__(self, ini):
