@@ -13,7 +13,7 @@ WebBreaker enables development teams to release secure software with orchestrati
 
 ## Release Notes
 
-New Features, bugs and enhancements are documented in our [WebBreaker Release Notes](docs/release.md)
+New Features, bugs and enhancements for this release are documented in our [WebBreaker Release Notes](docs/release.md)
 
 ## Quick Local Installation and Configurations
 
