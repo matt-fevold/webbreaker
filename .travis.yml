@@ -27,3 +27,5 @@ deploy:
     repo: target/webbreaker
     branch: master
     tags: true
+after_success:
+  - coveralls

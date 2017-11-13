@@ -2,38 +2,27 @@
 [![Release](http://img.shields.io/github/release/target/webbreaker.svg)](https://github.com/target/webbreaker/releases/latest)
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
 [![Open Hub statistics](https://www.openhub.net/p/webbreaker/widgets/project_thin_badge.gif)](https://www.openhub.net/p/webbreaker)
+[![Coverage Status](https://coveralls.io/repos/github/target/webbreaker/badge.svg?branch=master)](https://coveralls.io/github/target/webbreaker?branch=master)
 
 ## Introduction
 
-WebBreaker orchestrates web application security testing products to scale and reduce testing time, providing notifications and feedback early and often to development and other stakeholders.
+WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams to release secure software with continuous delivery, visibility, and scalability.
 
-Increasing visibility, orchestration, and scalability of Dynamic Application Security Testing (DAST) into your DevOps pipeline are paramount to releasing secure applications.  WebBreaker truly enables all members of the Software Security Development Life-Cycle (SDLC), with access to security testing.  Resulting in greater test coverage with increased visibility, providing Dynamic Application Security Test Orchestration (DASTO).  Current support is limited to the World's most popular commercial DAST product, WebInspect.
+Create pipelines with integrating a portfolio of web application security testing products, such as WebInspect, Fortify SSC, and ThreadFix.
 
 ## System Architecture
 ![WebBreaker System Architecture](images/WebBreakerSystemArchitecture.jpg)
 
-## Supported Features
+## Release Notes
 
-* Command-line (CLI) scan administration of WebInspect with Foritfy SSC products.
-* [Jenkins](https://jenkins.io) Environmental Variable & String Parameter support (i.e. $BUILD_TAG)
-* Docker container v17.x support
-* Custom email alerting or notifications for scan launch and completion.
-* Extensible event logging for scan administration and results.
-* [WebInspect REST API](https://pypi.python.org/pypi/webinspectapi) support for v9.30 and later.
-* [Fortify Software Security Center (SSC) REST API](https://pypi.python.org/pypi/fortifyapi) support for v16.10 and later.
-* WebInspect scan cluster support between two (2) or greater WebInspect servers/sensors.
-* Capabilities for extensible scan telemetry with ELK and Splunk.
-* GIT support for centrally managing [WebInspect scan configurations](https://github.com/automationdomination/Webinspect).
-* Replaces most functionality of Fortify's `fortifyclient`
-* Python compatibility with versions 2.x or 3.x
-* Provides AES 128-bit key management for all secrets from the [Fernet encryption](https://pypi.python.org/pypi/cryptography/) Python library.
+New Features, bugs and enhancements for this release are documented in our [WebBreaker Release Notes](docs/release.md)
 
 ## Quick Local Installation and Configurations
 
 1. ```git clone https://github.com/target/webbreaker```
 1. ```./build.sh```
 1. Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
-1. Add your _WebInspect_ API server(s) to [webbreaker/etc/webinspect.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/webinspect.ini#L4)
+1. Add your _WebInspect_ API server(s) to [webbreaker/etc/webinspect.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/webinspect.ini#L4)
 1. Add your _Fortify SSC_ URL to [webbreaker/etc/fortify.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/fortify.ini#L2)
 
 **NOTES:**
@@ -170,7 +159,7 @@ Below is a Cheatsheet of supported commands to get you started.
 Our automated testing is performed with tox and detox on Python 3.6 and 2.7. See the [full testing documentation](https://target.github.io/webbreaker/#testing).
 
 ## Docker 
-Build a development and/or testing environment by running the docker commands below from the root directory of the repo, virtualenv environments are named `venv27` for Python 2.7 or `venv36` for Python 3.6.
+Run WebBreaker in Docker from the repo's root directory, the pre-configured virtualenv environments are `venv27` for Python 2.7 or `venv36` for Python 3.6.  Examples are illustrated below.
 
 ```
 docker build -t test_env:centos . \
