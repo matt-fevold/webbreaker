@@ -13,21 +13,9 @@ Increasing visibility, orchestration, and scalability of Dynamic Application Sec
 ## System Architecture
 ![WebBreaker System Architecture](images/WebBreakerSystemArchitecture.jpg)
 
-## Supported Features
+## Release Notes
 
-* Command-line (CLI) scan administration of WebInspect with Foritfy SSC products.
-* [Jenkins](https://jenkins.io) Environmental Variable & String Parameter support (i.e. $BUILD_TAG)
-* Docker container v17.x support
-* Custom email alerting or notifications for scan launch and completion.
-* Extensible event logging for scan administration and results.
-* [WebInspect REST API](https://pypi.python.org/pypi/webinspectapi) support for v9.30 and later.
-* [Fortify Software Security Center (SSC) REST API](https://pypi.python.org/pypi/fortifyapi) support for v16.10 and later.
-* WebInspect scan cluster support between two (2) or greater WebInspect servers/sensors.
-* Capabilities for extensible scan telemetry with ELK and Splunk.
-* GIT support for centrally managing [WebInspect scan configurations](https://github.com/automationdomination/Webinspect).
-* Replaces most functionality of Fortify's `fortifyclient`
-* Python compatibility with versions 2.x or 3.x
-* Provides AES 128-bit key management for all secrets from the [Fernet encryption](https://pypi.python.org/pypi/cryptography/) Python library.
+![WebBreaker Client 1.9](docs/release.md)
 
 ## Quick Local Installation and Configurations
 
