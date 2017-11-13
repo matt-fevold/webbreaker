@@ -15,7 +15,7 @@ Increasing visibility, orchestration, and scalability of Dynamic Application Sec
 
 ## Release Notes
 
-![WebBreaker Client 1.9](docs/release.md)
+New Features, bugs and enhancements are documented in our [WebBreaker Release Notes](docs/release.md)
 
 ## Quick Local Installation and Configurations
 
