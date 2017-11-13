@@ -94,6 +94,7 @@ class SecretClient(object):
             self.write_secret()
 
     def secret_exists(self):
+        # TODO: Refactor to config option in webbreaker.ini
         home = expanduser("~")
         secret_path = os.path.join(home, '.webbreaker')
         return os.path.isfile(secret_path)
@@ -103,6 +104,7 @@ class SecretClient(object):
         self.clear_credentials('fortify', 'fortify', 'fortify_username', 'fortify_password')
 
     def write_secret(self, overwrite=False):
+        # TODO: Refactor to config option in webbreaker.ini
         home = expanduser("~")
         secret_path = os.path.join(home, '.webbreaker')
         if self.secret_exists() and overwrite:
@@ -145,6 +147,7 @@ class SecretClient(object):
 
     def __read_fernet_secret__(self):
         self.verify_secret()
+        # TODO: Refactor to config option in webbreaker.ini
         home = expanduser("~")
         secret_path = os.path.join(home, '.webbreaker')
         try:
