@@ -11,6 +11,7 @@ import sys
 import re
 from webbreaker.webbreakerlogger import Logger
 from cryptography.fernet import Fernet
+from os.path import expanduser
 
 
 class SecretClient(object):
@@ -86,6 +87,33 @@ class SecretClient(object):
             sys.exit(1)
         return True
 
+    def verify_secret(self):
+        if self.secret_exists():
+            return True
+        else:
+            self.write_secret()
+
+    def secret_exists(self):
+        home = expanduser("~")
+        secret_path = os.path.join(home, '.webbreaker')
+        return os.path.isfile(secret_path)
+
+    def wipe_all_credentials(self):
+        # TODO if any other values are encrypted, make sure to add them here
+        self.clear_credentials('fortify', 'fortify', 'fortify_username', 'fortify_password')
+
+    def write_secret(self, overwrite=False):
+        home = expanduser("~")
+        secret_path = os.path.join(home, '.webbreaker')
+        if self.secret_exists() and overwrite:
+            os.chmod(secret_path, 0o200)
+        key = Fernet.generate_key()
+        with open(secret_path, 'w') as secret_file:
+            secret_file.write(key.decode())
+        os.chmod(secret_path, 0o400)
+        print("New secret has been set.")
+
+
     def __encrypt__(self, value):
         try:
             cipher = Fernet(self.fernet_key)
@@ -115,8 +143,11 @@ class SecretClient(object):
         return decryp_value
 
     def __read_fernet_secret__(self):
+        self.verify_secret()
+        home = expanduser("~")
+        secret_path = os.path.join(home, '.webbreaker')
         try:
-            with open(".webbreaker", 'r') as secret_file:
+            with open(secret_path, 'r') as secret_file:
                 fernet_key = secret_file.readline().strip()
             return fernet_key
         except IOError:
