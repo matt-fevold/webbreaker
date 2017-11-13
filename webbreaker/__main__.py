@@ -783,12 +783,12 @@ def credentials(config, fortify, webinspect, clear, username, password):
     else:
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
 
-@admin.command()
+@admin.command(help="Generates a new encryption key and clears all stored credentials")
 @pass_config
 @click.option('-f', '--force',
               required=False,
               is_flag=True,
-              help="")
+              help="Optional flag to prevent confirmation prompt")
 def secret(config, force):
     secret_client = SecretClient()
     if secret_client.secret_exists():
