@@ -6,9 +6,7 @@
 
 ## Introduction
 
-WebBreaker orchestrates web application security testing products to scale and reduce testing time, providing notifications and feedback early and often to development and other stakeholders.
-
-Increasing visibility, orchestration, and scalability of Dynamic Application Security Testing (DAST) into your DevOps pipeline are paramount to releasing secure applications.  WebBreaker truly enables all members of the Software Security Development Life-Cycle (SDLC), with access to security testing.  Resulting in greater test coverage with increased visibility, providing Dynamic Application Security Test Orchestration (DASTO).  Current support is limited to the World's most popular commercial DAST product, WebInspect.
+WebBreaker enables development teams to release secure software with orchestration, visibility, and scalability of Dynamic Application Security Testing (DAST) products.  WebBreaker's goal is to provide a lightweight DevOps integration and/or desktop solution for Dynamic Application Security Test Orchestration (DASTO).   Current support includes WebInspect, Fortify SSC, and ThreadFix.
 
 ## System Architecture
 ![WebBreaker System Architecture](images/WebBreakerSystemArchitecture.jpg)
