@@ -925,15 +925,16 @@ def threadfix_list(config, team, application):
             for app in applications:
                 print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
             print('\n\n')
+            Logger.app.error("ThreadFix List successfully completed")
         else:
             query_info = ''
-            if team_name is not None:
-                query_info = ' with team name matching {}'.format(team_name)
-            if app_name is not None:
+            if team is not None:
+                query_info = ' with team name matching {}'.format(team)
+            if application is not None:
                 if query_info == '':
-                    query_info = ' with application name matching {}'.format(app_name)
+                    query_info = ' with application name matching {}'.format(application)
                 else:
-                    query_info = query_info + ' and application name matching {}'.format(app_name)
+                    query_info = query_info + ' and application name matching {}'.format(application)
             Logger.app.info("No applications were found" + query_info)
     else:
         Logger.app.error("ThreadFix List was unsuccessful")

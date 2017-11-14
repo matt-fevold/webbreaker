@@ -76,7 +76,6 @@ class ThreadFixClient(object):
             return applications
 
         else:
-            Logger.app.error(teams_resp.message)
             return False
 
     def list_scans_by_app(self, app_id):
