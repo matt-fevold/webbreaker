@@ -18,4 +18,3 @@ testfixtures
 tox
 validators
 webinspectapi>=1.0.19
-python-coveralls
