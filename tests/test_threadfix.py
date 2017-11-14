@@ -200,3 +200,73 @@ def test_threadfix_upload_failure(test_mock, runner, caplog):
     caplog.uninstall()
 
     assert result.exit_code == 0
+
+@mock.patch('webbreaker.__main__.ThreadFixClient')
+def test_threadfix_upload_success(test_mock, runner, caplog):
+    test_mock.return_value.upload_scan.return_value = "Upload process has begun."
+    test_mock.upload_scan()
+
+    result = runner.invoke(webbreaker, ['threadfix', 'upload', '--app_id', 666, '--scan_file', 'kyler_secret_scan.xml'])
+
+    caplog.check(('__webbreaker__', 'INFO', 'Upload process has begun.'), )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+@mock.patch('webbreaker.__main__.ThreadFixClient')
+def test_threadfix_list_success(test_mock, runner, caplog):
+    test_mock.return_value.list_all_apps.return_value = [
+                                                        {
+                                                          'team_name': 'Marketing',
+                                                          'app_id': 123,
+                                                          'app_name': 'Secret App'
+                                                        },
+                                                        {
+                                                          'team_name': 'AppSec',
+                                                          'app_id': 456,
+                                                          'app_name': 'Buggy App'
+                                                        }]
+    test_mock.list_all_apps()
+
+    result = runner.invoke(webbreaker, ['threadfix', 'list'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', 'ThreadFix List successfully completed'),
+    )
+    caplog.uninstall()
+
+    assert '123' in result.output
+    assert 'Marketing' in result.output
+    assert 'Secret App' in result.output
+
+    assert '456' in result.output
+    assert 'AppSec' in result.output
+    assert 'Buggy App' in result.output
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.ThreadFixClient')
+def test_threadfix_list_failure(test_mock, runner, caplog):
+    test_mock.return_value.list_all_apps.return_value = False
+    test_mock.list_all_apps()
+
+    result = runner.invoke(webbreaker, ['threadfix', 'list'])
+
+    caplog.check(('__webbreaker__', 'ERROR', 'ThreadFix List was unsuccessful'), )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.ThreadFixClient')
+def test_threadfix_list_empty(test_mock, runner, caplog):
+    test_mock.return_value.list_all_apps.return_value = []
+    test_mock.list_all_apps()
+
+    result = runner.invoke(webbreaker, ['threadfix', 'list'])
+
+    caplog.check(('__webbreaker__', 'INFO', 'No applications were found'), )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
