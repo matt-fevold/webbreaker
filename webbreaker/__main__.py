@@ -883,17 +883,36 @@ def threadfix_upload(config, app_id, scan_file):
 
 
 @threadfix.command(name='list', help="List all applications across all teams")
+@click.option('--team_name',
+              required=False,
+              default=None,
+              help="Only list applications of teams matching a certain name")
+@click.option('--app_name',
+              required=False,
+              default=None,
+              help="Only list applications matching a certain name")
 @pass_config
-def threadfix_list(config):
+def threadfix_list(config, team_name, app_name):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    applications = threadfix_client.list_all_apps()
-    if applications:
-        print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
-        print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
-        for app in applications:
-            print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
-        print('\n\n')
+    applications = threadfix_client.list_all_apps(team_name, app_name)
+    if applications is not False:
+        if len(applications):
+            print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
+            print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
+            for app in applications:
+                print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
+            print('\n\n')
+        else:
+            query_info = ''
+            if team_name is not None:
+                query_info = ' with team name matching {}'.format(team_name)
+            if app_name is not None:
+                if query_info == '':
+                    query_info = ' with application name matching {}'.format(app_name)
+                else:
+                    query_info = query_info + ' and application name matching {}'.format(app_name)
+            Logger.app.info("No applications where found" + query_info)
     else:
         Logger.app.error("ThreadFix List was unsuccessful")
 

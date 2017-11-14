@@ -37,21 +37,33 @@ class ThreadFixClient(object):
             Logger.app.error(response.message)
             return False
 
-    def list_all_apps(self):
+    def list_all_apps(self, team_name, app_name):
         teams_resp = self.list_teams()
         if teams_resp:
             team_ids = []
             applications = []
             for team in teams_resp:
-                team_ids.append({'id': team['id'], 'name': team['name']})
+                if team_name is not None and team_name in team['name']:
+                    team_ids.append({'id': team['id'], 'name': team['name']})
+                elif team_name is None:
+                    team_ids.append({'id': team['id'], 'name': team['name']})
+            if not len(team_ids):
+                Logger.app.info("No teams containing {} were found".format(team_name))
             for team in team_ids:
                 app_response = self.list_apps_by_team(team['id'])
                 if app_response:
                     for app in app_response:
-                        applications.append({'team_id': team['id'],
+                        if app_name is not None and app_name in app['name']:
+                            applications.append({'team_id': team['id'],
                                              'team_name': team['name'],
                                              'app_id': app['id'],
                                              'app_name': app['name']})
+                        elif app_name is None:
+                            applications.append({'team_id': team['id'],
+                                                 'team_name': team['name'],
+                                                 'app_id': app['id'],
+                                                 'app_name': app['name']})
+
                 else:
                     Logger.app.error("Error retrieving applications for team {}".format(team['name']))
             return applications
