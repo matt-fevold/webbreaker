@@ -925,7 +925,7 @@ def threadfix_list(config, team, application):
             for app in applications:
                 print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
             print('\n\n')
-            Logger.app.error("ThreadFix List successfully completed")
+            Logger.app.info("ThreadFix List successfully completed")
         else:
             query_info = ''
             if team is not None:
