@@ -1,6 +1,6 @@
 click
 configparser>=3.5.0
-coverage
+coverage==4.0.3
 cryptography>=1.8.0
 detox
 dpath>=1.4.0
