@@ -37,6 +37,29 @@ class ThreadFixClient(object):
             Logger.app.error(response.message)
             return False
 
+    def list_all_apps(self):
+        teams_resp = self.list_teams()
+        if teams_resp:
+            team_ids = []
+            applications = []
+            for team in teams_resp:
+                team_ids.append({'id': team['id'], 'name': team['name']})
+            for team in team_ids:
+                app_response = self.list_apps_by_team(team['id'])
+                if app_response:
+                    for app in app_response:
+                        applications.append({'team_id': team['id'],
+                                             'team_name': team['name'],
+                                             'app_id': app['id'],
+                                             'app_name': app['name']})
+                else:
+                    Logger.app.error("Error retrieving applications for team {}".format(team['name']))
+            return applications
+
+        else:
+            Logger.app.error(teams_resp.message)
+            return False
+
     def list_scans_by_app(self, app_id):
         api = ThreadFixAPI(host=self.host, api_key=self.api_key, verify_ssl=False)
         response = api.list_scans(app_id)

@@ -882,5 +882,21 @@ def threadfix_upload(config, app_id, scan_file):
         Logger.app.error("Scan file failed to upload")
 
 
+@threadfix.command(name='list', help="List all applications across all teams")
+@pass_config
+def threadfix_list(config):
+    threadfix_config = ThreadFixConfig()
+    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    applications = threadfix_client.list_all_apps()
+    if applications:
+        print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
+        print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
+        for app in applications:
+            print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
+        print('\n\n')
+    else:
+        Logger.app.error("ThreadFix List was unsuccessful")
+
+
 if __name__ == '__main__':
     cli()
