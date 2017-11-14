@@ -58,7 +58,7 @@ setup(
     },
     include_package_data=True,
     install_requires=requires,
-    links=links,
+    dependency_links=links,
     license='MIT',
     long_description=open('README.md').read(),
     name='webbreaker',
