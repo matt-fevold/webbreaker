@@ -1,6 +1,6 @@
 click
 configparser>=3.5.0
-coverage==4.0.3
+coverage
 cryptography>=1.8.0
 detox
 dpath>=1.4.0
@@ -18,4 +18,3 @@ testfixtures
 tox
 validators
 webinspectapi>=1.0.19
-python-coveralls
