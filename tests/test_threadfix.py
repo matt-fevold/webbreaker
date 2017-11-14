@@ -270,3 +270,16 @@ def test_threadfix_list_empty(test_mock, runner, caplog):
     caplog.uninstall()
 
     assert result.exit_code == 0
+
+@mock.patch('webbreaker.__main__.ThreadFixClient')
+def test_threadfix_list_empty_query(test_mock, runner, caplog):
+    test_mock.return_value.list_all_apps.return_value = []
+    test_mock.list_all_apps()
+
+    result = runner.invoke(webbreaker, ['threadfix', 'list', '--team', 'Security', '--application', 'Extra Super Secret App'])
+
+    caplog.check(('__webbreaker__', 'INFO', 'No applications were found with team name matching Security and application name matching Extra Super Secret App'), )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
