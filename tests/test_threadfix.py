@@ -253,7 +253,7 @@ def test_threadfix_list_failure(test_mock, runner, caplog):
 
     result = runner.invoke(webbreaker, ['threadfix', 'list'])
 
-    caplog.check(('__webbreaker__', 'ERROR', 'Possible cuase could be your API token must be associated with a local account account!!'), )
+    caplog.check(('__webbreaker__', 'ERROR', 'Possible cause could be your API token must be associated with a local account account!!'), )
     caplog.uninstall()
 
     assert result.exit_code == 0
