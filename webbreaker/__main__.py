@@ -832,11 +832,22 @@ def teams(config):
 @threadfix.command(help="List all applications (ID and Name) found on ThreadFix belonging to a certain team")
 @pass_config
 @click.option('--team_id',
-              required=True,
+              required=False,
               help="ID of ThreadFix team you want to list applications of")
-def applications(config, team_id):
+@click.option('--team_name',
+              required=False,
+              help="Name of ThreadFix team you want to list applications of")
+def applications(config, team_id, team_name):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    if not team_id and not team_name:
+        Logger.app.error("Please specify either a team_name or team_id")
+        return
+    if team_name and not team_id:
+        team_id = threadfix_client.get_team_id_by_name(team_name)
+    if team_id is None:
+        Logger.app.error("Unable to find team with name {}".format(team_name))
+        return
     apps = threadfix_client.list_apps_by_team(team_id)
     if apps:
         print("{0:^10} {1:30}".format('ID', 'Name'))
@@ -852,8 +863,11 @@ def applications(config, team_id):
 @threadfix.command(help="Create a new application in ThreadFix")
 @pass_config
 @click.option('--team_id',
-              required=True,
+              required=False,
               help="ID of ThreadFix team this application will belong to")
+@click.option('--team_name',
+              required=False,
+              help="Name of ThreadFix team this application will belong to")
 @click.option('--name',
               required=True,
               help="Name of new application")
@@ -861,9 +875,17 @@ def applications(config, team_id):
               required=False,
               default=None,
               help="Option URL of new application")
-def create_app(config, team_id, name, url):
+def create_app(config, team_id, team_name, name, url):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    if not team_id and not team_name:
+        Logger.app.error("Please specify either a team_name or team_id")
+        return
+    if team_name and not team_id:
+        team_id = threadfix_client.get_team_id_by_name(team_name)
+    if team_id is None:
+        Logger.app.error("Unable to find team with name {}".format(team_name))
+        return
     created_app = threadfix_client.create_application(team_id, name, url)
     if created_app:
         Logger.app.info("Application successfully created with id {}".format(created_app['id']))
@@ -907,6 +929,42 @@ def threadfix_upload(config, app_id, scan_file):
         Logger.app.info("{}".format(upload_resp))
     else:
         Logger.app.error("Scan file failed to upload")
+
+
+@threadfix.command(name='list', help="List all applications across all teams")
+@click.option('--team',
+              required=False,
+              default=None,
+              help="Only list applications of teams matching a certain name")
+@click.option('--application',
+              required=False,
+              default=None,
+              help="Only list applications matching a certain name")
+@pass_config
+def threadfix_list(config, team, application):
+    threadfix_config = ThreadFixConfig()
+    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    applications = threadfix_client.list_all_apps(team, application)
+    if applications is not False:
+        if len(applications):
+            print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
+            print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
+            for app in applications:
+                print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
+            print('\n\n')
+            Logger.app.info("ThreadFix List successfully completed")
+        else:
+            query_info = ''
+            if team is not None:
+                query_info = ' with team name matching {}'.format(team)
+            if application is not None:
+                if query_info == '':
+                    query_info = ' with application name matching {}'.format(application)
+                else:
+                    query_info = query_info + ' and application name matching {}'.format(application)
+            Logger.app.info("No applications were found" + query_info)
+    else:
+        Logger.app.error("Possible cause could be your API token must be associated with a local account account!!")
 
 
 if __name__ == '__main__':

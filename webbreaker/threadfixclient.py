@@ -28,6 +28,13 @@ class ThreadFixClient(object):
             Logger.app.error(response.message)
             return False
 
+    def get_team_id_by_name(self, team_name):
+        teams = self.list_teams()
+        for team in teams:
+            if team['name'] == team_name:
+                return team['id']
+        return None
+
     def list_apps_by_team(self, team_id):
         api = ThreadFixAPI(host=self.host, api_key=self.api_key, verify_ssl=False)
         response = api.get_applications_by_team(team_id)
@@ -35,6 +42,40 @@ class ThreadFixClient(object):
             return response.data
         else:
             Logger.app.error(response.message)
+            return False
+
+    def list_all_apps(self, team_name, app_name):
+        teams_resp = self.list_teams()
+        if teams_resp:
+            team_ids = []
+            applications = []
+            for team in teams_resp:
+                if team_name is not None and team_name.lower() in team['name'].lower():
+                    team_ids.append({'id': team['id'], 'name': team['name']})
+                elif team_name is None:
+                    team_ids.append({'id': team['id'], 'name': team['name']})
+            if not len(team_ids):
+                Logger.app.info("No teams containing {} were found".format(team_name))
+            for team in team_ids:
+                app_response = self.list_apps_by_team(team['id'])
+                if app_response:
+                    for app in app_response:
+                        if app_name is not None and app_name.lower() in app['name'].lower():
+                            applications.append({'team_id': team['id'],
+                                             'team_name': team['name'],
+                                             'app_id': app['id'],
+                                             'app_name': app['name']})
+                        elif app_name is None:
+                            applications.append({'team_id': team['id'],
+                                                 'team_name': team['name'],
+                                                 'app_id': app['id'],
+                                                 'app_name': app['name']})
+
+                else:
+                    Logger.app.error("Error retrieving applications for team {}".format(team['name']))
+            return applications
+
+        else:
             return False
 
     def list_scans_by_app(self, app_id):
