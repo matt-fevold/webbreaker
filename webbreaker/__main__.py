@@ -964,7 +964,7 @@ def threadfix_list(config, team, application):
                     query_info = query_info + ' and application name matching {}'.format(application)
             Logger.app.info("No applications were found" + query_info)
     else:
-        Logger.app.error("ThreadFix List was unsuccessful")
+        Logger.app.error("Possible cuase could be your API token must be associated with a local account account!!")
 
 
 if __name__ == '__main__':
