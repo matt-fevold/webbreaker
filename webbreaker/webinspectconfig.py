@@ -109,6 +109,19 @@ class WebInspectConfig(object):
     def parse_webinspect_options(self, options):
         webinspect_dict = {}
 
+        # Remove any unneeded file extentions
+        if options['settings'] is not None and options['settings'][-4:] == '.xml':
+            options['settings'] = options['settings'][:-4]
+
+        if options['upload_webmacros'] is not None and options['upload_webmacros'][-9:] == '.webmacro':
+            options['upload_webmacros'] = options['upload_webmacros'][:-9]
+
+        if options['upload_policy'] is not None and options['upload_policy'][-7:] == '.policy':
+            options['upload_policy'] = options['upload_policy'][:-7]
+
+        if options['scan_policy'] is not None and options['scan_policy'][-7:] == '.policy':
+            options['scan_policy'] = options['scan_policy'][:-7]
+
         if not options['scan_name']:
             try:
                 if runenv == "jenkins":
