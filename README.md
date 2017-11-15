@@ -139,6 +139,9 @@ Below is a Cheatsheet of supported commands to get you started.
     Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345
     webbreaker threadfix upload --app_id 345 --scan_file my_app_scan.xml
 
+    Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App
+    webbreaker threadfix upload --app_name Marketing_App --scan_file my_app_scan.xml
+
     Create a new application, with a given name and url, in ThreadFix under the Marketing team
     webbreaker threadfix create_app --team_name Marketing --name new_marketing_app --url http://marketing.ourapp.com
 
