@@ -44,7 +44,7 @@ class ThreadFixClient(object):
             Logger.app.error(response.message)
             return False
 
-    def list_all_apps(self, team_name, app_name):
+    def list_all_apps(self, team_name=None, app_name=None):
         teams_resp = self.list_teams()
         if teams_resp:
             team_ids = []

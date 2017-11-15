@@ -916,14 +916,46 @@ def scans(config, app_id):
 @threadfix.command(name='upload', help="Upload a local scan file to an application in ThreadFix")
 @pass_config
 @click.option('--app_id',
-              required=True,
+              required=False,
               help="ID of ThreadFix Application to upload this scan to")
+@click.option('--app_name',
+              required=False,
+              help="Name of ThreadFix Application to upload this scan to")
 @click.option('--scan_file',
               required=True,
               help="File to be upload. Ex) --scan_file my_scan.xml")
-def threadfix_upload(config, app_id, scan_file):
+def threadfix_upload(config, app_id, app_name, scan_file):
+    if not app_id and not app_name:
+        Logger.app.error("Please specify either an app_name or app_id")
+        return
+
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    if not app_id:
+        Logger.app.info("Attempting to find application matching name {}".format(app_name))
+        apps = threadfix_client.list_all_apps()
+        if not apps:
+            Logger.app.error("Failed to retrieve applications from ThreadFix")
+            return
+        else:
+            matches = []
+            for app in apps:
+                if app['app_name'] == app_name:
+                    matches.append(app.copy())
+            if len(matches) == 0:
+                Logger.app.error("No application was found matching name {}".format(app_name))
+                return
+            if len(matches) > 1:
+                Logger.app.error("Multiple application was found matching name {}. Please specify the desired ID from below.".format(app_name))
+                print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
+                print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
+                for app in matches:
+                    print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
+                print('\n\n')
+                return
+            else:
+                app_id = matches[0]['app_id']
+
     upload_resp = threadfix_client.upload_scan(app_id, scan_file)
     if upload_resp:
         Logger.app.info("{}".format(upload_resp))
