@@ -17,5 +17,4 @@ requests
 testfixtures
 tox
 validators
-threadfix_list
 webinspectapi>=1.0.20
