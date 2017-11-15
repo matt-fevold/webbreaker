@@ -10,6 +10,7 @@ fi
 
 if type python 2>/dev/null; then
         if [ -f ./setup.py ]; then
+                pip install pyOpenSSL
                 python setup.py build
                 python setup.py install
         else

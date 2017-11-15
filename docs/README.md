@@ -52,6 +52,7 @@
 - [Notifier: `admin_notifier`](#admin-notifier)
 - [agent: `admin_agent`](#admin-agent)
 - [Credentials: `admin_credentials`](#admin-credentials)
+- [Secret: `admin_secret`](#admin-secret)
 
 ## Introduction `introduction`
 
@@ -105,6 +106,7 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
         - notifier
         - agent
         - credentials
+        - secret
     - threadfix
         - teams
         - applications
@@ -574,3 +576,13 @@ Clear cuurent stored Fortify credentials.
 webbreaker admin credentials --fortify --clear
 ```
 
+#### Admin Secret `admin_secret`
+A new encryption key is created and all stored credentials are cleared. Through regular use you should not need to use this command. However, if WebBreaker is having troubles with encrypting credentials, this command will help it reset.
+```
+webbreaker admin secret
+```
+
+A new encryption key is created and all stored credentials are cleared. You will not be prompted to confirm this command.
+```
+webbreaker admin secret [-f / --force]
+```

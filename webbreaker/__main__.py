@@ -40,9 +40,13 @@ from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
+import os
 import re
 import sys
 import subprocess
+from os.path import expanduser
+
+from cryptography.fernet import Fernet
 
 handle_scan_event = None
 reporter = None
@@ -75,6 +79,7 @@ def cli(config):
     f = Figlet(font='slant')
     sys.stdout.write(str("{0}Version {1}\n".format(f.renderText('WebBreaker'), version)))
     sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
+    SecretClient().verify_secret()
 
 
 @cli.group(help="""WebInspect is dynamic application security testing software for assessing security of Web
@@ -777,6 +782,28 @@ def credentials(config, fortify, webinspect, clear, username, password):
             sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
     else:
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
+
+@admin.command(help="Generates a new encryption key and clears all stored credentials")
+@pass_config
+@click.option('-f', '--force',
+              required=False,
+              is_flag=True,
+              help="Optional flag to prevent confirmation prompt")
+def secret(config, force):
+    secret_client = SecretClient()
+    if secret_client.secret_exists():
+        if not force:
+            if click.confirm('All stored credentials will be deleted. Do you want to continue?'):
+                secret_client.wipe_all_credentials()
+                secret_client.write_secret(overwrite=True)
+            else:
+                sys.stdout.write(str("New secret was not written\n"))
+        else:
+            secret_client.wipe_all_credentials()
+            secret_client.write_secret(overwrite=True)
+    else:
+        secret_client.write_secret()
+
 
 
 @cli.group(help="Interaction with a ThreadFix API")
