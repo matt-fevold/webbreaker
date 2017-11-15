@@ -4,7 +4,7 @@ coverage
 cryptography>=1.8.0
 detox
 dpath>=1.4.0
-fortifyapi>=1.0.7
+fortifyapi>=1.0.8
 GitPython
 httplib2
 mock
@@ -17,4 +17,5 @@ requests
 testfixtures
 tox
 validators
-webinspectapi>=1.0.19
+threadfix_list
+webinspectapi>=1.0.20

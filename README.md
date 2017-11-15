@@ -24,6 +24,7 @@ New Features, bugs and enhancements for this release are documented in our [WebB
 1. Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
 1. Add your _WebInspect_ API server(s) to [webbreaker/etc/webinspect.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/webinspect.ini#L4)
 1. Add your _Fortify SSC_ URL to [webbreaker/etc/fortify.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/fortify.ini#L2)
+1. Add your _Threadfix_ URL and API Token to [webbreaker/etc/threadfix.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/threadfix.ini#L2)
 
 **NOTES:**
 

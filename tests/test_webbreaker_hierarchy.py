@@ -63,6 +63,9 @@ def test_admin_hierarchy(runner):
     result = runner.invoke(webbreaker, ['admin', 'notifier', '--help'])
     assert result.exit_code == 0
 
+    result = runner.invoke(webbreaker, ['admin', 'secret', '--help'])
+    assert result.exit_code == 0
+
 def test_threadfix_hierarchy(runner):
     result = runner.invoke(webbreaker, ['threadfix', 'teams', '--help'])
     assert result.exit_code == 0
