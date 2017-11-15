@@ -946,7 +946,7 @@ def threadfix_upload(config, app_id, app_name, scan_file):
                 Logger.app.error("No application was found matching name {}".format(app_name))
                 return
             if len(matches) > 1:
-                Logger.app.error("Multiple application was found matching name {}. Please specify the desired ID from below.".format(app_name))
+                Logger.app.error("Multiple applications were found matching name {}. Please specify the desired ID from below.".format(app_name))
                 print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
                 print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
                 for app in matches:
