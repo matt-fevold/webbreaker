@@ -41,6 +41,7 @@
 
 [Verbose Cheatsheet: ThreadFix `threadfix_cheatsheet`](#verbose-cheatsheet-threadfix)
 
+- [List: `threadfix_list`](#threadfix_list)
 - [Teams: `threadfix_teams`](#threadfix_teams)
 - [Applications: `threadfix_applications`](#threadfix_applications)
 - [Scans: `threadfix_scans`](#threadfix_scans)
@@ -108,6 +109,7 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
         - credentials
         - secret
     - threadfix
+        - list
         - teams
         - applications
         - scans
@@ -509,6 +511,17 @@ webbreaker fortify scan --version important_site_auth --build_id my_latest_build
 ```
 
 ## Verbose Cheatsheet: ThreadFix `threadfix_cheatsheet`
+#### ThreadFix List `threadfix_list`
+List all applications (ID, Team Name, Application Name) across all teams found in ThreadFix
+```
+webbreaker threadfix list
+```
+
+List all applications (ID, Team Name, Application Name) with names containing 'secret' across all teams with names containing 'Marketing'. Queries are not case sensitive.
+```
+webbreaker threadfix list --team Marketing --application secret
+```
+
 #### ThreadFix Teams `threadfix_teams`
 List all teams (ID and Name) found in ThreadFix
 ```
@@ -519,6 +532,11 @@ webbreaker threadfix teams
 List all applications (ID and Name) found in ThreadFix that belong to the team with ID=123
 ```
 webbreaker threadfix applications --team_id 123
+```
+
+List all applications (ID and Name) found in ThreadFix that belong to the Marketing team
+```
+webbreaker threadfix applications --team_name Marketing
 ```
 
 #### ThreadFix Scans `threadfix_scans`
@@ -537,6 +555,11 @@ webbreaker threadfix upload --app_id 345 --scan_file my_app_scan.xml
 Create a new application, with a given name and url, in ThreadFix under the team with ID=123
 ```
 webbreaker threadfix create_app --team_id 123 --name new_marketing_app --url http://marketing.ourapp.com
+```
+
+Create a new application, with a given name and url, in ThreadFix under the Marketing team
+```
+webbreaker threadfix create_app --team_name Marketing --name new_marketing_app --url http://marketing.ourapp.com
 ```
 
 ## Verbose Cheatsheet: Admin `admin_cheatsheet`
