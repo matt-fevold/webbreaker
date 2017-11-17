@@ -167,7 +167,7 @@ def test_threadfix_create_app(test_mock, runner, caplog):
     test_mock.return_value.create_application.return_value = {"id": 666}
     test_mock.create_application()
 
-    result = runner.invoke(webbreaker, ['threadfix', 'create_app', '--team_id', 456, '--name', 'New Secret App',
+    result = runner.invoke(webbreaker, ['threadfix', 'create', '--team_id', 456, '--application', 'New Secret App',
                                         '--url', 'https://github.com/target/webbreaker'])
 
     caplog.check(('__webbreaker__', 'INFO', 'Application successfully created with id 666'), )
