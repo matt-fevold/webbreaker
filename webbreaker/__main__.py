@@ -962,7 +962,7 @@ def threadfix_upload(config, app_id, application, scan_file):
     if upload_resp:
         Logger.app.info("{}".format(upload_resp))
     else:
-        Logger.app.error("Scan file failed to upload")
+        Logger.app.error("Scan file failed to upload!")
 
 
 @threadfix.command(name='list', help="List all applications across all teams")

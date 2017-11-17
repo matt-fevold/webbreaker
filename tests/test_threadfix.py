@@ -178,12 +178,12 @@ def test_threadfix_create_app(test_mock, runner, caplog):
 
 @mock.patch('webbreaker.__main__.ThreadFixClient')
 def test_threadfix_upload_success(test_mock, runner, caplog):
-    test_mock.return_value.upload_scan.return_value = "Upload process has begun."
+    test_mock.return_value.upload_scan.return_value = "Scan upload process started."
     test_mock.upload_scan()
 
     result = runner.invoke(webbreaker, ['threadfix', 'upload', '--app_id', 666, '--scan_file', 'kyler_secret_scan.xml'])
 
-    caplog.check(('__webbreaker__', 'INFO', 'Upload process has begun.'), )
+    caplog.check(('__webbreaker__', 'INFO', 'Scan upload process started.'), )
     caplog.uninstall()
 
     assert result.exit_code == 0
@@ -203,12 +203,12 @@ def test_threadfix_upload_failure(test_mock, runner, caplog):
 
 @mock.patch('webbreaker.__main__.ThreadFixClient')
 def test_threadfix_upload_success(test_mock, runner, caplog):
-    test_mock.return_value.upload_scan.return_value = "Upload process has begun."
+    test_mock.return_value.upload_scan.return_value = "Scan upload process started."
     test_mock.upload_scan()
 
     result = runner.invoke(webbreaker, ['threadfix', 'upload', '--app_id', 666, '--scan_file', 'kyler_secret_scan.xml'])
 
-    caplog.check(('__webbreaker__', 'INFO', 'Upload process has begun.'), )
+    caplog.check(('__webbreaker__', 'INFO', 'Scan upload process started.'), )
     caplog.uninstall()
 
     assert result.exit_code == 0
@@ -237,13 +237,13 @@ def test_threadfix_upload_team_name_match(test_mock, runner, caplog):
                                                     ]
     test_mock.list_all_apps()
 
-    test_mock.return_value.upload_scan.return_value = "Upload process has begun."
+    test_mock.return_value.upload_scan.return_value = "Scan upload process started."
     test_mock.upload_scan()
 
     result = runner.invoke(webbreaker, ['threadfix', 'upload', '--application', 'appsec_app', '--scan_file', 'kyler_secret_scan.xml'])
 
     caplog.check(('__webbreaker__', 'INFO', 'Attempting to find application matching name appsec_app'),
-                 ('__webbreaker__', 'INFO', 'Upload process has begun.'))
+                 ('__webbreaker__', 'INFO', 'Scan upload process started.'))
     caplog.uninstall()
 
     assert result.exit_code == 0
@@ -273,7 +273,7 @@ def test_threadfix_upload_team_name_match_multi(test_mock, runner, caplog):
                                                     ]
     test_mock.list_all_apps()
 
-    test_mock.return_value.upload_scan.return_value = "Upload process has begun."
+    test_mock.return_value.upload_scan.return_value = "Scan upload process started."
     test_mock.upload_scan()
 
     result = runner.invoke(webbreaker,
@@ -319,7 +319,7 @@ def test_threadfix_upload_team_name_match_none(test_mock, runner, caplog):
                                                     ]
     test_mock.list_all_apps()
 
-    test_mock.return_value.upload_scan.return_value = "Upload process has begun."
+    test_mock.return_value.upload_scan.return_value = "Scan upload process started."
     test_mock.upload_scan()
 
     result = runner.invoke(webbreaker,
