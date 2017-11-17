@@ -170,7 +170,7 @@ def test_threadfix_create_app(test_mock, runner, caplog):
     result = runner.invoke(webbreaker, ['threadfix', 'create', '--team_id', 456, '--application', 'New Secret App',
                                         '--url', 'https://github.com/target/webbreaker'])
 
-    caplog.check(('__webbreaker__', 'INFO', 'Application successfully created with id 666'), )
+    caplog.check(('__webbreaker__', 'INFO', 'Application was successfully created with id 666'), )
     caplog.uninstall()
 
     assert result.exit_code == 0
