@@ -949,7 +949,7 @@ def threadfix_upload(config, app_id, application, scan_file):
             if len(matches) > 1:
                 Logger.app.error(
                     "Multiple applications were found matching name {}. Please specify the desired ID from below.".format(application))
-                print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
+                print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
                 print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
                 for app in matches:
                     print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
@@ -981,7 +981,7 @@ def threadfix_list(config, team, application):
     applications = threadfix_client.list_all_apps(team, application)
     if applications is not False:
         if len(applications):
-            print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
+            print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
             print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
             for app in applications:
                 print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
