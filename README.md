@@ -84,7 +84,6 @@ Below is a Cheatsheet of supported commands to get you started.
     Scan with local WebInspect settings:
     webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth
     
-
     Initial Fortify SSC listing with authentication (SSC token is managed for 1-day):
     webbreaker fortify list --fortify_user matt --fortify_password abc123
     
@@ -125,25 +124,22 @@ Below is a Cheatsheet of supported commands to get you started.
     webbreaker threadfix list
 
     List all applications with names containing 'secret' for all teams with names containing 'Marketing'
-    webbreaker threadfix list --team Marketing --application secret
+    webbreaker threadfix list --team Marketing --application MyApp
 
-    List all teams (ID and Name) found in ThreadFix
-    webbreaker threadfix teams
+    List all applications and teams found in ThreadFix
+    webbreaker threadfix list
 
-    List all applications (ID and Name) found in ThreadFix that belong to the Marketing team
-    webbreaker threadfix applications --team_name Marketing
-
-    List all scans (ID Scanner, and Filename) found in ThreadFix that belong to the application with ID=345
-    webbreaker threadfix scans --app_id 345
+    List all ThreadFix applications for the Marketing team
+    webbreaker threadfix list --team Marketing
 
     Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345
-    webbreaker threadfix upload --app_id 345 --scan_file my_app_scan.xml
+    webbreaker threadfix upload --application MyApp --scan_file my_app_scan.xml
 
     Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App
-    webbreaker threadfix upload --app_name Marketing_App --scan_file my_app_scan.xml
+    webbreaker threadfix upload --application Marketing_App --scan_file my_app_scan.xml
 
     Create a new application, with a given name and url, in ThreadFix under the Marketing team
-    webbreaker threadfix create_app --team_name Marketing --name new_marketing_app --url http://marketing.ourapp.com
+    webbreaker threadfix create --team Marketing --application new_marketing_app --url http://marketing.ourapp.com
 
     Retrieve and store public emails of contributors to the webbreaker repo:
     webbreaker admin notifier --email --git_url https://github.com/target/webbreaker
