@@ -9,14 +9,17 @@ import requests.packages.urllib3
 import os
 import json
 import re
+
 try:
     import ConfigParser as configparser
-except ImportError: #Python3
-    import configparser
-try:  # Python 2
+
     config = configparser.SafeConfigParser()
-except NameError:  # Python 3
+
+except ImportError:  # Python3
+    import configparser
+
     config = configparser.ConfigParser()
+
 
 class GitClient(object):
     def __init__(self, host):
@@ -24,7 +27,7 @@ class GitClient(object):
             self.host = host
             self.token = self.get_token()
         except configparser.NoSectionError as e:
-            Logger.app.error("You are missing a git OAuth Token in your webbreaker.ini: {}".format(e))
+            Logger.app.error("You are missing a git OAuth Token in your config file: {}".format(e))
 
     def get_user_email(self, login):
         gitapi = GitApi(host=self.host, token=self.token, verify_ssl=False)
@@ -65,7 +68,7 @@ class GitClient(object):
             return None
 
     def get_token(self):
-        config_file = os.path.abspath(os.path.join('webbreaker', 'etc', 'webbreaker.ini'))
+        config_file = os.path.abspath('.config')
         config.read(config_file)
         return config.get("git", "token")
 
@@ -90,6 +93,7 @@ def write_agent_info(name, value):
         exit(1)
 
 
+# TODO: Remove json reads maybe?
 def read_agent_info():
     json_file_path = os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json'))
     try:
@@ -116,6 +120,7 @@ def read_agent_info():
         Logger.console.error("Error reading from agent.json")
         exit(1)
 
+
 def format_git_url(url):
     # if url ends in .git, remove
     url = url.replace('.git', '')
@@ -132,6 +137,7 @@ def format_git_url(url):
         url = 'https://' + url
         return url
     return None
+
 
 class UploadJSON(object):
     def __init__(self, log_file):
@@ -164,9 +170,11 @@ class UploadJSON(object):
                                     --application <some_value> --version <some_value>'""")
             return -1
         if not 'fortify_build_id' in data:
-            Logger.console.error("No Fortify Build ID found. Please run 'webbreaker fortify scan --build_id [BUILD_ID]'")
+            Logger.console.error(
+                "No Fortify Build ID found. Please run 'webbreaker fortify scan --build_id [BUILD_ID]'")
             return -1
         return 1
+
 
 class AgentVerifier(object):
     def __init__(self, log_file):
@@ -186,20 +194,25 @@ class AgentVerifier(object):
 
     def __verify__(self, data):
         if not 'git_emails' in data:
-            Logger.console.error("No emails were found to notify. Please run 'webbreaker admin notifier --email --url [REPO URL]'")
+            Logger.console.error(
+                "No emails were found to notify. Please run 'webbreaker admin notifier --email --url [REPO URL]'")
             return -1
         if not 'fortify_pv_url' in data:
             Logger.console.error("""No Fortify Project Version URL was found. Please run 'webbreaker fortify scan 
                                             --application <some_value> --version <some_value>'""")
             return -1
         if not 'fortify_build_id' in data:
-            Logger.console.error("No Fortify Build ID found. Please run 'webbreaker fortify scan --build_id [BUILD_ID]'")
+            Logger.console.error(
+                "No Fortify Build ID found. Please run 'webbreaker fortify scan --build_id [BUILD_ID]'")
             return -1
         if not 'git_url' in data:
-            Logger.console.error("No Git Repo URL found. Please run 'webbreaker admin notifier --email --url [REPO URL]'")
+            Logger.console.error(
+                "No Git Repo URL found. Please run 'webbreaker admin notifier --email --url [REPO URL]'")
             return -1
         return 1
 
+
+#TODO: Remove agent.json?
 class GitUploader(object):
     def __init__(self, agent_url=None):
         self.upload_log = UploadJSON(os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json')))
@@ -207,12 +220,10 @@ class GitUploader(object):
         if not agent_url:
             self.agent_url = self.read_ini()
 
-
     def read_ini(self):
-        config_file = os.path.abspath(os.path.join('webbreaker', 'etc', 'webbreaker.ini'))
+        config_file = os.path.abspath('.config')
         config.read(config_file)
         return config.get("agent", "webbreaker_agent")
-
 
     def upload(self):
         data = {}
@@ -221,5 +232,3 @@ class GitUploader(object):
         data['git_emails'] = self.upload_log.git_emails
         response = requests.put(self.agent_url, data=data)
         return response.status_code
-
-
