@@ -196,7 +196,7 @@ def test_threadfix_upload_failure(test_mock, runner, caplog):
 
     result = runner.invoke(webbreaker, ['threadfix', 'upload', '--app_id', 666, '--scan_file', 'kyler_secret_scan.xml'])
 
-    caplog.check(('__webbreaker__', 'ERROR', 'Scan file failed to upload'), )
+    caplog.check(('__webbreaker__', 'ERROR', 'Scan file failed to upload!'), )
     caplog.uninstall()
 
     assert result.exit_code == 0
@@ -217,22 +217,22 @@ def test_threadfix_upload_success(test_mock, runner, caplog):
 def test_threadfix_upload_team_name_match(test_mock, runner, caplog):
     test_mock.return_value.list_all_apps.return_value = [
                                                         {
-                                                          'team': 'Marketing',
+                                                          'team_name': 'Marketing',
                                                           'team_id': 321,
                                                           'app_id': 123,
-                                                          'application': 'our_app'
+                                                          'app_name': 'our_app'
                                                         },
                                                         {
-                                                          'team': 'AppSec',
+                                                          'team_name': 'AppSec',
                                                           'team_id': 654,
                                                           'app_id': 456,
-                                                          'application': 'appsec_app'
+                                                          'app_name': 'appsec_app'
                                                         },
                                                         {
-                                                          'team': 'Operations',
+                                                          'team_name': 'Operations',
                                                           'team_id': 987,
                                                           'app_id': 789,
-                                                          'application': 'our_app'
+                                                          'app_name': 'our_app'
                                                         }
                                                     ]
     test_mock.list_all_apps()
@@ -253,22 +253,22 @@ def test_threadfix_upload_team_name_match(test_mock, runner, caplog):
 def test_threadfix_upload_team_name_match_multi(test_mock, runner, caplog):
     test_mock.return_value.list_all_apps.return_value = [
                                                         {
-                                                          'team': 'Marketing',
+                                                          'team_name': 'Marketing',
                                                           'team_id': 321,
                                                           'app_id': 123,
-                                                          'application': 'our_app'
+                                                          'app_name': 'our_app'
                                                         },
                                                         {
-                                                          'team': 'AppSec',
+                                                          'team_name': 'AppSec',
                                                           'team_id': 654,
                                                           'app_id': 456,
-                                                          'application': 'appsec_app'
+                                                          'app_name': 'appsec_app'
                                                         },
                                                         {
-                                                          'team': 'Operations',
+                                                          'team_name': 'Operations',
                                                           'team_id': 987,
                                                           'app_id': 789,
-                                                          'application': 'our_app'
+                                                          'app_name': 'our_app'
                                                         }
                                                     ]
     test_mock.list_all_apps()
@@ -299,22 +299,22 @@ def test_threadfix_upload_team_name_match_multi(test_mock, runner, caplog):
 def test_threadfix_upload_team_name_match_none(test_mock, runner, caplog):
     test_mock.return_value.list_all_apps.return_value = [
                                                         {
-                                                          'team': 'Marketing',
+                                                          'team_name': 'Marketing',
                                                           'team_id': 321,
                                                           'app_id': 123,
-                                                          'application': 'our_app'
+                                                          'app_name': 'our_app'
                                                         },
                                                         {
-                                                          'team': 'AppSec',
+                                                          'team_name': 'AppSec',
                                                           'team_id': 654,
                                                           'app_id': 456,
-                                                          'application': 'appsec_app'
+                                                          'app_name': 'appsec_app'
                                                         },
                                                         {
-                                                          'team': 'Operations',
+                                                          'team_name': 'Operations',
                                                           'team_id': 987,
                                                           'app_id': 789,
-                                                          'application': 'our_app'
+                                                          'app_name': 'our_app'
                                                         }
                                                     ]
     test_mock.list_all_apps()
@@ -336,14 +336,14 @@ def test_threadfix_upload_team_name_match_none(test_mock, runner, caplog):
 def test_threadfix_list_success(test_mock, runner, caplog):
     test_mock.return_value.list_all_apps.return_value = [
                                                         {
-                                                          'team': 'Marketing',
+                                                          'team_name': 'Marketing',
                                                           'app_id': 123,
-                                                          'application': 'Secret App'
+                                                          'app_name': 'Secret App'
                                                         },
                                                         {
-                                                          'team': 'AppSec',
+                                                          'team_name': 'AppSec',
                                                           'app_id': 456,
-                                                          'application': 'Buggy App'
+                                                          'app_name': 'Buggy App'
                                                         }]
     test_mock.list_all_apps()
 
