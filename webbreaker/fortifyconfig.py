@@ -23,7 +23,7 @@ except NameError:  # Python 3
 
 class FortifyConfig(object):
     def __init__(self):
-        config_file = os.path.abspath(os.path.join('webbreaker', 'etc', 'fortify.ini'))
+        config_file = os.path.abspath('.config')
         try:
             config.read(config_file)
             self.ssc_url = config.get("fortify", "ssc_url")
@@ -31,6 +31,7 @@ class FortifyConfig(object):
             self.application_name = config.get("fortify", "application_name")
 
             secret_client = SecretClient()
+            # TODO: remove one fortify in whole file
             self.username = secret_client.get('fortify', 'fortify', 'fortify_username')
             self.password = secret_client.get('fortify', 'fortify', 'fortify_password')
 
