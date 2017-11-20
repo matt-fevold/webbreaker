@@ -99,7 +99,7 @@ WEBINSPECT DOWNLOAD OPTIONS:
 FORTIFY LIST OPTIONS:
     --application\tProvides a listing of Fortify SSC Version(s) within a specific Application or Project.\n
     --fortify_user\tIf provided WebBreaker authenticates to Fortify using these credentials. If not provided\n
-    --fortify_password\tWebBreaker attempts to use a secret for .config. If no secret is found our\b
+    --fortify_password\tWebBreaker attempts to use a secret from .config. If no secret is found our\b
     the secret is no longer valid, you will be prompted for these credentials.\n
 
 FORTIFY UPLOAD OPTIONS:

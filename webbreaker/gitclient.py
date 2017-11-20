@@ -93,7 +93,6 @@ def write_agent_info(name, value):
         exit(1)
 
 
-# TODO: Remove json reads maybe?
 def read_agent_info():
     json_file_path = os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json'))
     try:
@@ -218,9 +217,9 @@ class GitUploader(object):
         self.upload_log = UploadJSON(os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json')))
         self.agent_url = agent_url
         if not agent_url:
-            self.agent_url = self.read_ini()
+            self.agent_url = self.read_config()
 
-    def read_ini(self):
+    def read_config(self):
         config_file = os.path.abspath('.config')
         config.read(config_file)
         return config.get("agent", "webbreaker_agent")

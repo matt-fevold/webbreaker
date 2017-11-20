@@ -756,6 +756,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
         else:
             if username and password:
                 try:
+                    # Fortify Client is not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
@@ -768,6 +769,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
             else:
                 username, password = fortify_prompt()
                 try:
+                    # Fortify Client is not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)

@@ -27,5 +27,5 @@ class ThreadFixConfig(object):
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
-        except configparser.Error as e:
+        except (configparser.Error) as e:
             Logger.app.error("Error reading {} {}".format(config_file, e))
