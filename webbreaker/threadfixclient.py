@@ -62,9 +62,9 @@ class ThreadFixClient(object):
                     for app in app_response:
                         if app_name is not None and app_name.lower() in app['name'].lower():
                             applications.append({'team_id': team['id'],
-                                             'team_name': team['name'],
-                                             'app_id': app['id'],
-                                             'app_name': app['name']})
+                                                 'team_name': team['name'],
+                                                 'app_id': app['id'],
+                                                 'app_name': app['name']})
                         elif app_name is None:
                             applications.append({'team_id': team['id'],
                                                  'team_name': team['name'],

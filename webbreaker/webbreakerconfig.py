@@ -1,55 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-try:
-    import ConfigParser as configparser
-except ImportError: #Python3
-    import configparser
-import os, sys
+import os
 from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.notifiers import emailer
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.notifiers import reporter
 
-runenv = WebBreakerHelper.check_run_env()
+try:
+    import ConfigParser as configparser
 
-# TODO: Test on Python2
-try:  # Python 2
     config = configparser.SafeConfigParser()
-except NameError:  # Python 3
+except ImportError:  # Python3
+    import configparser
+
     config = configparser.ConfigParser()
 
 
 class WebBreakerConfig(object):
-    def parse_fortify_settings(self):
-        fortify_dict = {}
-        #fortify_setting = os.path.abspath(os.path.join('webbreaker', 'etc', 'fortify.ini'))
-        fortify_setting = os.path.join('webbreaker', 'etc', 'fortify.ini')
-        sys.path.append(os.path.join('webbreaker', 'etc', 'fortify.ini'))
-
-
-        print(fortify_setting)
-        if os.path.exists(fortify_setting):
-            fortify_dict = {}
-            config.read(fortify_setting)
-
-            try:
-                fortify_dict['fortify_url'] = config.get("fortify", "ssc_url")
-                fortify_dict['application_name'] = config.get("fortify", "application_name")
-                fortify_dict['project_template'] = config.get("fortify", "project_template")
-                fortify_dict['fortify_secret'] = config.get("fortify", "fortify_secret")
-            except configparser.NoOptionError:
-                Logger.console.error("{} has incorrect or missing values!".format(fortify_setting))
-        else:
-            Logger.console.debug("There is no {}".format(fortify_setting))
-
-        return fortify_dict
-
     def parse_emailer_settings(self):
         emailer_dict = {}
-        #emailer_setting = os.path.abspath(os.path.join('webbreaker', 'etc', 'email.ini'))
-        emailer_setting = os.path.join('webbreaker', 'etc', 'email.ini')
+        emailer_setting = os.path.abspath('.config')
         if os.path.exists(emailer_setting):
             config.read(emailer_setting)
 
@@ -66,7 +37,6 @@ class WebBreakerConfig(object):
             Logger.console.info("Your scan email notifier is not configured: {}".format(emailer_setting))
 
         return emailer_dict
-
 
     def create_reporter(self):
 
