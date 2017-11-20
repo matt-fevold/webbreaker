@@ -829,26 +829,26 @@ def teams(config):
         Logger.app.error("No teams were found")
 
 
-@threadfix.command(help="List all applications (ID and Name) found on ThreadFix belonging to a certain team")
+@threadfix.command(help="List all applications for a given ThreadFix team")
 @pass_config
 @click.option('--team_id',
               required=False,
               help="ID of ThreadFix team you want to list applications of")
-@click.option('--team_name',
+@click.option('--team',
               required=False,
-              help="Name of ThreadFix team you want to list applications of")
-def applications(config, team_id, team_name):
+              help="ThreadFix team application listing")
+def applications(config, team_id, team):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    if not team_id and not team_name:
-        Logger.app.error("Please specify either a team_name or team_id")
+    if not team_id and not team:
+        Logger.app.error("Please specify either a team or team_id")
         return
-    if team_name and not team_id:
-        team_id = threadfix_client.get_team_id_by_name(team_name)
+    if team and not team_id:
+        team_id = threadfix_client.get_team_id_by_name(team)
     if team_id is None:
-        Logger.app.error("Unable to find team with name {}".format(team_name))
+        Logger.app.error("Unable to find team with name {}".format(team))
         return
-    apps = threadfix_client.list_apps_by_team(team_id)
+    apps = threadfix_client.list_apps_by_team(team)
     if apps:
         print("{0:^10} {1:30}".format('ID', 'Name'))
         print("{0:10} {1:30}".format('-' * 10, '-' * 30))
@@ -865,32 +865,33 @@ def applications(config, team_id, team_name):
 @click.option('--team_id',
               required=False,
               help="ID of ThreadFix team this application will belong to")
-@click.option('--team_name',
+@click.option('--team',
               required=False,
               help="Name of ThreadFix team this application will belong to")
-@click.option('--name',
+@click.option('--application',
               required=True,
               help="Name of new application")
 @click.option('--url',
               required=False,
               default=None,
               help="Option URL of new application")
-def create_app(config, team_id, team_name, name, url):
+def create(config, team_id, team, application, url):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    if not team_id and not team_name:
-        Logger.app.error("Please specify either a team_name or team_id")
+    if not team_id and not team:
+        Logger.app.error("Please specify either a team or team_id")
         return
-    if team_name and not team_id:
-        team_id = threadfix_client.get_team_id_by_name(team_name)
+    if team and not team_id:
+        team_id = threadfix_client.get_team_id_by_name(team)
     if team_id is None:
-        Logger.app.error("Unable to find team with name {}".format(team_name))
+        Logger.app.error("Unable to find team with application {}".format(team))
         return
-    created_app = threadfix_client.create_application(team_id, name, url)
+    created_app = threadfix_client.create_application(team_id, application, url)
     if created_app:
-        Logger.app.info("Application successfully created with id {}".format(created_app['id']))
+        Logger.app.info("Application was successfully created with id {}".format(created_app['id']))
     else:
-        Logger.app.error("Application was not created")
+        Logger.app.error("Application was not created, either the application exists, invalid token, or ThreadFix"
+                         " is unavailable!! ")
 
 
 @threadfix.command(help="List all scans (ID, Scanner, and Filename) of a certain application in ThreadFix")
@@ -916,19 +917,52 @@ def scans(config, app_id):
 @threadfix.command(name='upload', help="Upload a local scan file to an application in ThreadFix")
 @pass_config
 @click.option('--app_id',
-              required=True,
+              required=False,
               help="ID of ThreadFix Application to upload this scan to")
+@click.option('--application',
+              required=False,
+              help="Name of ThreadFix Application to upload this scan to")
 @click.option('--scan_file',
               required=True,
               help="File to be upload. Ex) --scan_file my_scan.xml")
-def threadfix_upload(config, app_id, scan_file):
+def threadfix_upload(config, app_id, application, scan_file):
+    if not app_id and not application:
+        Logger.app.error("Please specify either an application or app_id!")
+        return
+
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
+    if not app_id:
+        Logger.app.info("Attempting to find application matching name {}".format(application))
+        apps = threadfix_client.list_all_apps()
+        if not apps:
+            Logger.app.error("Failed to retrieve applications from ThreadFix")
+            return
+        else:
+            matches = []
+            for app in apps:
+                if app['app_name'] == application:
+                    matches.append(app.copy())
+            if len(matches) == 0:
+                Logger.app.error("No application was found matching name {}".format(application))
+                return
+            if len(matches) > 1:
+                Logger.app.error(
+                    "Multiple applications were found matching name {}. Please specify the desired ID from below.".format(application))
+                print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
+                print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
+                for app in matches:
+                    print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
+                print('\n\n')
+                return
+            else:
+                app_id = matches[0]['app_id']
+
     upload_resp = threadfix_client.upload_scan(app_id, scan_file)
     if upload_resp:
         Logger.app.info("{}".format(upload_resp))
     else:
-        Logger.app.error("Scan file failed to upload")
+        Logger.app.error("Scan file failed to upload!")
 
 
 @threadfix.command(name='list', help="List all applications across all teams")
@@ -947,7 +981,7 @@ def threadfix_list(config, team, application):
     applications = threadfix_client.list_all_apps(team, application)
     if applications is not False:
         if len(applications):
-            print("{0:^10} {1:55} {2:30}".format('App ID', 'Team Name', 'Application'))
+            print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
             print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
             for app in applications:
                 print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
