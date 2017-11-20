@@ -22,16 +22,16 @@ New Features, bugs and enhancements for this release are documented in our [WebB
 1. ```git clone https://github.com/target/webbreaker```
 1. ```./build.sh```
 1. Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
-1. Add your _WebInspect_ API server(s) to [webbreaker/etc/webinspect.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/webinspect.ini#L4)
-1. Add your _Fortify SSC_ URL to [webbreaker/etc/fortify.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/fortify.ini#L2)
-1. Add your _Threadfix_ URL and API Token to [webbreaker/etc/threadfix.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/threadfix.ini#L2)
+1. Add your _WebInspect_ API server(s) to [.config](https://github.com/target/webbreaker/blob/master/.config#L21)
+1. Add your _Fortify SSC_ URL to [.config](https://github.com/target/webbreaker/blob/master/.config#L2)
+1. Add your _Threadfix_ URL and API Token to [.config](https://github.com/target/webbreaker/blob/master/.config#L8)
 
 **NOTES:**
 
 * As with any Python application that contains library dependencies, [pip](https://pip.pypa.io/en/stable/installing) is required for installation.
 * _Optional_: Include your Python site-packages, if they are not already in your $PATH with ```export PATH=$PATH:$PYTHONPATH```.
-* _Optional_: SMTP settings on email notifications and a message template can be edited in [webbreaker/etc/email.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/email.ini#L2)
-* _Optional_: Create your own remote GIT repo for your WebInspect [settings](https://github.com/automationdomination/WebInspect/tree/master/settings), [policies](https://github.com/automationdomination/WebInspect/tree/master/policies), and [webmacros](https://github.com/automationdomination/WebInspect/tree/master/webmacros). Simply, add the [GIT URL to the webinspect.ini](https://github.com/target/webbreaker/blob/configuration/webbreaker/etc/webinspect.ini#L33) and their respective directories.
+* _Optional_: SMTP settings on email notifications and a message template can be edited in [.config](https://github.com/target/webbreaker/blob/configuration/.config#L81)
+* _Optional_: Create your own remote GIT repo for your WebInspect [settings](https://github.com/automationdomination/WebInspect/tree/master/settings), [policies](https://github.com/automationdomination/WebInspect/tree/master/policies), and [webmacros](https://github.com/automationdomination/WebInspect/tree/master/webmacros). Simply, add the [GIT URL to the .config file](https://github.com/target/webbreaker/blob/configuration/.config#L50) and their respective directories.
 
 
 ## Usage
@@ -45,7 +45,7 @@ Below is a Cheatsheet of supported commands to get you started.
 ---
 
 
-    List all WebInspect servers found in webinspect.ini:
+    List all WebInspect servers found in .config - webinspect_endpoints:
     webbreaker webinspect servers
 
     List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com:
@@ -96,7 +96,7 @@ Below is a Cheatsheet of supported commands to get you started.
     Upload to Fortify SSC with command-line authentication:
     webbreaker fortify upload --fortify_user $FORT_USER --fortify_password $FORT_PASS --version important_site_auth
     
-    Upload to Fortify SSC with interactive authentication & application version configured with fortify.ini:
+    Upload to Fortify SSC with interactive authentication & application version configured with .config file:
     webbreaker fortify upload --version important_site_auth --scan_name auth_scan
     
     Upload to Fortify SSC with application/project & version name:
@@ -105,7 +105,7 @@ Below is a Cheatsheet of supported commands to get you started.
     Download lastest .fpr scan from Fortify SSC with application/project & version name:
     webbreaker fortify download --application my_other_app --version important_site_auth
 
-    Download lastest .fpr scan from Fortify SSC with application/project from fortify.ini & version name:
+    Download lastest .fpr scan from Fortify SSC with application/project from .config file & version name:
     webbreaker fortify download --version important_site_auth
 
     Download lastest .fpr scan from Fortify SSC with application/project & version name and command-line authentication:
