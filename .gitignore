@@ -25,7 +25,7 @@ MANIFEST
 
 # env 
 .webbreaker
-webbreaker/etc/webinspect/
+webbreaker/etc/
 env/
 venv27/
 venv36/
