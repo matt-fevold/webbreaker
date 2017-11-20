@@ -58,7 +58,7 @@ WEBINSPECT SCAN OPTIONS:
      or Jenkins global environment variables may be declared, such as $BUILD_TAG.\n
 
     --scan_policy\tOverrides the existing scan policy from the value in the\b
-    setting file from `--settings`, see `webinspect.ini` for built-in values.  \b
+    setting file from `--settings`, see `.config` for built-in values.  \b
     Any custom policy must include only the GUID.  Do NOT include the `.policy` extension.\n
 
     --login_macro\tOverrides the login macro declared in the original setting file from\b
@@ -79,7 +79,7 @@ WEBINSPECT SCAN OPTIONS:
     --allowed_hosts\tHosts to scan, either a single host or a list of hosts separated by \b
     spaces. If not provided, all values from `--start_urls` will be used.\n
 
-    --size\t WebInspect scan servers are managed with the `webinspect.ini` file, however a\b
+    --size\t WebInspect scan servers are managed with the `.config` file, however a\b
      medium or large size WebInspect server defined in the config can be explicitly declared with\b
     `--size medium` or `--size large`.\n
 
@@ -99,15 +99,15 @@ WEBINSPECT DOWNLOAD OPTIONS:
 FORTIFY LIST OPTIONS:
     --application\tProvides a listing of Fortify SSC Version(s) within a specific Application or Project.\n
     --fortify_user\tIf provided WebBreaker authenticates to Fortify using these credentials. If not provided\n
-    --fortify_password\tWebBreaker attempts to use a secret for fortify.ini. If no secret is found our\b
+    --fortify_password\tWebBreaker attempts to use a secret for .config. If no secret is found our\b
     the secret is no longer valid, you will be prompted for these credentials.\n
 
 FORTIFY UPLOAD OPTIONS:
     --fortify_user \tIf provided WebBreaker authenticates to Fortify using these credentials. If not provided\n
-    --fortify_password\tWebBreaker attempts to use a secret for fortify.ini. If no secret is found our the secret is\b
+    --fortify_password\tWebBreaker attempts to use a secret for .config. If no secret is found our the secret is\b
     no longer valid, you will be prompted for these credentials.\n
     --application\tIf provided WebBreaker will look for version under this application name instead of the one\b
-    provided in fortify.ini\n
+    provided in .config\n
     --version\tUsed for the command 'fortify upload' this option specifies the application version name and\b
     is used to both locate the file to be uploaded and the correct fortify application version\b
     to upload the file to.\n
