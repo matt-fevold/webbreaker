@@ -137,5 +137,5 @@ email_template = <html>
 	</html>
 
 [webbreaker_install]
-dir = /opt/webbreaker
+dir = 
 
