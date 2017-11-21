@@ -11,18 +11,14 @@ __license__ = "MIT"
 try:
     from signal import *
     from urlparse import urlparse
-    # from urllib.parse import urlparse
+    import urllib
 except ImportError:  # Python3
     import html.entities as htmlentitydefs
     from urllib.parse import urlparse
     import html.parser as HTMLParser
-try:  # Python3
     import urllib.request as urllib
-except:
-    import urllib
-import datetime
+
 import requests.exceptions
-import json
 from git.exc import GitCommandError
 import click
 from pyfiglet import Figlet
@@ -35,18 +31,13 @@ from webbreaker.fortifyclient import FortifyClient
 from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier, \
-    format_git_url
+from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
-import os
 import re
 import sys
 import subprocess
-from os.path import expanduser
-
-from cryptography.fernet import Fernet
 
 handle_scan_event = None
 reporter = None
@@ -468,6 +459,7 @@ def fortify_list(config, fortify_user, fortify_password, application):
     except (AttributeError, UnboundLocalError) as e:
         Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
 
+
 @fortify.command(name='download', help="Download the current fpr scan of an Fortify Version")
 @click.option('--fortify_user')
 @click.option('--fortify_password')
@@ -497,9 +489,10 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
             Logger.app.info("No Fortify username or password provided. Checking .config for credentials")
             if fortify_config.has_auth_creds():
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                       project_template=fortify_config.project_template,
-                                       application_name=fortify_config.application_name,
-                                       fortify_username=fortify_config.username, fortify_password=fortify_config.password)
+                                               project_template=fortify_config.project_template,
+                                               application_name=fortify_config.application_name,
+                                               fortify_username=fortify_config.username,
+                                               fortify_password=fortify_config.password)
                 Logger.app.info("Fortify username and password successfully found in .config")
             else:
                 Logger.app.info("Fortify credentials not found in .config")
@@ -785,6 +778,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
     else:
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
 
+
 @admin.command(help="Generates a new encryption key and clears all stored credentials")
 @pass_config
 @click.option('-f', '--force',
@@ -805,7 +799,6 @@ def secret(config, force):
             secret_client.write_secret(overwrite=True)
     else:
         secret_client.write_secret()
-
 
 
 @cli.group(help="Interaction with a ThreadFix API")
@@ -950,7 +943,8 @@ def threadfix_upload(config, app_id, application, scan_file):
                 return
             if len(matches) > 1:
                 Logger.app.error(
-                    "Multiple applications were found matching name {}. Please specify the desired ID from below.".format(application))
+                    "Multiple applications were found matching name {}. Please specify the desired ID from below.".format(
+                        application))
                 print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
                 print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
                 for app in matches:
