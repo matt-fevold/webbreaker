@@ -7,15 +7,10 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-env/
-venv27/
-venv36/
 build/
 develop-eggs/
 dist/
 downloads/
-webbreaker/etc/*.ini
-webbreaker/etc/webinspect/
 eggs/
 .eggs/
 lib/
@@ -27,7 +22,14 @@ var/
 .installed.cfg
 *.egg
 MANIFEST
+
+# env 
 .webbreaker
+webbreaker/etc/
+env/
+venv27/
+venv36/
+.config
 
 # PyInstaller
 *.manifest

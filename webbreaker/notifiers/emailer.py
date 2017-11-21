@@ -1,27 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-
-try:
-    from email.MIMEMultipart import MIMEMultipart
-    from email.MIMEText import MIMEText
-except ImportError: #Python3
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
 import smtplib
 import os
 from webbreaker.notifiers.notifier import Notifier
 from webbreaker.webbreakerlogger import Logger
 from subprocess import CalledProcessError
+
 try:
+    from email.MIMEMultipart import MIMEMultipart
+    from email.MIMEText import MIMEText
     import ConfigParser as configparser
-except ImportError: #Python3
+
+    config = configparser.SafeConfigParser()
+
+
+except ImportError:  # Python3
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
     import configparser
 
-try:  # Python 2
-    config = configparser.SafeConfigParser()
-except NameError:  # Python 3
     config = configparser.ConfigParser()
+
 
 class EmailNotifier(Notifier):
     def __init__(self, emailer_settings=None):
@@ -40,11 +39,12 @@ class EmailNotifier(Notifier):
             msg['Subject'] = "{0} {1}".format(event['subject'], event['scanname'])
 
             html = str(self.emailer_settings['email_template']).format(event['server'],
-                                                                      event['scanname'],
-                                                                      event['scanid'],
-                                                                      event['subject'],
-                                                                      "".join(
-                                                                          ["<li>{0}</li>".format(t) for t in event['targets']]))
+                                                                       event['scanname'],
+                                                                       event['scanid'],
+                                                                       event['subject'],
+                                                                       "".join(
+                                                                           ["<li>{0}</li>".format(t) for t in
+                                                                            event['targets']]))
             msg.attach(MIMEText(html, 'html'))
 
             mail_server = smtplib.SMTP(self.emailer_settings['smtp_host'], self.emailer_settings['smtp_port'])
@@ -73,9 +73,8 @@ class EmailNotifier(Notifier):
             Logger.app.error("Error sending email. {}".format(e.message))
             Logger.console.error("Error sending email, see log: {}!".format(Logger.app_logfile))
 
-
     def __read_agent_settings__(self):
-        settings_file = os.path.abspath(os.path.join('webbreaker', 'etc', 'email.ini'))
+        settings_file = os.path.abspath('.config')
         try:
             config.read(settings_file)
             self.smtp_host = config.get("agent_emailer", "smtp_host")

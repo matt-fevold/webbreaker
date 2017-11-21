@@ -11,18 +11,14 @@ __license__ = "MIT"
 try:
     from signal import *
     from urlparse import urlparse
-    # from urllib.parse import urlparse
+    import urllib
 except ImportError:  # Python3
     import html.entities as htmlentitydefs
     from urllib.parse import urlparse
     import html.parser as HTMLParser
-try:  # Python3
     import urllib.request as urllib
-except:
-    import urllib
-import datetime
+
 import requests.exceptions
-import json
 from git.exc import GitCommandError
 import click
 from pyfiglet import Figlet
@@ -35,18 +31,13 @@ from webbreaker.fortifyclient import FortifyClient
 from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, GitUploader, write_agent_info, read_agent_info, AgentVerifier, \
-    format_git_url
+from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
-import os
 import re
 import sys
 import subprocess
-from os.path import expanduser
-
-from cryptography.fernet import Fernet
 
 handle_scan_event = None
 reporter = None
@@ -99,7 +90,7 @@ def webinspect(config):
               default='Default',
               required=True,
               help="""Specify name of settings file, without the .xml extension. WebBreaker will 
-                 by default try to locate this file in in the repo found in webinspect.ini. If your 
+                 by default try to locate this file in in the repo found in .config. If your 
                  file is not in the repo, you may instead pass an absolute path to the file""")
 @click.option('--size',
               required=False,
@@ -443,14 +434,14 @@ def fortify_list(config, fortify_user, fortify_password, application):
             fortify_config.write_password(fortify_password)
             Logger.app.info("Fortify credentials stored")
         else:
-            Logger.app.info("No Fortify username or password provided. Checking fortify.ini for credentials")
+            Logger.app.info("No Fortify username or password provided. Checking .config for credentials")
             if fortify_config.has_auth_creds():
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                fortify_username=fortify_config.username,
                                                fortify_password=fortify_config.password)
-                Logger.app.info("Fortify username and password successfully found in fortify.ini")
+                Logger.app.info("Fortify username and password successfully found in .config")
             else:
-                Logger.app.info("Fortify credentials not found in fortify.ini")
+                Logger.app.info("Fortify credentials not found in .config")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                fortify_username=fortify_user,
@@ -468,12 +459,13 @@ def fortify_list(config, fortify_user, fortify_password, application):
     except (AttributeError, UnboundLocalError) as e:
         Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
 
+
 @fortify.command(name='download', help="Download the current fpr scan of an Fortify Version")
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
               required=False,
-              help="Name of the Fortify application that version belongs to. If this option is not provided, application_name from fortify.ini will be used.")
+              help="Name of the Fortify application that version belongs to. If this option is not provided, application_name from .config will be used.")
 @click.option('--version',
               required=True,
               help="Name of Fortify application version which you would like to a scan of")
@@ -494,15 +486,16 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
             fortify_config.write_password(fortify_password)
             Logger.app.info("Fortify credentials stored")
         else:
-            Logger.app.info("No Fortify username or password provided. Checking fortify.ini for credentials")
+            Logger.app.info("No Fortify username or password provided. Checking .config for credentials")
             if fortify_config.has_auth_creds():
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                       project_template=fortify_config.project_template,
-                                       application_name=fortify_config.application_name,
-                                       fortify_username=fortify_config.username, fortify_password=fortify_config.password)
-                Logger.app.info("Fortify username and password successfully found in fortify.ini")
+                                               project_template=fortify_config.project_template,
+                                               application_name=fortify_config.application_name,
+                                               fortify_username=fortify_config.username,
+                                               fortify_password=fortify_config.password)
+                Logger.app.info("Fortify username and password successfully found in .config")
             else:
-                Logger.app.info("Fortify credentials not found in fortify.ini")
+                Logger.app.info("Fortify credentials not found in .config")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
@@ -532,7 +525,7 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
 @click.option('--fortify_password')
 @click.option('--application',
               required=False,
-              help="Name of the Fortify application that version belongs to. If this option is not provided, application_name from fortify.ini will be used.")
+              help="Name of the Fortify application that version belongs to. If this option is not provided, application_name from .config will be used.")
 @click.option('--version',
               required=True,
               help="Name of Fortify application version which you would like to upload a scan to.")
@@ -550,16 +543,16 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
         scan_name = version
     try:
         if not fortify_user or not fortify_password:
-            Logger.console.info("No Fortify username or password provided. Checking fortify.ini for secret")
+            Logger.console.info("No Fortify username or password provided. Checking .config for secret")
             if fortify_config.has_auth_creds():
-                Logger.console.info("Fortify credentials found in fortify.ini")
+                Logger.console.info("Fortify credentials found in .config")
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
                                                application_name=fortify_config.application_name, scan_name=version,
                                                extension=x, fortify_username=fortify_config.username,
                                                fortify_password=fortify_config.password)
             else:
-                Logger.console.info("Fortify credentials not found in fortify.ini")
+                Logger.console.info("Fortify credentials not found in .config")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
@@ -756,6 +749,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
         else:
             if username and password:
                 try:
+                    # Fortify Client is not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
@@ -768,6 +762,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
             else:
                 username, password = fortify_prompt()
                 try:
+                    # Fortify Client is not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
@@ -782,6 +777,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
             sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
     else:
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
+
 
 @admin.command(help="Generates a new encryption key and clears all stored credentials")
 @pass_config
@@ -803,7 +799,6 @@ def secret(config, force):
             secret_client.write_secret(overwrite=True)
     else:
         secret_client.write_secret()
-
 
 
 @cli.group(help="Interaction with a ThreadFix API")
@@ -948,7 +943,8 @@ def threadfix_upload(config, app_id, application, scan_file):
                 return
             if len(matches) > 1:
                 Logger.app.error(
-                    "Multiple applications were found matching name {}. Please specify the desired ID from below.".format(application))
+                    "Multiple applications were found matching name {}. Please specify the desired ID from below.".format(
+                        application))
                 print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
                 print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
                 for app in matches:
@@ -998,7 +994,7 @@ def threadfix_list(config, team, application):
                     query_info = query_info + ' and application name matching {}'.format(application)
             Logger.app.info("No applications were found" + query_info)
     else:
-        Logger.app.error("Possible cause could be your API token must be associated with a local account account!!")
+        Logger.app.error("Possible cause could be your API token must be associated with a local account!!")
 
 
 if __name__ == '__main__':

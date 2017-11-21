@@ -2,15 +2,8 @@
 # -*-coding:utf-8-*-
 
 import json
-import ntpath
-import requests
 import webinspectapi.webinspect as webinspectapi
 from webbreaker.webbreakerlogger import Logger
-from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.webinspectconfig import WebInspectConfig
-from webbreaker.webinspectjitscheduler import WebInspectJitScheduler
-
-requests.packages.urllib3.disable_warnings()
 
 
 class WebinspectQueryClient(object):
@@ -29,11 +22,11 @@ class WebinspectQueryClient(object):
 
     def export_scan_results(self, scan_id, scan_name, extension):
         """
-        Save scan results to file
+        Download scan as a xml for Threadfix or other Vuln Management System
         :param scan_id:
-        :return:
+        :param scan_name:
+        :param extension:
         """
-        # Export scan as a xml for Threadfix or other Vuln Management System
         Logger.app.debug('Exporting scan: {}'.format(scan_id))
         detail_type = 'Full' if extension == 'xml' else None
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
@@ -52,8 +45,7 @@ class WebinspectQueryClient(object):
     def list_scans(self):
         """
         List all scans found on host
-        :param scan_id:
-        :return:
+        :return: response.data from the Webinspect server
         """
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
         response = api.list_scans()
@@ -62,8 +54,12 @@ class WebinspectQueryClient(object):
         else:
             Logger.app.critical("{}".format(response.message))
 
-
     def get_scan_status(self, scan_guid):
+        """
+        Get scan status from the Webinspect server
+        :param scan_guid:
+        :return: Current status of scan
+        """
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
         try:
             response = api.get_current_status(scan_guid)
