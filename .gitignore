@@ -29,7 +29,7 @@ webbreaker/etc/
 env/
 venv27/
 venv36/
-.config
+config.ini
 
 # PyInstaller
 *.manifest
