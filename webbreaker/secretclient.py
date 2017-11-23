@@ -5,6 +5,7 @@ import os
 import sys
 import re
 from webbreaker.webbreakerlogger import Logger
+from webbreaker.confighelper import Config
 from cryptography.fernet import Fernet
 from os.path import expanduser
 
@@ -21,7 +22,7 @@ except ImportError:  # Python3
 class SecretClient(object):
     def __init__(self):
         self.fernet_key = self.__read_fernet_secret__()
-        self.config_file = os.path.abspath('.config')
+        self.config_file = Config().config
 
     def get(self, section, key):
         config.read(self.config_file)
@@ -86,26 +87,21 @@ class SecretClient(object):
             self.write_secret()
 
     def secret_exists(self):
-        # TODO: Refactor to config option in .config
-        home = expanduser("~")
-        secret_path = os.path.join(home, '.webbreaker')
-        return os.path.isfile(secret_path)
+        return os.path.isfile(Config().secret)
 
     def wipe_all_credentials(self):
         # TODO if any other values are encrypted, make sure to add them here
         self.clear_credentials('fortify', 'fortify_username', 'fortify_password')
 
     def write_secret(self, overwrite=False):
-        # TODO: Refactor to config option in .config
-        home = expanduser("~")
-        secret_path = os.path.join(home, '.webbreaker')
+        secret_path = Config().secret
         if self.secret_exists() and overwrite:
             os.chmod(secret_path, 0o200)
         key = Fernet.generate_key()
         with open(secret_path, 'w') as secret_file:
             secret_file.write(key.decode())
         os.chmod(secret_path, 0o400)
-        print("New secret has been set.")
+        Logger.app.info("New secret has been set.")
 
     def __encrypt__(self, value):
         try:
@@ -138,11 +134,8 @@ class SecretClient(object):
 
     def __read_fernet_secret__(self):
         self.verify_secret()
-        # TODO: Refactor to config option in .config
-        home = expanduser("~")
-        secret_path = os.path.join(home, '.webbreaker')
         try:
-            with open(secret_path, 'r') as secret_file:
+            with open(Config().secret, 'r') as secret_file:
                 fernet_key = secret_file.readline().strip()
             return fernet_key
         except IOError:

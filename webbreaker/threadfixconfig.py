@@ -3,6 +3,7 @@
 
 import os
 from webbreaker.webbreakerlogger import Logger
+from webbreaker.confighelper import Config
 from subprocess import CalledProcessError
 
 try:
@@ -17,7 +18,7 @@ except ImportError:  # Python3
 
 class ThreadFixConfig(object):
     def __init__(self):
-        config_file = os.path.abspath('.config')
+        config_file = Config().config
         try:
             config.read(config_file)
             self.api_key = config.get("threadfix", "api_key")

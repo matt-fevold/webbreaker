@@ -35,9 +35,11 @@ from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, f
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
+from webbreaker.confighelper import Config
 import re
 import sys
 import subprocess
+
 
 handle_scan_event = None
 reporter = None
@@ -176,9 +178,6 @@ def scan(config, **kwargs):
             webinspect_config.webinspect_git, Logger.app_logfile))
         Logger.app.critical("{} does not have permission to access the git repo: {}".format(
             webinspect_config.webinspect_git, e))
-        sys.exit(1)
-    except Exception as e:
-        Logger.app.critical("Error: {}".format(e))
         sys.exit(1)
 
     # ...and settings...
