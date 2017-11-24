@@ -1,5 +1,5 @@
 [webbreaker_install]
-dir =
+dir = /opt/webbreaker
 
 [fortify]
 ssc_url = https://fortify.example.com
