@@ -16,9 +16,9 @@ except ImportError:  # Python3
 
 class Config(object):
     def __init__(self):
-        # TODO: Confirm that files/folders exist, if not create them
         self.install = os.path.abspath('')
-        self.config = os.path.join(self.install, 'config.ini')
+        self.config_name = 'config.ini'
+        self.config = os.path.join(self.install, self.config_name)
 
         self.etc = None
         self.git = None
@@ -40,16 +40,50 @@ class Config(object):
             config.set('webbreaker_install', 'dir', self.install)
             with open(self.config, 'w') as configfile:
                 config.write(configfile)
-            read_path = config.get('webbreaker_install', 'dir')
+            read_path = self.install
 
         if read_path == '':
             config.set('webbreaker_install', 'dir', self.install)
             with open(self.config, 'w') as configfile:
                 config.write(configfile)
-        self.install = read_path
-        self.config = os.path.join(self.install, 'config.ini')
-        self.etc = os.path.join(self.install, 'etc')
-        self.git = os.path.join(self.install, 'etc', 'webinspect', '.git')
-        self.log = os.path.join(self.install, 'log')
+            read_path = self.install
+        self.install = self.set_path(dir_path=read_path)
+        self.config = self.set_path(file_name=self.config_name)
+        self.etc = self.set_path(dir_path='etc')
+        self.git = os.path.join(self.set_path(dir_path=os.path.join('etc', 'webinspect')), '.git')
+        self.log = self.set_path(dir_path='log')
         self.secret = os.path.join(self.install, '.webbreaker')
-        self.agent_json = os.path.join(self.install, 'etc', 'agent.json')
+        self.agent_json = self.set_path(dir_path='etc', file_name='agent.json')
+
+    def set_path(self, dir_path=None, file_name=None):
+        if dir_path and file_name:
+            dir_path = os.path.join(self.install, dir_path)
+            full_path = os.path.join(dir_path, file_name)
+            if os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            try:
+                f = open(full_path, 'a+')
+                f.close()
+            except IOError:
+                print("Unable to open {}".format(full_path))
+                return 1
+            return full_path
+
+        elif not dir_path and file_name:
+            dir_path = self.install
+            full_path = os.path.join(dir_path, file_name)
+            if os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            try:
+                f = open(full_path, 'a+')
+                f.close()
+            except IOError:
+                print("Unable to open {}".format(full_path))
+                return 1
+            return full_path
+
+        elif dir_path and not file_name:
+            dir_path = os.path.join(self.install, dir_path)
+            if os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            return dir_path

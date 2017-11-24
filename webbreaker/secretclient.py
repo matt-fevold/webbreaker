@@ -86,6 +86,7 @@ class SecretClient(object):
         else:
             self.write_secret()
 
+    # TODO: Change to check inside file, not just if file is there
     def secret_exists(self):
         return os.path.isfile(Config().secret)
 
