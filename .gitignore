@@ -27,6 +27,7 @@ MANIFEST
 .webbreaker
 webbreaker/etc/
 env/
+etc/
 venv27/
 venv36/
 config.ini

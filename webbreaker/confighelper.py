@@ -35,7 +35,7 @@ class Config(object):
         try:
             config.read(self.config)
             read_path = config.get('webbreaker_install', 'dir')
-        except configparser.NoSectionError as e:
+        except configparser.NoSectionError:
             config.add_section('webbreaker_install')
             config.set('webbreaker_install', 'dir', self.install)
             with open(self.config, 'w') as configfile:
@@ -47,6 +47,7 @@ class Config(object):
             with open(self.config, 'w') as configfile:
                 config.write(configfile)
             read_path = self.install
+
         self.install = self.set_path(dir_path=read_path)
         self.config = self.set_path(file_name=self.config_name)
         self.etc = self.set_path(dir_path='etc')
