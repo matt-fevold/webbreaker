@@ -3,6 +3,7 @@
 
 from webbreaker.gitapi.git import GitApi
 from webbreaker.webbreakerlogger import Logger
+from webbreaker.confighelper import Config
 import requests
 import requests.exceptions
 import requests.packages.urllib3
@@ -68,13 +69,12 @@ class GitClient(object):
             return None
 
     def get_token(self):
-        config_file = os.path.abspath('.config')
-        config.read(config_file)
+        config.read(Config().config)
         return config.get("git", "token")
 
 
 def write_agent_info(name, value):
-    json_file_path = os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json'))
+    json_file_path = Config().agent_json
     try:
         if os.path.isfile(json_file_path):
             with open(json_file_path, 'r') as json_file:
@@ -94,7 +94,7 @@ def write_agent_info(name, value):
 
 
 def read_agent_info():
-    json_file_path = os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json'))
+    json_file_path = Config().agent_json
     try:
         if os.path.isfile(json_file_path):
             with open(json_file_path, 'r') as json_file:
@@ -211,17 +211,15 @@ class AgentVerifier(object):
         return 1
 
 
-#TODO: Remove agent.json?
 class GitUploader(object):
     def __init__(self, agent_url=None):
-        self.upload_log = UploadJSON(os.path.abspath(os.path.join('webbreaker', 'etc', 'agent.json')))
+        self.upload_log = UploadJSON(Config().agent_json)
         self.agent_url = agent_url
         if not agent_url:
             self.agent_url = self.read_config()
 
     def read_config(self):
-        config_file = os.path.abspath('.config')
-        config.read(config_file)
+        config.read(Config().config)
         return config.get("agent", "webbreaker_agent")
 
     def upload(self):

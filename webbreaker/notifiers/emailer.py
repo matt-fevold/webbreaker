@@ -4,6 +4,7 @@ import smtplib
 import os
 from webbreaker.notifiers.notifier import Notifier
 from webbreaker.webbreakerlogger import Logger
+from webbreaker.confighelper import Config
 from subprocess import CalledProcessError
 
 try:
@@ -74,7 +75,7 @@ class EmailNotifier(Notifier):
             Logger.console.error("Error sending email, see log: {}!".format(Logger.app_logfile))
 
     def __read_agent_settings__(self):
-        settings_file = os.path.abspath('.config')
+        settings_file = Config().config
         try:
             config.read(settings_file)
             self.smtp_host = config.get("agent_emailer", "smtp_host")

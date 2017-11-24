@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ElementTree
 from subprocess import CalledProcessError, check_output
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webbreakerhelper import WebBreakerHelper
+from webbreaker.confighelper import Config
 
 try:
     import ConfigParser as configparser
@@ -53,10 +54,11 @@ class WebInspectConfig(object):
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
 
+    # TODO: Move to webbreakerconfig
     def __get_webinspect_settings__(self):
         Logger.app.debug("Getting webinspect settings from config file")
         webinspect_dict = {}
-        webinspect_setting = os.path.abspath('.config')
+        webinspect_setting = Config().config
 
         try:
             config.read(webinspect_setting)
@@ -136,6 +138,8 @@ class WebInspectConfig(object):
                 Logger.app.error("The {0} is unable to be created! {1}".format(options['scan_name'], e))
 
         if options['upload_settings']:
+            # Full path is specified in settings
+            # TODO: Move al os.path functions to helper class
             if os.path.isfile(options['upload_settings'] + '.xml'):
                 options['upload_settings'] = options['upload_settings'] + '.xml'
             if not os.path.isfile(options['upload_settings']):
@@ -253,24 +257,24 @@ class WebInspectConfig(object):
         Logger.app.debug("Completed webinspect settings parse")
         return webinspect_dict
 
-    # TODO: Move to the WebInspectHelper class
+    # TODO: Move to the WebbreakerConfig class
     def fetch_webinspect_configs(self, options):
-
-        full_path = os.path.join(os.path.dirname(__file__), self.webinspect_dir)
-        git_dir = os.path.abspath(os.path.join(full_path, '.git'))
+        config_helper = Config()
+        etc_dir = config_helper.etc
+        git_dir = config_helper.git
 
         try:
             if options['settings'] == 'Default':
                 Logger.app.debug("Default settings were used")
             elif os.path.isdir(git_dir):
-                Logger.app.info("Updating your WebInspect configurations from {}".format(full_path))
-                check_output(['git', 'init', full_path])
+                Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
+                check_output(['git', 'init', etc_dir])
                 check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
                 check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
                 sys.stdout.flush()
-            elif not os.path.isdir(full_path):
-                Logger.app.info("Cloning your specified WebInspect configurations to {}".format(full_path))
-                check_output(['git', 'clone', self.webinspect_git, full_path])
+            elif not os.path.isdir(etc_dir):
+                Logger.app.info("Cloning your specified WebInspect configurations to {}".format(etc_dir))
+                check_output(['git', 'clone', self.webinspect_git, etc_dir])
             else:
                 Logger.app.error(
                     "No GIT Repo was declared in your .config, therefore nothing will be cloned!")
