@@ -21,17 +21,17 @@ New Features, bugs and enhancements for this release are documented in our [WebB
 
 1. ```git clone https://github.com/target/webbreaker```
 1. ```./build.sh```
+1. Modify the working directory of your [webbreaker installation directory](https://github.com/target/webbreaker/blob/master/config.ini.example#L2)
 1. Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
-1. Add your _WebInspect_ API server(s) to [.config](https://github.com/target/webbreaker/blob/master/.config#L21)
-1. Add your _Fortify SSC_ URL to [.config](https://github.com/target/webbreaker/blob/master/.config#L2)
-1. Add your _Threadfix_ URL and API Token to [.config](https://github.com/target/webbreaker/blob/master/.config#L8)
+1. Add your _WebInspect_ API server(s) to [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L21)
+1. Add your _Fortify SSC_ URL to [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L5)
+1. Add your _Threadfix_ URL and API Token to [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L12)
 
 **NOTES:**
 
-* As with any Python application that contains library dependencies, [pip](https://pip.pypa.io/en/stable/installing) is required for installation.
 * _Optional_: Include your Python site-packages, if they are not already in your $PATH with ```export PATH=$PATH:$PYTHONPATH```.
-* _Optional_: SMTP settings on email notifications and a message template can be edited in [.config](https://github.com/target/webbreaker/blob/configuration/.config#L81)
-* _Optional_: Create your own remote GIT repo for your WebInspect [settings](https://github.com/automationdomination/WebInspect/tree/master/settings), [policies](https://github.com/automationdomination/WebInspect/tree/master/policies), and [webmacros](https://github.com/automationdomination/WebInspect/tree/master/webmacros). Simply, add the [GIT URL to the .config file](https://github.com/target/webbreaker/blob/configuration/.config#L50) and their respective directories.
+* _Optional_: SMTP settings on email notifications and a message template can be edited in [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L81)
+* _Optional_: Create your own remote GIT repo for your WebInspect [settings](https://github.com/automationdomination/WebInspect/tree/master/settings), [policies](https://github.com/automationdomination/WebInspect/tree/master/policies), and [webmacros](https://github.com/automationdomination/WebInspect/tree/master/webmacros). Simply, add the [GIT URL to the config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L50) and their respective directories.
 
 
 ## Usage
