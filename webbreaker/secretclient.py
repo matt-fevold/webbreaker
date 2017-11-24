@@ -102,7 +102,7 @@ class SecretClient(object):
         with open(secret_path, 'w') as secret_file:
             secret_file.write(key.decode())
         os.chmod(secret_path, 0o400)
-        Logger.app.info("New secret has been set.")
+        print("New secret has been set.")
 
     def __encrypt__(self, value):
         try:

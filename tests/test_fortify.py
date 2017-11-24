@@ -35,7 +35,6 @@ def test_fortify_list_success(client_mock, test_mock, runner, caplog):
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'New secret has been set.'),
         ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
         ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
         ('__webbreaker__', 'INFO', 'Fortify list has successfully completed'),

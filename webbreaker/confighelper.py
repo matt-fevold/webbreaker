@@ -59,7 +59,7 @@ class Config(object):
         if dir_path and file_name:
             dir_path = os.path.join(self.install, dir_path)
             full_path = os.path.join(dir_path, file_name)
-            if os.path.exists(dir_path):
+            if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
             try:
                 f = open(full_path, 'a+')
@@ -72,7 +72,7 @@ class Config(object):
         elif not dir_path and file_name:
             dir_path = self.install
             full_path = os.path.join(dir_path, file_name)
-            if os.path.exists(dir_path):
+            if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
             try:
                 f = open(full_path, 'a+')
@@ -84,6 +84,6 @@ class Config(object):
 
         elif dir_path and not file_name:
             dir_path = os.path.join(self.install, dir_path)
-            if os.path.exists(dir_path):
+            if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
             return dir_path
