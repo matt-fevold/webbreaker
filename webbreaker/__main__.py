@@ -414,15 +414,17 @@ def download(config, server, scan_name, scan_id, x, protocol):
             Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
 
 
-@cli.group(help=WebBreakerHelper.fortify_desc(),
-           short_help="Interaction with Fortify API"
+@cli.group(short_help="Interaction with Fortify API",
+           help=WebBreakerHelper.fortify_desc(),
            )
 @pass_config
 def fortify(config):
     pass
 
 
-@fortify.command('list')
+@fortify.command('list',
+                 short_help="List Fortify application versions",
+                 help=WebBreakerHelper.fortify_list_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -468,7 +470,9 @@ def fortify_list(config, fortify_user, fortify_password, application):
         Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
 
 
-@fortify.command(name='download', help="Download the current fpr scan of an Fortify Version")
+@fortify.command(name='download',
+                 short_help="Download Fortify .fpr scan",
+                 help=WebBreakerHelper.fortify_download_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -528,7 +532,9 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
         Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
 
 
-@fortify.command()
+@fortify.command('upload',
+                 short_help="Upload WebInspect scan to Fortify",
+                 help=WebBreakerHelper.fortify_upload_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -591,7 +597,9 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
         Logger.console.critical("Unable to complete command 'fortify upload'")
 
 
-@fortify.command('scan')
+@fortify.command('scan',
+                 short_help="Start Fortify scan",
+                 help=WebBreakerHelper.fortify_scan_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -655,14 +663,18 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
             Logger.console.critical("Unable to complete command 'fortify scan'")
 
 
-@cli.group(help=WebBreakerHelper.admin_desc(),
-           short_help="Manage credentials & notifiers")
+@cli.group(short_help="Manage credentials & notifiers",
+           help=WebBreakerHelper.admin_desc(),
+           )
 @pass_config
 def admin(config):
     pass
 
 
-@admin.command()
+@admin.command('notifier',
+               short_help="Get contributors of git repo",
+               help=WebBreakerHelper.admin_notifier_desc()
+               )
 @click.option('--email',
               is_flag=True,
               help="Optional flag which instructs WebBreaker to find contributors to notify via email")
@@ -702,7 +714,10 @@ def notifier(config, email, git_url):
         Logger.app.error("Unable to query git repo for email".format(e))
 
 
-@admin.command()
+@admin.command('agent',
+               short_help="Monitor scans and notify contributors",
+               help=WebBreakerHelper.admin_agent_desc()
+               )
 @click.option('--start',
               required=False,
               is_flag=True,
@@ -732,7 +747,10 @@ def agent(config, start):
         return
 
 
-@admin.command()
+@admin.command('credentials',
+               short_help="Create & update Fortify credentials",
+               help=WebBreakerHelper.admin_credentials_desc()
+               )
 @pass_config
 @click.option('--fortify',
               required=False,
@@ -788,7 +806,10 @@ def credentials(config, fortify, webinspect, clear, username, password):
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
 
 
-@admin.command(help="Generates a new encryption key and clears all stored credentials")
+@admin.command('secret',
+               short_help="Generate & update encryption key",
+               help=WebBreakerHelper.admin_secret_desc()
+               )
 @pass_config
 @click.option('-f', '--force',
               required=False,
@@ -810,15 +831,20 @@ def secret(config, force):
         secret_client.write_secret()
 
 
-@cli.group(help=WebBreakerHelper.threadfix_desc())
+@cli.group(short_help="Interaction with ThreadFix API",
+           help=WebBreakerHelper.threadfix_desc()
+           )
 @pass_config
 def threadfix(config):
     pass
 
 
-@threadfix.command(help="List all teams (ID and Name) found on ThreadFix")
+@threadfix.command('team',
+                   short_help="List all ThreadFix teams",
+                   help=WebBreakerHelper.threadfix_application_desc()
+                   )
 @pass_config
-def teams(config):
+def team(config):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     teams = threadfix_client.list_teams()
@@ -833,7 +859,10 @@ def teams(config):
         Logger.app.error("No teams were found")
 
 
-@threadfix.command(help="List all applications for a given ThreadFix team")
+@threadfix.command('application',
+                   short_help="List team's ThreadFix applications",
+                   help=WebBreakerHelper.threadfix_application_desc(),
+                   )
 @pass_config
 @click.option('--team_id',
               required=False,
@@ -841,7 +870,7 @@ def teams(config):
 @click.option('--team',
               required=False,
               help="ThreadFix team application listing")
-def applications(config, team_id, team):
+def application(config, team_id, team):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     if not team_id and not team:
@@ -864,7 +893,10 @@ def applications(config, team_id, team):
         Logger.app.error("No applications were found for team_id {}".format(team_id))
 
 
-@threadfix.command(help="Create a new application in ThreadFix")
+@threadfix.command('create',
+                   short_help="Create application in ThreadFix ",
+                   help=WebBreakerHelper.threadfix_create_desc()
+                   )
 @pass_config
 @click.option('--team_id',
               required=False,
@@ -898,12 +930,14 @@ def create(config, team_id, team, application, url):
                          " is unavailable!! ")
 
 
-@threadfix.command(help="List all scans (ID, Scanner, and Filename) of a certain application in ThreadFix")
+@threadfix.command('scan',
+                   short_help="List ThreadFix scans",
+                   help=WebBreakerHelper.threadfix_scan_desc())
 @pass_config
 @click.option('--app_id',
               required=True,
               help="ID of ThreadFix Application to list scans of")
-def scans(config, app_id):
+def scan(config, app_id):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     scans = threadfix_client.list_scans_by_app(app_id)
