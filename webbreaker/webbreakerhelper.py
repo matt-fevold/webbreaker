@@ -37,19 +37,19 @@ class WebBreakerHelper(object):
     @classmethod
     def webinspect_list_desc(cls):
         return """
-        List WebInspect scans
+        List WebInspect scans.
         """
 
     @classmethod
     def webinspect_servers_desc(cls):
         return """
-        List all WebInspect servers
+        List all WebInspect servers.
         """
 
     @classmethod
     def webinspect_download_desc(cls):
         return """
-        Download or export a WebInspect scan locally
+        Download or export a WebInspect scan locally.
         """
 
     @classmethod
@@ -60,39 +60,97 @@ class WebBreakerHelper(object):
         """
 
     @classmethod
-    def admin_desc(cls):
-        return """
-        Administrative commands involving credentials and notifiers        
-        """
-
-    @classmethod
-    def threadfix_desc(cls):
-        return """
-        Interaction with ThreadFix API    
-        """
-
-    @classmethod
     def fortify_download_desc(cls):
         return """
-        
+        Download the .fpr scan of an Fortify version using application/project & version name
         """
 
     @classmethod
     def fortify_list_desc(cls):
         return """
-
+        Interactive Listing of all Fortify SSC application versions
         """
 
     @classmethod
     def fortify_scan_desc(cls):
         return """
-
+        Retrieve and store Fortify Version url and Jenkins BuildID in agent.json. If application 
+        is not provided, WebBreaker will use the application in fortify.ini
         """
 
     @classmethod
     def fortify_upload_desc(cls):
         return """
+        Upload a WebInspect scan matching '--version' with a '.fpr' extension to Fortify 
+        Security Center (SSC). 
+        """
 
+    @classmethod
+    def admin_desc(cls):
+        return """
+        Administrative commands involving credentials and notifiers.       
+        """
+
+    @classmethod
+    def admin_notifier_desc(cls):
+        return """
+        Retrieve and store public emails of contributors to the webbreaker repo.
+        """
+
+    @classmethod
+    def admin_agent_desc(cls):
+        return """
+        View the current stored information for WebBreaker Agent based on most recent use of 
+        'admin notifier' and 'fortify scan'.
+        Create a WebBreaker Agent to monitor the Fortify scan specified in 'fortify scan'. 
+        On scan completion the agent will notify contributors found via 'admin notifiers'
+        """
+
+    @classmethod
+    def admin_credentials_desc(cls):
+        return """
+        Encrypt and store new Fortify credentials
+        """
+
+    @classmethod
+    def admin_secret_desc(cls):
+        return """
+        Generates a new encryption key and clears all stored credentials
+        """
+
+    @classmethod
+    def threadfix_desc(cls):
+        return """
+        Interaction with ThreadFix API.
+        """
+
+    @classmethod
+    def threadfix_application_desc(cls):
+        return """
+        List all applications for a given ThreadFix team
+        """
+    @classmethod
+    def threadfix_create_desc(cls):
+        return """
+        Create a new application in ThreadFix
+        """
+    @classmethod
+    def threadfix_list_desc(cls):
+        return """
+        """
+    @classmethod
+    def threadfix_scan_desc(cls):
+        return """
+        List all scans (ID, Scanner, and Filename) of a certain application in ThreadFix
+        """
+    @classmethod
+    def threadfix_team_desc(cls):
+        return """
+        List all teams (ID and Name) found on ThreadFix
+        """
+    @classmethod
+    def threadfix_upload_desc(cls):
+        return """
         """
 
 # LOWER-LEVEL COMMANDS
@@ -106,7 +164,7 @@ class WebBreakerHelper(object):
 #     .
 #
 #     fortify-upload
-#     Upload a WebInspect scan to Fortify Software Security Center (SSC).
+#
 #
 # WEBINSPECT SCAN OPTIONS:
 #     --settings\tWebInspect scan configuration file, if no setting file\b
