@@ -74,6 +74,7 @@ def test_install_path_get_config_path_exception(open_mock, set_mock, add_mock, g
     path_mock.return_value = '/test/set/path'
 
     test_obj = Config()
+    assert open_mock.call_count == 1
     assert get_mock.call_count == 1
     assert add_mock.call_count == 1
     assert set_mock.call_count == 1
@@ -91,11 +92,126 @@ def test_install_path_init_variables(get_mock, path_mock):
     assert path_mock.call_count == 6
     assert test_obj.install == '/test/set/path'
 
-# def test_set_path_dir_file_success():
-# def test_set_path_dir_file_exception():
-# def test_set_path_dir_file_exists_dir():
-# def test_set_path_file_success():
-# def test_set_path_file_exception():
-# def test_set_path_file_exists_dir():
-# def test_set_path_dir_success():
-# def test_set_path_exists():
+
+@mock.patch('webbreaker.confighelper.os.path.exists')
+@mock.patch('webbreaker.confighelper.Config.set_path')
+@mock.patch('webbreaker.confighelper.config.get')
+@mock.patch('webbreaker.confighelper.config.add_section')
+@mock.patch('webbreaker.confighelper.config.set')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_install_path_empty_read_path(open_mock, set_mock, add_mock, get_mock, path_mock, exist_mock):
+    exist_mock.return_value = True
+    get_mock.return_value = ''
+    set_mock.return_value = True
+    path_mock.return_value = '/test/set/path'
+
+    Config()
+    assert open_mock.call_count == 1
+    assert get_mock.call_count == 1
+    assert set_mock.call_count == 1
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.makedirs')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_set_path_dir_file_success(open_mock, mkdir_mock, install_path_mock):
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(dir_path='test_dir', file_name='test.file')
+
+    assert open_mock.call_count == 1
+    assert mkdir_mock.call_count == 1
+    assert result == '/test/install/path/test_dir/test.file'
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.makedirs')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_set_path_dir_file_exception(open_mock, mkdir_mock, install_path_mock):
+    e = IOError("Test Error")
+    open_mock.side_effect = e
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(dir_path='test_dir', file_name='test.file')
+
+    assert open_mock.call_count == 1
+    assert mkdir_mock.call_count == 1
+    assert result == 1
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.path.exists')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_set_path_dir_file_exists_dir(open_mock, exist_mock, install_path_mock):
+    exist_mock.return_value = True
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(dir_path='test_dir', file_name='test.file')
+
+    assert open_mock.call_count == 1
+    assert result == '/test/install/path/test_dir/test.file'
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.makedirs')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_set_path_file_success(open_mock, mkdir_mock, install_path_mock):
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(file_name='test.file')
+
+    assert open_mock.call_count == 1
+    assert mkdir_mock.call_count == 1
+    assert result == '/test/install/path/test.file'
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.makedirs')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_set_path_file_exception(open_mock, mkdir_mock, install_path_mock):
+    e = IOError("Test Error")
+    open_mock.side_effect = e
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(file_name='test.file')
+
+    assert open_mock.call_count == 1
+    assert mkdir_mock.call_count == 1
+    assert result == 1
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.path.exists')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_set_path_file_exists_dir(open_mock, exist_mock, install_path_mock):
+    exist_mock.return_value = True
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(file_name='test.file')
+
+    assert open_mock.call_count == 1
+    assert result == '/test/install/path/test.file'
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.makedirs')
+def test_set_path_dir_success(mkdir_mock, install_path_mock):
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(dir_path='test_dir')
+
+    assert mkdir_mock.call_count == 1
+    assert result == '/test/install/path/test_dir'
+
+
+@mock.patch('webbreaker.confighelper.Config.install_path')
+@mock.patch('webbreaker.confighelper.os.path.exists')
+@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+def test_set_path_exists(open_mock, exist_mock, install_path_mock):
+    exist_mock.return_value = True
+    test_obj = Config()
+    test_obj.install = '/test/install/path'
+    result = test_obj.set_path(dir_path='test_dir')
+
+    assert exist_mock.call_count == 1
+    assert result == '/test/install/path/test_dir'
