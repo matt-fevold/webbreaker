@@ -1,5 +1,5 @@
 [webbreaker_install]
-dir =
+dir = .
 
 [fortify]
 ssc_url = https://fortify.example.com
@@ -48,7 +48,7 @@ default = large
 
 [webinspect_repo]
 git = git@github.com:automationdomination/WebInspect.git
-dir =
+dir = ./webinspect
 
 [webinspect_policies]
 aggressivesqlinjection = 032b1266-294d-42e9-b5f0-2a4239b23941
