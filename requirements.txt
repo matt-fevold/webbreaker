@@ -10,6 +10,7 @@ httplib2
 mock
 ndg-httpsclient
 pyasn1
+pyfiglet
 pyOpenSSL
 pytest-runner
 requests
