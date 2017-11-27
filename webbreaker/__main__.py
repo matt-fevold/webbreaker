@@ -39,7 +39,6 @@ import re
 import sys
 import subprocess
 
-
 handle_scan_event = None
 reporter = None
 
@@ -64,7 +63,7 @@ def format_webinspect_server(server):
     return server
 
 
-@click.group(help=WebBreakerHelper.help_description())
+@click.group(help=WebBreakerHelper.webbreaker_desc())
 @pass_config
 def cli(config):
     # Show something pretty to start
@@ -74,14 +73,18 @@ def cli(config):
     SecretClient().verify_secret()
 
 
-@cli.group(help="""WebInspect is dynamic application security testing software for assessing security of Web
-applications and Web services.""")
+@cli.group(short_help="Interaction with Webinspect API",
+           help=WebBreakerHelper.webinspect_desc(),
+           )
 @pass_config
 def webinspect(config):
     pass
 
 
-@webinspect.command()
+@webinspect.command('scan',
+                    short_help="Launch WebInspect scan",
+                    help=WebBreakerHelper.webinspect_scan_desc()
+                    )
 @click.option('--scan_name',
               type=str,
               required=False,
@@ -297,7 +300,9 @@ def scan(config, **kwargs):
     Logger.app.info("Webbreaker WebInspect has completed.")
 
 
-@webinspect.command('list')
+@webinspect.command('list',
+                    short_help="List WebInspect scans",
+                    help=WebBreakerHelper.webinspect_list_desc())
 @click.option('--server',
               required=False,
               multiple=True,
@@ -326,7 +331,7 @@ def webinspect_list(config, server, scan_name, protocol):
         if scan_name:
             results = query_client.get_scan_by_name(scan_name)
             if results and len(results):
-                print ("Scans matching the name {} found on {}".format(scan_name, server))
+                print("Scans matching the name {} found on {}".format(scan_name, server))
                 print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
                 print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
                 for match in results:
@@ -348,7 +353,9 @@ def webinspect_list(config, server, scan_name, protocol):
         print('\n\n\n')
 
 
-@webinspect.command('servers')
+@webinspect.command('servers',
+                    short_help="List all WebInspect servers",
+                    help=WebBreakerHelper.webinspect_servers_desc())
 @pass_config
 def servers_list(config):
     servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
@@ -359,7 +366,9 @@ def servers_list(config):
     print('\n')
 
 
-@webinspect.command()
+@webinspect.command('download',
+                    short_help="Download WebInspect scan",
+                    help=WebBreakerHelper.webinspect_download_desc())
 @click.option('--server',
               required=True,
               help="URL of webinspect server. For example --server sample.webinspect.com:8083")
@@ -405,8 +414,9 @@ def download(config, server, scan_name, scan_id, x, protocol):
             Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
 
 
-@cli.group(help="""Collaborative web application for managing WebInspect and Fortify SCA security bugs
-across the entire secure SDLC-from development to QA and through production.""")
+@cli.group(help=WebBreakerHelper.fortify_desc(),
+           short_help="Interaction with Fortify API"
+           )
 @pass_config
 def fortify(config):
     pass
@@ -645,7 +655,8 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
             Logger.console.critical("Unable to complete command 'fortify scan'")
 
 
-@cli.group(help="""Administrative commands involving credentials and notifiers""")
+@cli.group(help=WebBreakerHelper.admin_desc(),
+           short_help="Manage credentials & notifiers")
 @pass_config
 def admin(config):
     pass
@@ -799,7 +810,7 @@ def secret(config, force):
         secret_client.write_secret()
 
 
-@cli.group(help="Interaction with a ThreadFix API")
+@cli.group(help=WebBreakerHelper.threadfix_desc())
 @pass_config
 def threadfix(config):
     pass
