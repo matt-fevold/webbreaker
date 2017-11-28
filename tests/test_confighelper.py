@@ -37,9 +37,7 @@ def test_config_init_variables(set_vars_mock, set_config_mock):
 def test_set_path_no_install_success(set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
-    test_obj = Config()
-    test_obj.install = '/test/install'
-    result = test_obj.set_path(install=None)
+    result = Config().set_path(install=None)
 
     assert set_vars_mock.call_count == 1
     assert set_config_mock.call_count == 1
@@ -51,9 +49,7 @@ def test_set_path_no_install_success(set_config_mock, set_vars_mock):
 def test_set_path_install_success(set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
-    test_obj = Config()
-    test_obj.install = '/og/test/install'
-    result = test_obj.set_path(install='/test/install')
+    result = Config().set_path(install='/test/install')
 
     assert set_vars_mock.call_count == 1
     assert set_config_mock.call_count == 1
@@ -68,8 +64,7 @@ def test_set_path_dir_file_success(open_mock, makedirs_mock, set_config_mock, se
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
 
-    test_obj = Config()
-    result = test_obj.set_path(install='/test/install', dir_path='test_dir', file_name='test.file')
+    result = Config().set_path(install='/test/install', dir_path='test_dir', file_name='test.file')
 
     assert makedirs_mock.call_count == 1
     assert open_mock.call_count == 1
@@ -86,8 +81,7 @@ def test_set_path_dir_file_exception(open_mock, makedirs_mock, set_config_mock, 
     e = IOError("Test Error")
     open_mock.side_effect = e
 
-    test_obj = Config()
-    result = test_obj.set_path(install='/test/install', dir_path='test_dir', file_name='test.file')
+    result = Config().set_path(install='/test/install', dir_path='test_dir', file_name='test.file')
 
     assert makedirs_mock.call_count == 1
     assert open_mock.call_count == 1
@@ -104,8 +98,7 @@ def test_set_path_dir_file_exists_dir(open_mock, makedirs_mock, exist_mock, set_
     set_config_mock.return_value = None
     exist_mock.return_value = True
 
-    test_obj = Config()
-    result = test_obj.set_path(install='/test/install', dir_path='test_dir', file_name='test.file')
+    result = Config().set_path(install='/test/install', dir_path='test_dir', file_name='test.file')
 
     assert makedirs_mock.call_count == 0
     assert open_mock.call_count == 1
@@ -192,7 +185,9 @@ def test_set_path_exists(open_mock, makedirs_mock, exist_mock, set_config_mock, 
 
 
 @mock.patch('webbreaker.confighelper.Config.conf_get')
-def test_set_config_basic(conf_get_mock):
+@mock.patch('webbreaker.confighelper.Config.set_vars')
+def test_set_config_basic(set_vars_mock, conf_get_mock):
+    set_vars_mock.return_value = None
     conf_get_mock.return_value = None
 
     Config()
