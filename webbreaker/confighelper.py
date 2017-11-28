@@ -17,6 +17,18 @@ except ImportError:  # Python3
 class Config(object):
     def __init__(self):
         self.home = os.path.expanduser('~')
+        self.install = None
+        self.config = None
+        self.etc = None
+        self.git = None
+        self.log = None
+        self.agent_json = None
+        self.secret = None
+
+        self.set_vars()
+        self.set_config()
+
+    def set_vars(self):
         self.install = self.set_path(install=self.home, dir_path='.webbreaker')
         self.config = self.set_path(file_name='config.ini')
         self.etc = self.set_path(dir_path='etc')
@@ -25,8 +37,6 @@ class Config(object):
         self.agent_json = self.set_path(dir_path=self.etc, file_name='agent.json')
 
         self.secret = os.path.join(self.install, '.webbreaker')
-
-        self.set_config()
 
     def set_path(self, install=None, dir_path=None, file_name=None):
         if not install:
@@ -62,6 +72,7 @@ class Config(object):
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
             return dir_path
+        return 1
 
     def conf_get(self, section, option, value):
         try:
