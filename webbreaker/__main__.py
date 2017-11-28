@@ -113,6 +113,7 @@ def webinspect(config):
               help="""Are either custom or built-in WebInspect policies, for example \n
                     AggressiveSQLInjection, AllChecks, ApacheStruts, Application,
                     Assault, CriticalsAndHighs, CrossSiteScripting, Development, Mobile, NoSQLAndNode.js
+                    Assault, CriticalsAndHighs, CrossSiteScripting, Development, Mobile, NoSQLAndNode.js
                     OpenSSLHeartbleed, OWASPTop10ApplicationSecurityRisks2013, OWASPTop10ApplicationSecurityRisks2007
                     OWASPTop10ApplicationSecurityRisks2010, PassiveScan, Platform, PrivilegeEscalation,
                     QA, Quick, Safe, SOAP, SQLInjection, Standard and TransportLayerSecurity""")
