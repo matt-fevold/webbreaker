@@ -127,21 +127,22 @@ class WebBreakerHelper(object):
     @classmethod
     def threadfix_application_desc(cls):
         return """
-        List all applications for a given ThreadFix team
+        List all applications for a given ThreadFix team. Either team name OR team_id is required
         """
     @classmethod
     def threadfix_create_desc(cls):
         return """
-        Create a new application in ThreadFix
+        Create a new application in ThreadFix. Use OPTIONS to specify application information.
         """
     @classmethod
     def threadfix_list_desc(cls):
         return """
+        List all applications across all teams. Use OPTIONS to specify either teams or applications to list.
         """
     @classmethod
     def threadfix_scan_desc(cls):
         return """
-        List all scans (ID, Scanner, and Filename) of a certain application in ThreadFix
+        List all scans (ID, Scanner, and Filename) of specified application in ThreadFix
         """
     @classmethod
     def threadfix_team_desc(cls):
@@ -151,6 +152,7 @@ class WebBreakerHelper(object):
     @classmethod
     def threadfix_upload_desc(cls):
         return """
+        Upload a local specified scan file to an application in ThreadFix.
         """
 
 # LOWER-LEVEL COMMANDS
