@@ -1,4 +1,8 @@
 #!/bin/sh
+#
+# pyinstaller command for webbreaker.spec
+#
+# pyinstaller --clean -y --dist /opt/webbreaker/dist/linux /opt/webbreaker/webbreaker.spec
 
 if type pip 2>/dev/null; then
         if [ ! -f ./requirements.txt ]; then
