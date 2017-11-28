@@ -37,19 +37,21 @@ class WebBreakerHelper(object):
     @classmethod
     def webinspect_list_desc(cls):
         return """
-        List WebInspect scans.
+        List WebInspect scans. Default protocol is https. If no server is specified it will list all 
+        scans from config.ini settings. 
         """
 
     @classmethod
     def webinspect_servers_desc(cls):
         return """
-        List all WebInspect servers.
+        List all WebInspect servers from config.ini.
         """
 
     @classmethod
     def webinspect_download_desc(cls):
         return """
-        Download or export a WebInspect scan locally.
+        Download or export a WebInspect scan locally. Default protocol is https & default extension is 'fpr'.
+        
         """
 
     @classmethod

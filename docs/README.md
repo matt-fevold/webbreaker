@@ -365,6 +365,54 @@ Launch a scan using a settings file found by absolute path instead of one downlo
 ```
 webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth
 ```
+#### WebInspect Scan Options
+
+Specify name of scan --scan_name ${BUILD_TAG}
+```--scan_name```
+
+Specify name of settings file, without the .xml extension. WebBreaker will  by default try to locate this file in in the repo found in .config. If your file is not in the repo, you may instead pass an absolute path to the file
+```--settings```
+
+Size of scanner required. Valid values if provided are 'medium' or 'large'
+```--size```
+
+Overrides the setting scan mode value.  Acceptable values are crawl, scan, or all.
+```--scan_mode```
+
+Overrides the scope value.  Acceptable values are all, strict, children, and ancestors.
+```--scan_scope```
+
+Overrides existing or adds a recorded login sequence to authenticate to the targeted application
+```--login_macro```
+
+Assign either custom or built-in WebInspect policies, for example AggressiveSQLInjection, AllChecks, ApacheStruts, Application, Assault, CriticalsAndHighs, CrossSiteScripting, Development, Mobile, NoSQLAndNode.js OpenSSLHeartbleed, OWASPTop10ApplicationSecurityRisks2013, OWASPTop10ApplicationSecurityRisks2007 OWASPTop10ApplicationSecurityRisks2010, PassiveScan, Platform, PrivilegeEscalation, QA, Quick, Safe, SOAP, SQLInjection, Standard and TransportLayerSecurity
+```--scan_policy```
+
+Type of scan to be performed list-driven or workflow-driven scan. Acceptable values are `url` or `macro`
+```--scan_start```
+
+Enter a single url or multiple each with it's own --start_urls. For example --start_urls http://test.example.com --start_urls http://test2.example.com
+```--start_urls```
+
+--upload_settings, upload setting file to the webinspect host, settings are hosted under webbreaker/etc/webinspect/settings, all settings files end with an .xml extension, the xml extension is not needed and shouldn't be included.
+```--upload_settings```
+
+--upload_policy xss, upload policy file to the webinspect scanner policies are hosted under webbreaker/etc/webinspect/policies, all policy files end with a .policy extension, the policy extension is not needed and shouldn't be included.
+```--upload_policy```
+
+--upload_webmacro to the webinspect scanner macros are hosted under webbreaker/etc/webinspect/webmacros, all webmacro files end with the .webmacro extension, the extension should NOT be included.
+```--upload_webmacros```
+
+--fortify_user authenticates the Fortify SSC user for uploading WebInspect `.fpr` formatted scan
+```--fortify_user```
+
+Include the hosts to scan without the protocol or scheme http:// or https://, either a single host or multiple hosts each with it's own --allowed_hosts. If --allowed_hosts is not provided, all hosts explicitly stated within the option, --start_urls will be used.  Keep in mind, if this option is used you must re-enter your host as provided in --start_urls
+```--allowed_hosts```
+
+--workflow_macros are located under webbreaker/etc/webinspect/webmacros. Overrides the login macro. Acceptable values are login .webmacros files available on the WebInspect scanner to be used.
+```--workflow_macros```
+
+
 ### WebInspect Servers `webinspect_servers`
 List all servers found in webbreaker/etc/webinspect.ini
 ```

@@ -85,81 +85,60 @@ def webinspect(config):
                     short_help="Launch WebInspect scan",
                     help=WebBreakerHelper.webinspect_scan_desc()
                     )
+@click.option('--allowed_host',
+              required=False,
+              multiple=True,
+              help="Override host(s) from start_urls option")
+@click.option('--fortify_user',
+              required=False,
+              help="Auth Fortify user to upload WebInspect scan")
+@click.option('--login_macro',
+              required=False,
+              help="Assign login macro to auth app")
 @click.option('--scan_name',
               type=str,
               required=False,
               help="Assign name of scan")
-@click.option('--settings',
-              type=str,
-              default='Default',
-              required=True,
-              help="Specify settings file")
-@click.option('--size',
-              required=False,
-              type=click.Choice(['medium', 'large']),
-              help="Specify scanner size")
 @click.option('--scan_mode',
               required=False,
               type=click.Choice(['crawl', 'scan', 'all']),
               help="Override setting scan mode value")
-@click.option('--scan_scope',
-              required=False,
-                type=click.Choice(['all', 'strict', 'children', 'ancestors']),
-              help="Overrides the scope value.")
-@click.option('--login_macro',
-              required=False,
-              help="Overrides existing or adds a recorded login sequence to authenticate to the targeted application")
 @click.option('--scan_policy',
               required=False,
-              help="""Are either custom or built-in WebInspect policies, for example \n
-                    AggressiveSQLInjection, AllChecks, ApacheStruts, Application,
-                    Assault, CriticalsAndHighs, CrossSiteScripting, Development, Mobile, NoSQLAndNode.js
-                    OpenSSLHeartbleed, OWASPTop10ApplicationSecurityRisks2013, OWASPTop10ApplicationSecurityRisks2007
-                    OWASPTop10ApplicationSecurityRisks2010, PassiveScan, Platform, PrivilegeEscalation,
-                    QA, Quick, Safe, SOAP, SQLInjection, Standard and TransportLayerSecurity""")
+              help="Assign WebInspect policies,")
+@click.option('--scan_scope',
+              required=False,
+              help="Assign all, strict, children, OR ancestors")
 @click.option('--scan_start',
               required=False,
-              help="Type of scan to be performed list-driven or workflow-driven scan."
-                   " Acceptable values are `url` or `macro`")
-@click.option('--start_urls',
+              type=click.Choice(['url', 'macro']),
+              help="Assign type of scan to be performed")
+@click.option('--setting',
+              type=str,
+              default='Default',
+              required=True,
+              help="Specify setting file")
+@click.option('--size',
+              required=False,
+              type=click.Choice(['medium', 'large']),
+              help="Specify scanner size")
+@click.option('--start_url',
               required=False,
               multiple=True,
-              help="""Enter a single url or multiple each with it's own --start_urls.\n
-                    For example --start_urls http://test.example.com --start_urls http://test2.example.com""")
-@click.option('--upload_settings',
-              required=False,
-              help="""--upload_settings, upload setting file to the webinspect host,
-                    settings are hosted under webbreaker/etc/webinspect/settings,
-                    all settings files end with an .xml extension, the xml extension is not needed
-                    and shouldn't be included.""")
+              help="Assign starting url(s)")
 @click.option('--upload_policy',
               required=False,
-              help="""--upload_policy xss, upload policy file to the webinspect scanner
-                    policies are hosted under webbreaker/etc/webinspect/policies, all policy
-                    files end with a .policy extension, the policy extension is not needed and
-                    shouldn't be included.""")
-@click.option('--upload_webmacros',
+              help="Upload policy file to WebInspect")
+@click.option('--upload_setting',
               required=False,
-              help="""--upload_webmacro to the webinspect scanner macros are hosted under
-                    webbreaker/etc/webinspect/webmacros, all webmacro files end with the .webmacro extension,
-                     the extension should NOT be included.""")
-@click.option('--fortify_user',
+              help="Upload setting file without .xml extension")
+@click.option('--upload_webmacro',
               required=False,
-              help="--fortify_user authenticates the Fortify SSC user for uploading WebInspect `.fpr` formatted scan")
-@click.option('--allowed_hosts',
+              help="Upload webmacro to WebInspect")
+@click.option('--workflow_macro',
               required=False,
               multiple=True,
-              help="""Include the hosts to scan without the protocol or scheme http:// or https://,
-                     either a single host or multiple hosts each with it's own --allowed_hosts.
-                     If --allowed_hosts is not provided, all hosts explicitly stated within the option,
-                     --start_urls will be used.  Keep in mind, if this option is used you must re-enter
-                     your host as provided in --start_urls""")
-@click.option('--workflow_macros',
-              required=False,
-              multiple=True,
-              help="""--workflow_macros are located under webbreaker/etc/webinspect/webmacros.
-                    Overrides the login macro. Acceptable values are login .webmacros files
-                    available on the WebInspect scanner to be used.""")
+              help="Assign workflow macro(s)")
 @pass_config
 def scan(config, **kwargs):
     # Setup our configuration...
@@ -302,20 +281,20 @@ def scan(config, **kwargs):
 @webinspect.command(name='list',
                     short_help="List WebInspect scans",
                     help=WebBreakerHelper.webinspect_list_desc())
-@click.option('--server',
-              required=False,
-              multiple=True,
-              help="Optional URL of webinspect server. If not provided, all servers will be "
-                   "queried. Can be provided multiple times. "
-                   "Ex) --server sample.webinspect.com:8083 --server sample.webinspect2.com:8083")
-@click.option('--scan_name',
-              required=False,
-              help="Only list scans matching this scan_name")
 @click.option('--protocol',
               required=False,
               type=click.Choice(['http', 'https']),
               default='https',
-              help="The protocol used to contact the webinspect server. Default protocol is https")
+              help="Protocol used to contact WebInspect server")
+@click.option('--scan_name',
+              required=False,
+              help="Specify WebInspect scan name")
+@click.option('--server',
+              required=False,
+              multiple=True,
+              help="Specify WebInspect server URL(S). not provided, all servers will be "
+                   "queried. Can be provided multiple times. "
+                   "Ex) --server sample.webinspect.com:8083 --server sample.webinspect2.com:8083")
 @pass_config
 def webinspect_list(config, server, scan_name, protocol):
     if len(server):
@@ -370,22 +349,22 @@ def servers_list(config):
                     help=WebBreakerHelper.webinspect_download_desc())
 @click.option('--server',
               required=True,
-              help="URL of webinspect server. For example --server sample.webinspect.com:8083")
+              help="Specify WebInspect server URL")
 @click.option('--scan_name',
               required=True,
-              help="Name of scan to be downloaded")
+              help="WebInspect scan name to download")
 @click.option('--scan_id',
               required=False,
-              help="ID of scan to be downloaded. Scan will be downloaded as [scan_name].[x]")
+              help="WebInspect scan ID to download")
 @click.option('-x',
               required=False,
               default="fpr",
-              help="Desired file format of scan download. Extension is defaulted to .fpr")
+              help="Assign scan ext")
 @click.option('--protocol',
               required=False,
               type=click.Choice(['http', 'https']),
               default='https',
-              help="The protocol used to contact the webinspect server. Default protocol is https")
+              help="Protocol used to contact WebInspect server")
 @pass_config
 def download(config, server, scan_name, scan_id, x, protocol):
     server = format_webinspect_server(server)
