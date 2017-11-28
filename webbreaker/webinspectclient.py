@@ -5,6 +5,7 @@ import sys
 import json
 import ntpath
 import requests
+import urllib3
 import webinspectapi.webinspect as webinspectapi
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webbreakerhelper import WebBreakerHelper
@@ -12,8 +13,10 @@ from webbreaker.webinspectconfig import WebInspectConfig
 from webbreaker.webinspectjitscheduler import WebInspectJitScheduler
 import webbreaker.webinspectjson as webinspectjson
 
-requests.packages.urllib3.disable_warnings()
-
+try:
+    requests.packages.urllib3.disable_warnings()
+except (ImportError, AttributeError):  # Python3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class WebinspectClient(object):
     def __init__(self, webinspect_setting):

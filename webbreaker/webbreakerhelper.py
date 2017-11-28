@@ -12,7 +12,22 @@ class WebBreakerHelper(object):
             return "jenkins"
         return None
 
+    @classmethod
+    def ascii_motd(cls):
+        return """
+ _       __     __    ____                  __
+| |     / /__  / /_  / __ )________  ____ _/ /_____  _____
+| | /| / / _ \/ __ \/ __  / ___/ _ \/ __ `/ //_/ _ \/ ___/
+| |/ |/ /  __/ /_/ / /_/ / /  /  __/ /_/ / ,< /  __/ /
+|__/|__/\___/_.___/_____/_/   \___/\__,_/_/|_|\___/_/
+"""
 
+    @classmethod
+    def banner(cls, text, ch=' ', length=78):
+        spaced_text = ' %s ' % text
+        banner = spaced_text.center(length, ch)
+        return banner
+    
     @classmethod
     def help_description(cls):
         return """
