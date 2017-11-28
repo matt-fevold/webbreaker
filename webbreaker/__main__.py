@@ -81,32 +81,31 @@ def webinspect(config):
     pass
 
 
-@webinspect.command('scan',
+@webinspect.command(name='scan',
                     short_help="Launch WebInspect scan",
                     help=WebBreakerHelper.webinspect_scan_desc()
                     )
 @click.option('--scan_name',
               type=str,
               required=False,
-              help="Specify name of scan --scan_name ${BUILD_TAG}")
+              help="Assign name of scan")
 @click.option('--settings',
               type=str,
               default='Default',
               required=True,
-              help="""Specify name of settings file, without the .xml extension. WebBreaker will 
-                 by default try to locate this file in in the repo found in .config. If your 
-                 file is not in the repo, you may instead pass an absolute path to the file""")
+              help="Specify settings file")
 @click.option('--size',
               required=False,
               type=click.Choice(['medium', 'large']),
-              help="Size of scanner required. Valid values if provided are 'medium' or 'large'")
+              help="Specify scanner size")
 @click.option('--scan_mode',
               required=False,
               type=click.Choice(['crawl', 'scan', 'all']),
-              help="Overrides the setting scan mode value.  Acceptable values are crawl, scan, or all.")
+              help="Override setting scan mode value")
 @click.option('--scan_scope',
               required=False,
-              help="Overrides the scope value.  Acceptable values are all, strict, children, and ancestors.")
+                type=click.Choice(['all', 'strict', 'children', 'ancestors']),
+              help="Overrides the scope value.")
 @click.option('--login_macro',
               required=False,
               help="Overrides existing or adds a recorded login sequence to authenticate to the targeted application")
@@ -300,7 +299,7 @@ def scan(config, **kwargs):
     Logger.app.info("Webbreaker WebInspect has completed.")
 
 
-@webinspect.command('list',
+@webinspect.command(name='list',
                     short_help="List WebInspect scans",
                     help=WebBreakerHelper.webinspect_list_desc())
 @click.option('--server',
@@ -353,7 +352,7 @@ def webinspect_list(config, server, scan_name, protocol):
         print('\n\n\n')
 
 
-@webinspect.command('servers',
+@webinspect.command(name='servers',
                     short_help="List all WebInspect servers",
                     help=WebBreakerHelper.webinspect_servers_desc())
 @pass_config
@@ -366,7 +365,7 @@ def servers_list(config):
     print('\n')
 
 
-@webinspect.command('download',
+@webinspect.command(name='download',
                     short_help="Download WebInspect scan",
                     help=WebBreakerHelper.webinspect_download_desc())
 @click.option('--server',
@@ -422,7 +421,7 @@ def fortify(config):
     pass
 
 
-@fortify.command('list',
+@fortify.command(name='list',
                  short_help="List Fortify application versions",
                  help=WebBreakerHelper.fortify_list_desc())
 @click.option('--fortify_user')
@@ -532,7 +531,7 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
         Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
 
 
-@fortify.command('upload',
+@fortify.command(name='upload',
                  short_help="Upload WebInspect scan to Fortify",
                  help=WebBreakerHelper.fortify_upload_desc())
 @click.option('--fortify_user')
@@ -597,7 +596,7 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
         Logger.console.critical("Unable to complete command 'fortify upload'")
 
 
-@fortify.command('scan',
+@fortify.command(name='scan',
                  short_help="Start Fortify scan",
                  help=WebBreakerHelper.fortify_scan_desc())
 @click.option('--fortify_user')
@@ -671,7 +670,7 @@ def admin(config):
     pass
 
 
-@admin.command('notifier',
+@admin.command(name='notifier',
                short_help="Get contributors of git repo",
                help=WebBreakerHelper.admin_notifier_desc()
                )
@@ -714,7 +713,7 @@ def notifier(config, email, git_url):
         Logger.app.error("Unable to query git repo for email".format(e))
 
 
-@admin.command('agent',
+@admin.command(name='agent',
                short_help="Monitor scans and notify contributors",
                help=WebBreakerHelper.admin_agent_desc()
                )
@@ -747,7 +746,7 @@ def agent(config, start):
         return
 
 
-@admin.command('credentials',
+@admin.command(name='credentials',
                short_help="Create & update Fortify credentials",
                help=WebBreakerHelper.admin_credentials_desc()
                )
@@ -806,7 +805,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
 
 
-@admin.command('secret',
+@admin.command(name='secret',
                short_help="Generate & update encryption key",
                help=WebBreakerHelper.admin_secret_desc()
                )
@@ -839,9 +838,9 @@ def threadfix(config):
     pass
 
 
-@threadfix.command('team',
+@threadfix.command(name='team',
                    short_help="List all ThreadFix teams",
-                   help=WebBreakerHelper.threadfix_application_desc()
+                   help=WebBreakerHelper.threadfix_team_desc()
                    )
 @pass_config
 def team(config):
@@ -859,17 +858,17 @@ def team(config):
         Logger.app.error("No teams were found")
 
 
-@threadfix.command('application',
+@threadfix.command(name='application',
                    short_help="List team's ThreadFix applications",
                    help=WebBreakerHelper.threadfix_application_desc(),
                    )
 @pass_config
 @click.option('--team_id',
               required=False,
-              help="ID of ThreadFix team you want to list applications of")
+              help="ThreadFix team ID")
 @click.option('--team',
               required=False,
-              help="ThreadFix team application listing")
+              help="ThreadFix team name")
 def application(config, team_id, team):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
@@ -893,24 +892,24 @@ def application(config, team_id, team):
         Logger.app.error("No applications were found for team_id {}".format(team_id))
 
 
-@threadfix.command('create',
-                   short_help="Create application in ThreadFix ",
+@threadfix.command(name='create',
+                   short_help="Create application in ThreadFix",
                    help=WebBreakerHelper.threadfix_create_desc()
                    )
 @pass_config
 @click.option('--team_id',
               required=False,
-              help="ID of ThreadFix team this application will belong to")
+              help="Assign ThreadFix team ID")
 @click.option('--team',
               required=False,
-              help="Name of ThreadFix team this application will belong to")
+              help="Assign ThreadFix team name")
 @click.option('--application',
               required=True,
-              help="Name of new application")
+              help="Assign a name")
 @click.option('--url',
               required=False,
               default=None,
-              help="Option URL of new application")
+              help="Assign an Option URL")
 def create(config, team_id, team, application, url):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
@@ -930,13 +929,13 @@ def create(config, team_id, team, application, url):
                          " is unavailable!! ")
 
 
-@threadfix.command('scan',
+@threadfix.command(name='scan',
                    short_help="List ThreadFix scans",
                    help=WebBreakerHelper.threadfix_scan_desc())
 @pass_config
 @click.option('--app_id',
               required=True,
-              help="ID of ThreadFix Application to list scans of")
+              help="ThreadFix Application ID")
 def scan(config, app_id):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
@@ -952,17 +951,20 @@ def scan(config, app_id):
         Logger.app.error("No scans were found for app_id {}".format(app_id))
 
 
-@threadfix.command(name='upload', help="Upload a local scan file to an application in ThreadFix")
+@threadfix.command(name='upload',
+                   short_help="Upload local scan to ThreadFix",
+                   help=WebBreakerHelper.threadfix_upload_desc()
+                   )
 @pass_config
 @click.option('--app_id',
               required=False,
-              help="ID of ThreadFix Application to upload this scan to")
+              help="Assign ThreadFix Application ID")
 @click.option('--application',
               required=False,
-              help="Name of ThreadFix Application to upload this scan to")
+              help="Assign ThreadFix Application name")
 @click.option('--scan_file',
               required=True,
-              help="File to be upload. Ex) --scan_file my_scan.xml")
+              help="Assign file to upload")
 def threadfix_upload(config, app_id, application, scan_file):
     if not app_id and not application:
         Logger.app.error("Please specify either an application or app_id!")
@@ -1004,15 +1006,18 @@ def threadfix_upload(config, app_id, application, scan_file):
         Logger.app.error("Scan file failed to upload!")
 
 
-@threadfix.command(name='list', help="List all applications across all teams")
+@threadfix.command(name='list',
+                   short_help="List all ThreadFix applications",
+                   help=WebBreakerHelper.threadfix_list_desc()
+                   )
 @click.option('--team',
               required=False,
               default=None,
-              help="Only list applications of teams matching a certain name")
+              help="Specify team name to list")
 @click.option('--application',
               required=False,
               default=None,
-              help="Only list applications matching a certain name")
+              help="Specify application name to list")
 @pass_config
 def threadfix_list(config, team, application):
     threadfix_config = ThreadFixConfig()
