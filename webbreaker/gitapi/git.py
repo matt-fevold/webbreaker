@@ -5,6 +5,7 @@ import json
 import ntpath
 import logging
 import requests
+import urllib3
 import requests.exceptions
 import requests.packages.urllib3
 
@@ -19,7 +20,7 @@ class GitApi(object):
         self.verify_ssl = verify_ssl
 
         if not self.verify_ssl:
-            requests.packages.urllib3.disable_warnings()
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
     def get_user(self, login):

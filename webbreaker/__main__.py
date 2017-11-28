@@ -21,7 +21,6 @@ except ImportError:  # Python3
 import requests.exceptions
 from git.exc import GitCommandError
 import click
-from pyfiglet import Figlet
 from webbreaker import __version__ as version
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webinspectconfig import WebInspectConfig
@@ -67,8 +66,10 @@ def format_webinspect_server(server):
 @pass_config
 def cli(config):
     # Show something pretty to start
-    f = Figlet(font='slant')
-    sys.stdout.write(str("{0}Version {1}\n".format(f.renderText('WebBreaker'), version)))
+    webbreaker_ascii = WebBreakerHelper.ascii_motd()
+    b = WebBreakerHelper.banner(text=webbreaker_ascii)
+
+    sys.stdout.write(str("{0}\nVersion {1}\n".format(b, version)))
     sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
     SecretClient().verify_secret()
 
