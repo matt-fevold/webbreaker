@@ -261,7 +261,7 @@ class WebInspectConfig(object):
     def fetch_webinspect_configs(self, options):
         config_helper = Config()
         etc_dir = config_helper.etc
-        git_dir = config_helper.git
+        git_dir = os.path.join(config_helper.git, '.git')
 
         try:
             if options['settings'] == 'Default':
