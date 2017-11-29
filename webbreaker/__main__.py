@@ -402,11 +402,15 @@ def fortify(config):
 @fortify.command(name='list',
                  short_help="List Fortify application versions",
                  help=WebBreakerHelper().fortify_list_desc())
-@click.option('--fortify_user')
-@click.option('--fortify_password')
+@click.option('--fortify_user',
+              required=False,
+              help="Specify Fortify username")
+@click.option('--fortify_password',
+              required=False,
+              help="Specify Fortify username")
 @click.option('--application',
               required=False,
-              help="Name of Fortify application which you would like to list versions of."
+              help="Specify Fortify app name"
               )
 @pass_config
 def fortify_list(config, fortify_user, fortify_password, application):
@@ -450,14 +454,19 @@ def fortify_list(config, fortify_user, fortify_password, application):
 @fortify.command(name='download',
                  short_help="Download Fortify .fpr scan",
                  help=WebBreakerHelper().fortify_download_desc())
-@click.option('--fortify_user')
-@click.option('--fortify_password')
+@click.option('--fortify_user',
+              required=False,
+              help="Specify Fortify username")
+@click.option('--fortify_password',
+              required=False,
+              help="Specify Fortify username")
 @click.option('--application',
               required=False,
-              help="Name of the Fortify application that version belongs to. If this option is not provided, application_name from .config will be used.")
+              help="Specify Fortify app name"
+              )
 @click.option('--version',
               required=True,
-              help="Name of Fortify application version which you would like to a scan of")
+              help="Specify Fortify app version")
 @pass_config
 def fortify_download(config, fortify_user, fortify_password, application, version):
     fortify_config = FortifyConfig()
@@ -512,17 +521,23 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
 @fortify.command(name='upload',
                  short_help="Upload WebInspect scan to Fortify",
                  help=WebBreakerHelper().fortify_upload_desc())
-@click.option('--fortify_user')
-@click.option('--fortify_password')
+@click.option('--fortify_user',
+              required=False,
+              help="Specify Fortify username")
+@click.option('--fortify_password',
+              required=False,
+              help="Specify Fortify username")
 @click.option('--application',
               required=False,
-              help="Name of the Fortify application that version belongs to. If this option is not provided, application_name from .config will be used.")
+              help="Assign Fortify app name"
+              )
 @click.option('--version',
               required=True,
-              help="Name of Fortify application version which you would like to upload a scan to.")
+              help="Assign Fortify app version"
+              )
 @click.option('--scan_name',
               required=False,
-              help="If the name of the file is different than --version, use this option to to specify the name of the file (without the extension)")
+              help="Specify name if file name is different than version")
 @pass_config
 def upload(config, fortify_user, fortify_password, application, version, scan_name):
     fortify_config = FortifyConfig()
@@ -577,17 +592,23 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
 @fortify.command(name='scan',
                  short_help="Start Fortify scan",
                  help=WebBreakerHelper().fortify_scan_desc())
-@click.option('--fortify_user')
-@click.option('--fortify_password')
+@click.option('--fortify_user',
+              required=False,
+              help="Specify Fortify username")
+@click.option('--fortify_password',
+              required=False,
+              help="Specify Fortify username")
 @click.option('--application',
               required=False,
-              help="Name of the Fortify application that version belongs to. If this option is not provided, application_name from fortify.ini will be used.")
+              help="Assign Fortify app name"
+              )
 @click.option('--version',
               required=True,
-              help="Name of Fortify application version.")
+              help="Assign Fortify app version"
+              )
 @click.option('--build_id',
               required=True,
-              help="Jenkins BuildID")
+              help="Assign Jenkins BuildID")
 @pass_config
 def fortify_scan(config, fortify_user, fortify_password, application, version, build_id):
     fortify_config = FortifyConfig()

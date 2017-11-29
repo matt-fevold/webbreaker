@@ -79,13 +79,19 @@ class WebBreakerHelper(object):
     @classmethod
     def fortify_download_desc(cls):
         return """
-        Download the .fpr scan of an Fortify version using application/project & version name
+        Download the .fpr scan of an Fortify version using application/project & version name.
+        
+        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
         """
 
     @classmethod
     def fortify_list_desc(cls):
         return """
-        Interactive Listing of all Fortify SSC application versions
+        Interactive Listing of all Fortify SSC application versions. 
+        
+        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved! 
         """
 
     @classmethod
@@ -93,6 +99,9 @@ class WebBreakerHelper(object):
         return """
         Retrieve and store Fortify Version url and Jenkins BuildID in agent.json. If application 
         is not provided, WebBreaker will use the application in fortify.ini
+        
+        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
         """
 
     @classmethod
@@ -100,6 +109,9 @@ class WebBreakerHelper(object):
         return """
         Upload a WebInspect scan matching '--version' with a '.fpr' extension to Fortify 
         Security Center (SSC). 
+        
+        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
         """
 
     @classmethod
