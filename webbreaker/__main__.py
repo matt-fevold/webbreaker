@@ -293,9 +293,7 @@ def scan(config, **kwargs):
 @click.option('--server',
               required=False,
               multiple=True,
-              help="Specify WebInspect server URL(S). not provided, all servers will be "
-                   "queried. Can be provided multiple times. "
-                   "Ex) --server sample.webinspect.com:8083 --server sample.webinspect2.com:8083")
+              help="Specify WebInspect server URL(S)")
 @pass_config
 def webinspect_list(config, server, scan_name, protocol):
     if len(server):
@@ -360,7 +358,7 @@ def servers_list(config):
 @click.option('-x',
               required=False,
               default="fpr",
-              help="Assign scan ext")
+              help="Assign scan extension")
 @click.option('--protocol',
               required=False,
               type=click.Choice(['http', 'https']),
