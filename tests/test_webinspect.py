@@ -281,7 +281,6 @@ def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock
     )
     caplog.uninstall()
 
-    print(result.output)
     assert result.exit_code == 0
 
 @mock.patch('webbreaker.__main__.WebInspectConfig')

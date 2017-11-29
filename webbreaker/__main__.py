@@ -63,7 +63,7 @@ def format_webinspect_server(server):
     return server
 
 
-@click.group(help=WebBreakerHelper.webbreaker_desc())
+@click.group(help=WebBreakerHelper().webbreaker_desc())
 @pass_config
 def cli(config):
     # Show something pretty to start
@@ -74,7 +74,7 @@ def cli(config):
 
 
 @cli.group(short_help="Interaction with Webinspect API",
-           help=WebBreakerHelper.webinspect_desc(),
+           help=WebBreakerHelper().webinspect_desc(),
            )
 @pass_config
 def webinspect(config):
@@ -83,9 +83,9 @@ def webinspect(config):
 
 @webinspect.command(name='scan',
                     short_help="Launch WebInspect scan",
-                    help=WebBreakerHelper.webinspect_scan_desc()
+                    help=WebBreakerHelper().webinspect_scan_desc()
                     )
-@click.option('--allowed_host',
+@click.option('--allowed_hosts',
               required=False,
               multiple=True,
               help="Override host(s) from start_urls option")
@@ -113,7 +113,7 @@ def webinspect(config):
               required=False,
               type=click.Choice(['url', 'macro']),
               help="Assign type of scan to be performed")
-@click.option('--setting',
+@click.option('--settings',
               type=str,
               default='Default',
               required=True,
@@ -122,20 +122,20 @@ def webinspect(config):
               required=False,
               type=click.Choice(['medium', 'large']),
               help="Specify scanner size")
-@click.option('--start_url',
+@click.option('--start_urls',
               required=False,
               multiple=True,
               help="Assign starting url(s)")
 @click.option('--upload_policy',
               required=False,
               help="Upload policy file to WebInspect")
-@click.option('--upload_setting',
+@click.option('--upload_settings',
               required=False,
               help="Upload setting file without .xml extension")
-@click.option('--upload_webmacro',
+@click.option('--upload_webmacros',
               required=False,
               help="Upload webmacro to WebInspect")
-@click.option('--workflow_macro',
+@click.option('--workflow_macros',
               required=False,
               multiple=True,
               help="Assign workflow macro(s)")
@@ -146,8 +146,8 @@ def scan(config, **kwargs):
 
     ops = kwargs.copy()
     # Convert multiple args from tuples to lists
-    ops['start_urls'] = list(kwargs['start_urls'])
     ops['allowed_hosts'] = list(kwargs['allowed_hosts'])
+    ops['start_urls'] = list(kwargs['start_urls'])
     ops['workflow_macros'] = list(kwargs['workflow_macros'])
 
     # ...as well as pulling down webinspect server config files from github...
@@ -280,7 +280,7 @@ def scan(config, **kwargs):
 
 @webinspect.command(name='list',
                     short_help="List WebInspect scans",
-                    help=WebBreakerHelper.webinspect_list_desc())
+                    help=WebBreakerHelper().webinspect_list_desc())
 @click.option('--protocol',
               required=False,
               type=click.Choice(['http', 'https']),
@@ -333,7 +333,7 @@ def webinspect_list(config, server, scan_name, protocol):
 
 @webinspect.command(name='servers',
                     short_help="List all WebInspect servers",
-                    help=WebBreakerHelper.webinspect_servers_desc())
+                    help=WebBreakerHelper().webinspect_servers_desc())
 @pass_config
 def servers_list(config):
     servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
@@ -346,7 +346,7 @@ def servers_list(config):
 
 @webinspect.command(name='download',
                     short_help="Download WebInspect scan",
-                    help=WebBreakerHelper.webinspect_download_desc())
+                    help=WebBreakerHelper().webinspect_download_desc())
 @click.option('--server',
               required=True,
               help="Specify WebInspect server URL")
@@ -393,7 +393,7 @@ def download(config, server, scan_name, scan_id, x, protocol):
 
 
 @cli.group(short_help="Interaction with Fortify API",
-           help=WebBreakerHelper.fortify_desc(),
+           help=WebBreakerHelper().fortify_desc(),
            )
 @pass_config
 def fortify(config):
@@ -402,7 +402,7 @@ def fortify(config):
 
 @fortify.command(name='list',
                  short_help="List Fortify application versions",
-                 help=WebBreakerHelper.fortify_list_desc())
+                 help=WebBreakerHelper().fortify_list_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -450,7 +450,7 @@ def fortify_list(config, fortify_user, fortify_password, application):
 
 @fortify.command(name='download',
                  short_help="Download Fortify .fpr scan",
-                 help=WebBreakerHelper.fortify_download_desc())
+                 help=WebBreakerHelper().fortify_download_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -512,7 +512,7 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
 
 @fortify.command(name='upload',
                  short_help="Upload WebInspect scan to Fortify",
-                 help=WebBreakerHelper.fortify_upload_desc())
+                 help=WebBreakerHelper().fortify_upload_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -577,7 +577,7 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
 
 @fortify.command(name='scan',
                  short_help="Start Fortify scan",
-                 help=WebBreakerHelper.fortify_scan_desc())
+                 help=WebBreakerHelper().fortify_scan_desc())
 @click.option('--fortify_user')
 @click.option('--fortify_password')
 @click.option('--application',
@@ -642,7 +642,7 @@ def fortify_scan(config, fortify_user, fortify_password, application, version, b
 
 
 @cli.group(short_help="Manage credentials & notifiers",
-           help=WebBreakerHelper.admin_desc(),
+           help=WebBreakerHelper().admin_desc(),
            )
 @pass_config
 def admin(config):
@@ -651,7 +651,7 @@ def admin(config):
 
 @admin.command(name='notifier',
                short_help="Get contributors of git repo",
-               help=WebBreakerHelper.admin_notifier_desc()
+               help=WebBreakerHelper().admin_notifier_desc()
                )
 @click.option('--email',
               is_flag=True,
@@ -694,7 +694,7 @@ def notifier(config, email, git_url):
 
 @admin.command(name='agent',
                short_help="Monitor scans and notify contributors",
-               help=WebBreakerHelper.admin_agent_desc()
+               help=WebBreakerHelper().admin_agent_desc()
                )
 @click.option('--start',
               required=False,
@@ -727,7 +727,7 @@ def agent(config, start):
 
 @admin.command(name='credentials',
                short_help="Create & update Fortify credentials",
-               help=WebBreakerHelper.admin_credentials_desc()
+               help=WebBreakerHelper().admin_credentials_desc()
                )
 @pass_config
 @click.option('--fortify',
@@ -786,7 +786,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
 
 @admin.command(name='secret',
                short_help="Generate & update encryption key",
-               help=WebBreakerHelper.admin_secret_desc()
+               help=WebBreakerHelper().admin_secret_desc()
                )
 @pass_config
 @click.option('-f', '--force',
@@ -810,16 +810,16 @@ def secret(config, force):
 
 
 @cli.group(short_help="Interaction with ThreadFix API",
-           help=WebBreakerHelper.threadfix_desc()
+           help=WebBreakerHelper().threadfix_desc()
            )
 @pass_config
 def threadfix(config):
     pass
 
 
-@threadfix.command(name='team',
+@threadfix.command(name='teams',
                    short_help="List all ThreadFix teams",
-                   help=WebBreakerHelper.threadfix_team_desc()
+                   help=WebBreakerHelper().threadfix_team_desc()
                    )
 @pass_config
 def team(config):
@@ -837,9 +837,9 @@ def team(config):
         Logger.app.error("No teams were found")
 
 
-@threadfix.command(name='application',
+@threadfix.command(name='applications',
                    short_help="List team's ThreadFix applications",
-                   help=WebBreakerHelper.threadfix_application_desc(),
+                   help=WebBreakerHelper().threadfix_application_desc(),
                    )
 @pass_config
 @click.option('--team_id',
@@ -873,7 +873,7 @@ def application(config, team_id, team):
 
 @threadfix.command(name='create',
                    short_help="Create application in ThreadFix",
-                   help=WebBreakerHelper.threadfix_create_desc()
+                   help=WebBreakerHelper().threadfix_create_desc()
                    )
 @pass_config
 @click.option('--team_id',
@@ -908,9 +908,9 @@ def create(config, team_id, team, application, url):
                          " is unavailable!! ")
 
 
-@threadfix.command(name='scan',
+@threadfix.command(name='scans',
                    short_help="List ThreadFix scans",
-                   help=WebBreakerHelper.threadfix_scan_desc())
+                   help=WebBreakerHelper().threadfix_scan_desc())
 @pass_config
 @click.option('--app_id',
               required=True,
@@ -932,7 +932,7 @@ def scan(config, app_id):
 
 @threadfix.command(name='upload',
                    short_help="Upload local scan to ThreadFix",
-                   help=WebBreakerHelper.threadfix_upload_desc()
+                   help=WebBreakerHelper().threadfix_upload_desc()
                    )
 @pass_config
 @click.option('--app_id',
@@ -987,7 +987,7 @@ def threadfix_upload(config, app_id, application, scan_file):
 
 @threadfix.command(name='list',
                    short_help="List all ThreadFix applications",
-                   help=WebBreakerHelper.threadfix_list_desc()
+                   help=WebBreakerHelper().threadfix_list_desc()
                    )
 @click.option('--team',
               required=False,
