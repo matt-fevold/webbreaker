@@ -13,7 +13,23 @@ class WebBreakerHelper(object):
         return None
 
     @classmethod
-    def webbreaker_desc(cls):
+    def ascii_motd(cls):
+        return """
+ _       __     __    ____                  __
+| |     / /__  / /_  / __ )________  ____ _/ /_____  _____
+| | /| / / _ \/ __ \/ __  / ___/ _ \/ __ `/ //_/ _ \/ ___/
+| |/ |/ /  __/ /_/ / /_/ / /  /  __/ /_/ / ,< /  __/ /
+|__/|__/\___/_.___/_____/_/   \___/\__,_/_/|_|\___/_/
+"""
+
+    @classmethod
+    def banner(cls, text, ch=' ', length=78):
+        spaced_text = ' %s ' % text
+        banner = spaced_text.center(length, ch)
+        return banner
+    
+    @classmethod
+    def help_description(cls):
         return """
         WebBreaker is a light-weight, scalable, distributed, and automated dynamic security testing framework 
         with a rich command set providing both high-level Product operations and Dynamic Application Security 

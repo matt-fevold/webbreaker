@@ -3,6 +3,7 @@
 
 import json
 import requests
+import urllib3
 import requests.exceptions
 import requests.packages.urllib3
 
@@ -39,7 +40,7 @@ class ThreadFixAPI(object):
         self.debug = debug  # Prints request and response information.
 
         if not self.verify_ssl:
-            requests.packages.urllib3.disable_warnings()  # Disabling SSL warning messages if verification is disabled.
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) # Disabling SSL warning messages if verification is disabled.
 
     # Team
 
