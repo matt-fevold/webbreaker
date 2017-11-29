@@ -138,7 +138,10 @@ class WebBreakerHelper(object):
     @classmethod
     def admin_credentials_desc(cls):
         return """
-        Encrypt and store new Fortify credentials
+        Encrypt and store new Fortify credentials. 
+        
+        WARNING :: Do not specify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
         """
 
     @classmethod

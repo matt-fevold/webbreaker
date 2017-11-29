@@ -675,10 +675,10 @@ def admin(config):
                )
 @click.option('--email',
               is_flag=True,
-              help="Optional flag which instructs WebBreaker to find contributors to notify via email")
+              help="Flag to specify email notifications")
 @click.option('--git_url',
               required=True,
-              help="The url of the Git repo from which to find contributors. Ex: --url https://github.com/target/webbreaker")
+              help="Specify Git URL")
 @pass_config
 def notifier(config, email, git_url):
     try:
@@ -719,7 +719,7 @@ def notifier(config, email, git_url):
 @click.option('--start',
               required=False,
               is_flag=True,
-              help="Optional flag which instruct WebBreaker to create an agent")
+              help="Flag that instructs WebBreaker to create an agent")
 @pass_config
 def agent(config, start):
     if not start:
@@ -746,7 +746,7 @@ def agent(config, start):
 
 
 @admin.command(name='credentials',
-               short_help="Create & update Fortify credentials",
+               short_help="Create & update credentials",
                help=WebBreakerHelper().admin_credentials_desc()
                )
 @pass_config
@@ -761,11 +761,13 @@ def agent(config, start):
 @click.option('--clear',
               required=False,
               is_flag=True,
-              help="Clears stored credentials of either Fortify or WebInspect based on provided flag")
+              help="Flag to clear credentials of Fortify OR WebInspect")
 @click.option('--username',
-              required=False)
+              required=False,
+              help="Specify username")
 @click.option('--password',
-              required=False)
+              required=False,
+              help="Specify username")
 def credentials(config, fortify, webinspect, clear, username, password):
     if fortify:
         fortify_config = FortifyConfig()
@@ -812,7 +814,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
 @click.option('-f', '--force',
               required=False,
               is_flag=True,
-              help="Optional flag to prevent confirmation prompt")
+              help="Flag prevents confirmation prompt")
 def secret(config, force):
     secret_client = SecretClient()
     if secret_client.secret_exists():
