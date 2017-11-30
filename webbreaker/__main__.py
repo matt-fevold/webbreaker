@@ -746,7 +746,7 @@ def agent(config, start):
 
 
 @admin.command(name='credentials',
-               short_help="Create & update credentials",
+               short_help="Create & update Fortify credentials",
                help=WebBreakerHelper().admin_credentials_desc()
                )
 @pass_config
@@ -814,7 +814,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
 @click.option('-f', '--force',
               required=False,
               is_flag=True,
-              help="Flag prevents confirmation prompt")
+              help="Optional flag to prevent confirmation prompt")
 def secret(config, force):
     secret_client = SecretClient()
     if secret_client.secret_exists():
