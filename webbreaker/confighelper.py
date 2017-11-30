@@ -24,6 +24,7 @@ class Config(object):
         self.log = None
         self.agent_json = None
         self.secret = None
+        self.cert = None
 
         self.set_vars()
         self.set_config()
@@ -35,6 +36,7 @@ class Config(object):
         self.git = self.set_path(dir_path='etc/webinspect')
         self.log = self.set_path(dir_path='log')
         self.agent_json = self.set_path(dir_path=self.etc, file_name='agent.json')
+        self.cert = self.set_path(file_name='wiproxycert.crt')
 
         self.secret = os.path.join(self.install, '.webbreaker')
 

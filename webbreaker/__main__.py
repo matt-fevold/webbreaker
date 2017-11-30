@@ -34,10 +34,10 @@ from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, f
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
+from webbreaker.webinspectproxyclient import WebinspectProxyClient
 import re
 import sys
 import subprocess
-
 
 handle_scan_event = None
 reporter = None
@@ -328,7 +328,7 @@ def webinspect_list(config, server, scan_name, protocol):
         if scan_name:
             results = query_client.get_scan_by_name(scan_name)
             if results and len(results):
-                print ("Scans matching the name {} found on {}".format(scan_name, server))
+                print("Scans matching the name {} found on {}".format(scan_name, server))
                 print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
                 print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
                 for match in results:
@@ -406,6 +406,65 @@ def download(config, server, scan_name, scan_id, x, protocol):
         else:
             Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
 
+
+@webinspect.command(name='proxy',
+                    short_help="Interact with WebInspect proxy",
+                    help=WebBreakerHelper().webinspect_proxy_desc())
+@click.option('--list',
+              required=False,
+              is_flag=True,
+              help="List WebInspect proxies currently available")
+@click.option('--port',
+              required=False,
+              help="Assign WebInspect proxy port")
+@click.option('--proxy_id',
+              required=False,
+              help="Assign WebInspect proxy ID")
+@click.option('--server',
+              required=False,
+              help="Optional URL of specific WebInspect server")
+@click.option('--start',
+              required=False,
+              is_flag=True,
+              help="Start a WebInspect proxy service")
+@click.option('--stop',
+              required=False,
+              is_flag=True,
+              help="Stop & delete a WebInspect proxy service")
+def webinspect_proxy(list, port, proxy_id, server, start, stop):
+    # TODO: setup config.ini
+    proxy_client = WebinspectProxyClient(server, proxy_id, port)
+    if list:
+        results = proxy_client.list_proxy()
+        if results and len(results):
+            print("Proxies found on {}".format(proxy_client.host))
+            print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+            print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+            for match in results:
+                print("{0:80} {1:40} {2:10}".format(match['instanceId'], match['address'], match['port']))
+        else:
+            Logger.app.error("No proxies found on {}".format(proxy_client.host))
+
+    elif start:
+        proxy_client.get_cert_proxy()
+        result = proxy_client.start_proxy()
+        if result:
+            print("Proxy started on\t:\t{}".format(proxy_client.host))
+            print("Instance ID\t\t:\t{}".format(result['instanceId']))
+            print("Address\t\t\t:\t{}".format(result['address']))
+            print("Port\t\t\t:\t{}".format(result['port']))
+        else:
+            Logger.app.error("Unable to start proxy on {}".format(proxy_client.host))
+
+    elif stop:
+        if proxy_id:
+            proxy_client.delete_proxy()
+        else:
+            Logger.app.error("Please enter a proxy ID to delete.")
+
+    else:
+        Logger.app.error("Error: No proxy command was given.")
+        return 1
 
 @cli.group(help="""Collaborative web application for managing WebInspect and Fortify SCA security bugs
 across the entire secure SDLC-from development to QA and through production.""")
@@ -749,7 +808,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
         else:
             if username and password:
                 try:
-                    # Fortify Client is not used
+                    # TODO: Remove Fortify Client - not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
@@ -758,11 +817,10 @@ def credentials(config, fortify, webinspect, clear, username, password):
                 except ValueError as e:
                     sys.stdout.write(str("Unable to validate Fortify credentials. Credentials were not stored\n"))
 
-
             else:
                 username, password = fortify_prompt()
                 try:
-                    # Fortify Client is not used
+                    # TODO: Remove Fortify Client - not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
