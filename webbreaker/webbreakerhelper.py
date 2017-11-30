@@ -27,7 +27,12 @@ class WebBreakerHelper(object):
         spaced_text = ' %s ' % text
         banner = spaced_text.center(length, ch)
         return banner
-    
+
+    @classmethod
+    def webinspect_proxy_desc(cls):
+        return """
+        
+        """
     @classmethod
     def help_description(cls):
         return """
