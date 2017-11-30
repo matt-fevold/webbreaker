@@ -18,6 +18,7 @@ try:
 except (ImportError, AttributeError):  # Python3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+
 class WebinspectClient(object):
     def __init__(self, webinspect_setting):
         Logger.app.debug("Starting webinespect client initialization")
@@ -264,7 +265,8 @@ class WebinspectClient(object):
                 api = webinspectapi.WebInspectApi(self.url, verify_ssl=False)
                 response = api.delete_policy(response.data['uniqueId'])
                 if response.success:
-                    Logger.app.debug("Deleted policy {} from server".format(ntpath.basename(self.webinspect_upload_policy).split('.')[0]))
+                    Logger.app.debug("Deleted policy {} from server".format(
+                        ntpath.basename(self.webinspect_upload_policy).split('.')[0]))
         except (ValueError, UnboundLocalError) as e:
             Logger.app.error("Verify if deletion of existing policy failed: {}".format(e))
 
@@ -276,7 +278,7 @@ class WebinspectClient(object):
                 Logger.console.debug("Uploaded policy {} to server.".format(self.webinspect_upload_policy))
             else:
                 Logger.app.error("Error uploading policy {0}. {1}".format(self.webinspect_upload_policy,
-                                                                      response.message))
+                                                                          response.message))
 
         except (ValueError, UnboundLocalError) as e:
             Logger.app.error("Error uploading policy {}".format(e))
@@ -291,7 +293,7 @@ class WebinspectClient(object):
                 Logger.console.debug("Uploaded settings {} to server.".format(self.webinspect_upload_settings))
             else:
                 Logger.app.error("Error uploading settings {0}. {1}".format(self.webinspect_upload_settings,
-                                                                        response.message))
+                                                                            response.message))
 
         except (ValueError, UnboundLocalError) as e:
             Logger.app.error("Error uploading settings {}".format(e))
