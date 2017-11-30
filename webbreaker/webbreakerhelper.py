@@ -60,26 +60,26 @@ class WebBreakerHelper(object):
     @classmethod
     def webinspect_servers_desc(cls):
         return """
-        List all WebInspect servers found in configuration file.
+        List all configured WebInspect servers from the config.ini.
         """
 
     @classmethod
     def webinspect_download_desc(cls):
         return """
-        Download or export a WebInspect scan locally. Default protocol is https & default extension is 'fpr'.
+        Download or export a WebInspect scan file locally. Default protocol is https.
         """
 
     @classmethod
     def fortify_desc(cls):
         return """
-        Collaborative web application for managing WebInspect and Fortify SCA security bugs
-        across the entire secure SDLC-from development to QA and through production.
+        Micro Focus Security Fortify Software Security Center is a centralized management repository for scan results,
+        including WebInspect scans.
         """
 
     @classmethod
     def fortify_download_desc(cls):
         return """
-        Download the .fpr scan of an Fortify version using application/project & version name.
+        Download the .fpr scan of a Fortify version using application/project & version name.
         
         WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
         your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
@@ -117,7 +117,7 @@ class WebBreakerHelper(object):
     @classmethod
     def admin_desc(cls):
         return """
-        Administrative commands involving credentials and notifiers.       
+        WebBreaker administrative commands for managing 3rd party product credentials, agent, and notifiers.       
         """
 
     @classmethod
