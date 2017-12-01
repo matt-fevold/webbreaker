@@ -8,11 +8,11 @@ from webbreaker.confighelper import Config
 
 
 class WebinspectProxyClient(object):
-    def __init__(self, host, proxy_id, port):
-        if proxy_id is None:
-            self.proxy_id = ""
+    def __init__(self, host, proxy_name, port):
+        if proxy_name is None:
+            self.proxy_name = ""
         else:
-            self.proxy_id = proxy_id
+            self.proxy_name = proxy_name
 
         if port is None:
             self.port = ""
@@ -43,7 +43,7 @@ class WebinspectProxyClient(object):
     def start_proxy(self):
 
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
-        response = api.start_proxy(self.proxy_id, self.port, self.host)
+        response = api.start_proxy(self.proxy_name, self.port, self.host)
         print(response.data)
         if response.success:
             return response.data
@@ -53,9 +53,9 @@ class WebinspectProxyClient(object):
     def delete_proxy(self):
 
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
-        response = api.delete_proxy(self.proxy_id)
+        response = api.delete_proxy(self.proxy_name)
         if response.success:
-            Logger.app.info("Successfully deleted proxy: {}".format(self.proxy_id))
+            Logger.app.info("Successfully deleted proxy: {}".format(self.proxy_name))
         else:
             Logger.app.critical("{}".format(response.message))
 

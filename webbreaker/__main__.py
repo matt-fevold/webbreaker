@@ -417,7 +417,7 @@ def download(config, server, scan_name, scan_id, x, protocol):
 @click.option('--port',
               required=False,
               help="Assign WebInspect proxy port")
-@click.option('--proxy_id',
+@click.option('--proxy_name',
               required=False,
               help="Assign WebInspect proxy ID")
 @click.option('--server',
@@ -431,9 +431,9 @@ def download(config, server, scan_name, scan_id, x, protocol):
               required=False,
               is_flag=True,
               help="Stop & delete a WebInspect proxy service")
-def webinspect_proxy(list, port, proxy_id, server, start, stop):
+def webinspect_proxy(list, port, proxy_name, server, start, stop):
     # TODO: setup config.ini
-    proxy_client = WebinspectProxyClient(server, proxy_id, port)
+    proxy_client = WebinspectProxyClient(server, proxy_name, port)
     if list:
         results = proxy_client.list_proxy()
         if results and len(results):
@@ -457,7 +457,7 @@ def webinspect_proxy(list, port, proxy_id, server, start, stop):
             Logger.app.error("Unable to start proxy on {}".format(proxy_client.host))
 
     elif stop:
-        if proxy_id:
+        if proxy_name:
             proxy_client.delete_proxy()
         else:
             Logger.app.error("Please enter a proxy ID to delete.")
