@@ -34,6 +34,7 @@ from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, f
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
+from webbreaker.webinspectproxyclient import WebinspectProxyClient
 import re
 import sys
 import subprocess
@@ -389,6 +390,173 @@ def download(config, server, scan_name, scan_id, x, protocol):
             query_client.export_scan_results(scan_id, scan_name, x)
         else:
             Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
+
+
+@webinspect.command(name='proxy',
+                    short_help="Interact with WebInspect proxy",
+                    help=WebBreakerHelper().webinspect_proxy_desc())
+@click.option('--download',
+              required=False,
+              is_flag=True,
+              help="Flag to specify download")
+@click.option('--list',
+              required=False,
+              is_flag=True,
+              help="List WebInspect proxies currently available")
+@click.option('--port',
+              required=False,
+              help="Assign WebInspect proxy port")
+@click.option('--proxy_name',
+              required=False,
+              help="Assign WebInspect proxy ID")
+@click.option('--setting',
+              required=False,
+              is_flag=True,
+              help="Flag to download setting file from proxy_name")
+@click.option('--server',
+              required=False,
+              help="Optional URL of specific WebInspect server(s)")
+@click.option('--start',
+              required=False,
+              is_flag=True,
+              help="Start a WebInspect proxy service")
+@click.option('--stop',
+              required=False,
+              is_flag=True,
+              help="Stop & delete a WebInspect proxy service")
+@click.option('--upload',
+              required=False,
+              help="Webmacro file path to upload")
+@click.option('--webmacro',
+              required=False,
+              is_flag=True,
+              help="Flag to download webmacro file from proxy_name")
+def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro):
+    if server:
+        servers = []
+        for s in server:
+            servers.append(format_webinspect_server(s))
+    else:
+        servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
+
+    if list:
+        for server in servers:
+            proxy_client = WebinspectProxyClient(proxy_name, port, upload, 'https://' + server)
+            results = proxy_client.list_proxy()
+            if results and len(results):
+                print("Proxies found on {}".format(proxy_client.host))
+                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+                for match in results:
+                    print("{0:80} {1:40} {2:10}".format(match['instanceId'], match['address'], match['port']))
+            else:
+                Logger.app.error("No proxies found on '{}'".format(proxy_client.host))
+
+    elif start:
+        proxy_client = WebinspectProxyClient(proxy_name, port, upload)
+        try:
+            proxy_client.get_cert_proxy()
+            result = proxy_client.start_proxy()
+        except (UnboundLocalError, EnvironmentError) as e:
+            Logger.app.critical(
+                "Incorrect WebInspect configurations found!! See log {}".format(str(Logger.app_logfile)))
+            Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
+            return 1
+
+        if result:
+            print("Proxy started on\t:\t{}".format(proxy_client.host))
+            print("Instance ID\t\t:\t{}".format(result['instanceId']))
+            print("Address\t\t\t:\t{}".format(result['address']))
+            print("Port\t\t\t:\t{}".format(result['port']))
+        else:
+            Logger.app.error("Unable to start proxy on '{}'".format(proxy_client.host))
+            return 1
+    elif not proxy_name:
+        Logger.app.error("Please enter a proxy name.")
+        return 1
+
+    elif stop:
+        for server in servers:
+            server = 'https://' + server
+            proxy_client = WebinspectProxyClient(proxy_name, port, upload, server)
+            try:
+                result = proxy_client.get_proxy()
+            except (UnboundLocalError, EnvironmentError):
+                Logger.app.debug("Proxy_name was not on this server")
+            if result:
+                proxy_client.download_proxy(webmacro=False, setting=True)
+                proxy_client.download_proxy(webmacro=True, setting=False)
+                proxy_client.delete_proxy()
+                return 0
+        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+        return 1
+
+    elif download:
+        for server in servers:
+            server = 'https://' + server
+            proxy_client = WebinspectProxyClient(proxy_name, port, upload, server)
+            try:
+                result = proxy_client.get_proxy()
+            except (UnboundLocalError, EnvironmentError):
+                Logger.app.debug("{} was not on this server".format(proxy_name))
+            if result:
+                proxy_client.download_proxy(webmacro, setting)
+                return 0
+        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+        return 1
+
+    elif upload:
+        for server in servers:
+            server = 'https://' + server
+            proxy_client = WebinspectProxyClient(proxy_name, port, upload, server)
+            try:
+                result = proxy_client.get_proxy()
+            except (UnboundLocalError, EnvironmentError):
+                Logger.app.debug("{} was not on this server".format(proxy_name))
+            if result:
+                proxy_client.upload_proxy()
+                return 0
+        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+        return 1
+
+    else:
+        Logger.app.error("Error: No proxy command was given.")
+        return 1
+
+
+def webinspect_list(config, server, scan_name, protocol):
+    if len(server):
+        servers = []
+        for s in server:
+            servers.append(format_webinspect_server(s))
+    else:
+        servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
+
+    for server in servers:
+        query_client = WebinspectQueryClient(host=server, protocol=protocol)
+        if scan_name:
+            results = query_client.get_scan_by_name(scan_name)
+            if results and len(results):
+                print("Scans matching the name {} found on {}".format(scan_name, server))
+                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+                for match in results:
+                    print("{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
+            else:
+                Logger.app.error("No scans matching the name {} were found on {}".format(scan_name, server))
+
+        else:
+            results = query_client.list_scans()
+            if results and len(results):
+                print("Scans found on {}".format(server))
+                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+                for scan in results:
+                    print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
+            else:
+                print("No scans found on {}".format(server))
+
+        print('\n\n\n')
 
 
 @cli.group(short_help="Interaction with Fortify API",
@@ -776,7 +944,7 @@ def credentials(config, fortify, webinspect, clear, username, password):
         else:
             if username and password:
                 try:
-                    # Fortify Client is not used
+                    # TODO: Remove Fortify Client - not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
@@ -785,11 +953,10 @@ def credentials(config, fortify, webinspect, clear, username, password):
                 except ValueError as e:
                     sys.stdout.write(str("Unable to validate Fortify credentials. Credentials were not stored\n"))
 
-
             else:
                 username, password = fortify_prompt()
                 try:
-                    # Fortify Client is not used
+                    # TODO: Remove Fortify Client - not used
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)

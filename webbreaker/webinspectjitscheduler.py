@@ -45,7 +45,7 @@ class WebInspectJitScheduler(object):
         # Need a re-architecture or some kind of inter-process communication?
         possible_endpoints = self.__get_possible_endpoints__(max_concurrent_scans=self.max_scans)
         random.shuffle(possible_endpoints)
-        time.sleep(random.randint(0, 120))
+        # time.sleep(random.randint(0, 30))
         for endpoint in possible_endpoints:
             if self.__is_endpoint_available__(endpoint=endpoint, max_concurrent_scans=self.max_scans):
                 return endpoint
