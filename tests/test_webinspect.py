@@ -8,7 +8,6 @@ from webbreaker.__main__ import cli as webbreaker
 import json
 from mock import mock_open
 
-
 # Disable debugging for log clarity in testing
 logging.disable(logging.DEBUG)
 
@@ -151,7 +150,8 @@ def test_webinspect_list_scan_name_match(test_mock, runner, caplog):
     test_mock.get_scan_by_name()
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'list', '--server', 'test-server01', '--server', 'test-server02', '--scan_name', 'test-name'])
+                           ['webinspect', 'list', '--server', 'test-server01', '--server', 'test-server02',
+                            '--scan_name', 'test-name'])
 
     caplog.check()
     caplog.uninstall()
@@ -160,18 +160,21 @@ def test_webinspect_list_scan_name_match(test_mock, runner, caplog):
 
     assert result.exit_code == 0
 
+
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
 def test_webinspect_list_scan_name_match_multi_server(test_mock, runner, caplog):
     test_mock.return_value.get_scan_by_name.return_value = [{'Name': 'test-name', 'ID': 1234, 'Status': 'test'}]
     test_mock.get_scan_by_name()
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'list', '--server', 'test-server', '--server', 'test-server2', '--scan_name', 'test-name'])
+                           ['webinspect', 'list', '--server', 'test-server', '--server', 'test-server2', '--scan_name',
+                            'test-name'])
 
     caplog.check()
     caplog.uninstall()
 
     assert result.exit_code == 0
+
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
 def test_webinspect_list_scan_name_no_match(test_mock, runner, caplog):
@@ -188,13 +191,15 @@ def test_webinspect_list_scan_name_no_match(test_mock, runner, caplog):
 
     assert result.exit_code == 0
 
+
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
 def test_webinspect_list_scan_name_no_match_multi_server(test_mock, runner, caplog):
     test_mock.return_value.get_scan_by_name.return_value = []
     test_mock.get_scan_by_name()
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'list', '--server', 'test-server', '--server', 'test-server2', '--scan_name', 'test-name'])
+                           ['webinspect', 'list', '--server', 'test-server', '--server', 'test-server2', '--scan_name',
+                            'test-name'])
 
     caplog.check(
         ('__webbreaker__', 'ERROR', 'No scans matching the name test-name were found on test-server'),
@@ -246,6 +251,7 @@ def test_webinspect_list_protocol_change_success(test_mock, runner, caplog):
 
     assert result.exit_code == 0
 
+
 # TODO: webbreaker webinespect download
 
 # TODO: webinspect scan [OPTIONS]
@@ -281,8 +287,8 @@ def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock
     )
     caplog.uninstall()
 
-    print(result.output)
     assert result.exit_code == 0
+
 
 @mock.patch('webbreaker.__main__.WebInspectConfig')
 def test_webinspect_servers(test_mock, runner, caplog):

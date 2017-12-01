@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from webbreaker.webbreakerlogger import Logger
+
 
 class WebBreakerHelper(object):
     @classmethod
@@ -29,105 +29,239 @@ class WebBreakerHelper(object):
         return banner
     
     @classmethod
-    def help_description(cls):
+    def webbreaker_desc(cls):
         return """
-SYNOPSIS:
-webbreaker [webinspect|fortify] [list|scan|download|upload] [OPTIONS]
+        WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams 
+        to release secure software with continuous delivery, visibility, and scalability..
+        """
 
-DESCRIPTION:
-WebBreaker is a light-weight, scalable, distributed, and automated dynamic security testing framework with a rich
-command set providing both high-level Product operations and Dynamic Application Security Test Orchestration (DASTO) on Products.
+    @classmethod
+    def webinspect_desc(cls):
+        return """
+        WebInspect is commercial software for Dynamic Application Security Testing (DAST) of Web applications 
+        and services.
+        """
 
-COMMANDS:
-Webbreaker is separated into Upper ("Products") and Lower level ("Actions") commands with their respective options.
+    @classmethod
+    def webinspect_scan_desc(cls):
+        return """
+        Launch a WebInspect scan from the WebInspect RESTFul API with scan results downloaded locally in both XML
+        and FPR formats.
+        """
 
-UPPER-LEVEL COMMANDS:
-    webbreaker-fortify
-    Administer WebInspect scan results with Fortify Software Security Center (SSC).  Available `Actions` are
-    add, list, and upload.
+    @classmethod
+    def webinspect_list_desc(cls):
+        return """
+        List WebInspect scans configured in the config.ini or from an explicit server option. All communication implies 
+        https unless http is specified. 
+        """
 
-    webbreaker-webinspect
-    Select WebInspect as your commercial scanner or Dynamic Application Security Test (DAST) product.  Available  `Actions` are
-    scan, list and download.
+    @classmethod
+    def webinspect_servers_desc(cls):
+        return """
+        List all configured WebInspect servers from the config.ini.
+        """
 
-LOWER-LEVEL COMMANDS
-    webbraker-list
-    List current and past WebInspect scans.
+    @classmethod
+    def webinspect_download_desc(cls):
+        return """
+        Download or export a WebInspect scan file to the local file system. Default protocol is https.
+        """
 
-    webbreaker-scan
-    Create or launch a WebInspect scan from a fully licensed WebInspect server or host. Scan results are automatically
-    downloaded in both XML and FPR formats.
+    @classmethod
+    def fortify_desc(cls):
+        return """
+        Fortify's  Software Security Center (SSC) is a centralized management repository for both WebInspect and 
+        Fortify Sourceanalyzer (SCA) scan results.
+        """
 
-    webbreaker-download
-    Download or export a WebInspect scan locally.
+    @classmethod
+    def fortify_download_desc(cls):
+        return """
+        Download a Fortify Sourceanalyzer (SCA) or WebInspect scan from a specified Project/Application Version.  All 
+        scan results are included in a .fpr file.
+        
+        WARNING :: Do not specify fortify username and password using options unless you are willing to have 
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
+        """
 
-    fortify-upload
-    Upload a WebInspect scan to Fortify Software Security Center (SSC).
+    @classmethod
+    def fortify_list_desc(cls):
+        return """
+        Interactive Listing of all Fortify SSC Project/Application Versions. 
+        
+        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials! 
+        """
 
-WEBINSPECT SCAN OPTIONS:
-    --settings\tWebInspect scan configuration file, if no setting file\b
-    is specified the Default file shipped with WebInspect will be used.\n
+    @classmethod
+    def fortify_scan_desc(cls):
+        return """
+        Retrieve Fortify SSC Application Version URL and Jenkins $BUILD_ID in agent.json. If application 
+        is not provided, the default SSC Application/Project is declared in the config.ini under application_name.
+        
+        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
+        """
 
-    --scan_name\tUsed for the command 'webinspect scan' as both a scan\b
-    instance variable and file name.  Default value is WEBINSPECT-<random-5-alpha-numerics>,\b
-     or Jenkins global environment variables may be declared, such as $BUILD_TAG.\n
+    @classmethod
+    def fortify_upload_desc(cls):
+        return """
+        Upload a WebInspect .fpr scan to an explicit Fortify SSC Application/Project Version with '--version'
+        
+        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
+        """
 
-    --scan_policy\tOverrides the existing scan policy from the value in the\b
-    setting file from `--settings`, see `.config` for built-in values.  \b
-    Any custom policy must include only the GUID.  Do NOT include the `.policy` extension.\n
+    @classmethod
+    def admin_desc(cls):
+        return """
+        WebBreaker administrative commands for managing 3rd party product credentials, agent, and email/notifiers.       
+        """
 
-    --login_macro\tOverrides the login macro declared in the original setting file from\b
-    `--settings` and uploads it to the WebInspect server.\n
+    @classmethod
+    def admin_notifier_desc(cls):
+        return """
+        Retrieve and store emails from a specified Github repo.  An OAuth Github token is typically required for this action
+        under the config.ini
+        """
 
-    --workflow_macros\tWorkflow macros are located under webbreaker/etc/webinspect/webmacros,\b
-    all webmacro files end with a .webmacro extension, do NOT include the `webmacro` extension.\n
+    @classmethod
+    def admin_agent_desc(cls):
+        return """
+        Poll the Fortify SSC Cloudscan API endpoint from a Fortify Sourceanalyzer Build ID and email the Github repo's 
+        contributors upon scan completion.
+        """
 
-    --scan_mode\tAcceptable values are `crawl`, `scan`, or `all`.\n
+    @classmethod
+    def admin_credentials_desc(cls):
+        return """
+        Interactive prompt to encrypt and store Fortify SSC credentials. 
+        
+        WARNING :: Do not specify username and & password using options unless you are willing to have 
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
+        """
 
-    --scan_scope\tAcceptable values are `all`, `strict`, `children`, and `ancestors`.\n
+    @classmethod
+    def admin_secret_desc(cls):
+        return """
+        Creates an AES 128-bit encrypted symetric key and clears all stored credentials
+        """
 
-    --scan_start\tAcceptable values are `url` or `macro`.\n
+    @classmethod
+    def threadfix_desc(cls):
+        return """
+        ThreadFix is the industry leading vulnerability resolution platform that provides
+        a window into the state of application security programs for organizations that build software.
+        """
 
-    --start_urls\tEnter a single url or multiples.  For example --start_urls\b
-    http://test.example.com --start_urls http://test2.example.com\n
+    @classmethod
+    def threadfix_application_desc(cls):
+        return """
+        List all applications for a given ThreadFix team. Either team name OR team_id is required
+        """
+    @classmethod
+    def threadfix_create_desc(cls):
+        return """
+        Create a new application in ThreadFix. Use OPTIONS to specify application information.
+        """
+    @classmethod
+    def threadfix_list_desc(cls):
+        return """
+        List all applications across all teams. Use OPTIONS to specify either teams or applications to list.
+        """
+    @classmethod
+    def threadfix_scan_desc(cls):
+        return """
+        List all application scans per ID, Scanner, and Filename in ThreadFix
+        """
+    @classmethod
+    def threadfix_team_desc(cls):
+        return """
+        List all team names with associated ThreadFix IDs
+        """
+    @classmethod
+    def threadfix_upload_desc(cls):
+        return """
+        Upload a scan from to a Team's Application in ThreadFix.
+        """
 
-    --allowed_hosts\tHosts to scan, either a single host or a list of hosts separated by \b
-    spaces. If not provided, all values from `--start_urls` will be used.\n
-
-    --size\t WebInspect scan servers are managed with the `.config` file, however a\b
-     medium or large size WebInspect server defined in the config can be explicitly declared with\b
-    `--size medium` or `--size large`.\n
-
-WEBINSPECT LIST OPTIONS:
-    --server\tQuery a list of past and current scans from a specific WebInspect server or host.\n
-    --scan_name\tLimit query results to only those matching a given scan name
-    --protocol\tSpecify which protocol should be used to contact the WebInspect server. Valid protocols\b
-    are 'https' and 'http'. If not provided, this option will default to 'https'\n
-
-WEBINSPECT DOWNLOAD OPTIONS:
-    --scan_name\tSpecify the desired scan name to be downloaded from a specific WebInspect server or host.\n
-    --server\tRequired option for downloading a specific WebInspect scan.  Server must be appended to all\b
-    WebInspect download Actions.\n
-    --protocol\tSpecify which protocol should be used to contact the WebInspect server. Valid protocols\b
-    are 'https' and 'http'. If not provided, this option will default to 'https'\n
-
-FORTIFY LIST OPTIONS:
-    --application\tProvides a listing of Fortify SSC Version(s) within a specific Application or Project.\n
-    --fortify_user\tIf provided WebBreaker authenticates to Fortify using these credentials. If not provided\n
-    --fortify_password\tWebBreaker attempts to use a secret from .config. If no secret is found our\b
-    the secret is no longer valid, you will be prompted for these credentials.\n
-
-FORTIFY UPLOAD OPTIONS:
-    --fortify_user \tIf provided WebBreaker authenticates to Fortify using these credentials. If not provided\n
-    --fortify_password\tWebBreaker attempts to use a secret for .config. If no secret is found our the secret is\b
-    no longer valid, you will be prompted for these credentials.\n
-    --application\tIf provided WebBreaker will look for version under this application name instead of the one\b
-    provided in .config\n
-    --version\tUsed for the command 'fortify upload' this option specifies the application version name and\b
-    is used to both locate the file to be uploaded and the correct fortify application version\b
-    to upload the file to.\n
-    --scan_name\tIf the scan file you wish to upload has a different name then --version, this option can\b
-    override which file WebBreaker uploads. Note: WebBreaker still assume the .fpr extension so\b
-    it should not be included here\n
-"""
-
+# LOWER-LEVEL COMMANDS
+#     webbraker-list
+#
+#
+#     webbreaker-scan
+#
+#
+#     webbreaker-download
+#     .
+#
+#     fortify-upload
+#
+#
+# WEBINSPECT SCAN OPTIONS:
+#     --settings\tWebInspect scan configuration file, if no setting file\b
+#     is specified the Default file shipped with WebInspect will be used.\n
+#
+#     --scan_name\tUsed for the command 'webinspect scan' as both a scan\b
+#     instance variable and file name.  Default value is WEBINSPECT-<random-5-alpha-numerics>,\b
+#      or Jenkins global environment variables may be declared, such as $BUILD_TAG.\n
+#
+#     --scan_policy\tOverrides the existing scan policy from the value in the\b
+#     setting file from `--settings`, see `.config` for built-in values.  \b
+#     Any custom policy must include only the GUID.  Do NOT include the `.policy` extension.\n
+#
+#     --login_macro\tOverrides the login macro declared in the original setting file from\b
+#     `--settings` and uploads it to the WebInspect server.\n
+#
+#     --workflow_macros\tWorkflow macros are located under webbreaker/etc/webinspect/webmacros,\b
+#     all webmacro files end with a .webmacro extension, do NOT include the `webmacro` extension.\n
+#
+#     --scan_mode\tAcceptable values are `crawl`, `scan`, or `all`.\n
+#
+#     --scan_scope\tAcceptable values are `all`, `strict`, `children`, and `ancestors`.\n
+#
+#     --scan_start\tAcceptable values are `url` or `macro`.\n
+#
+#     --start_urls\tEnter a single url or multiples.  For example --start_urls\b
+#     http://test.example.com --start_urls http://test2.example.com\n
+#
+#     --allowed_hosts\tHosts to scan, either a single host or a list of hosts separated by \b
+#     spaces. If not provided, all values from `--start_urls` will be used.\n
+#
+#     --size\t WebInspect scan servers are managed with the `.config` file, however a\b
+#      medium or large size WebInspect server defined in the config can be explicitly declared with\b
+#     `--size medium` or `--size large`.\n
+#
+# WEBINSPECT LIST OPTIONS:
+#     --server\tQuery a list of past and current scans from a specific WebInspect server or host.\n
+#     --scan_name\tLimit query results to only those matching a given scan name
+#     --protocol\tSpecify which protocol should be used to contact the WebInspect server. Valid protocols\b
+#     are 'https' and 'http'. If not provided, this option will default to 'https'\n
+#
+# WEBINSPECT DOWNLOAD OPTIONS:
+#     --scan_name\tSpecify the desired scan name to be downloaded from a specific WebInspect server or host.\n
+#     --server\tRequired option for downloading a specific WebInspect scan.  Server must be appended to all\b
+#     WebInspect download Actions.\n
+#     --protocol\tSpecify which protocol should be used to contact the WebInspect server. Valid protocols\b
+#     are 'https' and 'http'. If not provided, this option will default to 'https'\n
+#
+# FORTIFY LIST OPTIONS:
+#     --application\tProvides a listing of Fortify SSC Version(s) within a specific Application or Project.\n
+#     --fortify_user\tIf provided WebBreaker authenticates to Fortify using these credentials. If not provided\n
+#     --fortify_password\tWebBreaker attempts to use a secret from .config. If no secret is found our\b
+#     the secret is no longer valid, you will be prompted for these credentials.\n
+#
+# FORTIFY UPLOAD OPTIONS:
+#     --fortify_user \tIf provided WebBreaker authenticates to Fortify using these credentials. If not provided\n
+#     --fortify_password\tWebBreaker attempts to use a secret for .config. If no secret is found our the secret is\b
+#     no longer valid, you will be prompted for these credentials.\n
+#     --application\tIf provided WebBreaker will look for version under this application name instead of the one\b
+#     provided in .config\n
+#     --version\tUsed for the command 'fortify upload' this option specifies the application version name and\b
+#     is used to both locate the file to be uploaded and the correct fortify application version\b
+#     to upload the file to.\n
+#     --scan_name\tIf the scan file you wish to upload has a different name then --version, this option can\b
+#     override which file WebBreaker uploads. Note: WebBreaker still assume the .fpr extension so\b
+#     it should not be included here\n
+# """
