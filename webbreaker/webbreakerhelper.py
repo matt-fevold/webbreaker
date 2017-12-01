@@ -129,16 +129,13 @@ class WebBreakerHelper(object):
     @classmethod
     def admin_agent_desc(cls):
         return """
-        View the current stored information for WebBreaker Agent based on most recent use of 
-        'admin notifier' and 'fortify scan'.
-        Create a WebBreaker Agent to monitor the Fortify scan specified in 'fortify scan'. 
-        On scan completion the agent will notify contributors found via 'admin notifiers'
+        Poll Fortify SSC Cloudscan from Sourceanalyzer Build ID and email the Github's repo contributors upon scan completion.
         """
 
     @classmethod
     def admin_credentials_desc(cls):
         return """
-        Encrypt and store new Fortify credentials. 
+        Interactive prompt to encrypt and store new Fortify credentials. 
         
         WARNING :: Do not specify username and & password using options unless you are willing to have 
         your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
@@ -147,13 +144,14 @@ class WebBreakerHelper(object):
     @classmethod
     def admin_secret_desc(cls):
         return """
-        Generates a new encryption key and clears all stored credentials
+        Creates an AES 128-bit encrypted symetric key and clears all stored credentials
         """
 
     @classmethod
     def threadfix_desc(cls):
         return """
-        Interaction with ThreadFix API.
+        ThreadFix is the industry leading vulnerability resolution platform that provides
+        a window into the state of application security programs for organizations that build software.
         """
 
     @classmethod
@@ -174,17 +172,17 @@ class WebBreakerHelper(object):
     @classmethod
     def threadfix_scan_desc(cls):
         return """
-        List all scans (ID, Scanner, and Filename) of specified application in ThreadFix
+        List all application scans per ID, Scanner, and Filename in ThreadFix
         """
     @classmethod
     def threadfix_team_desc(cls):
         return """
-        List all teams (ID and Name) found on ThreadFix
+        List all team names with associated ThreadFix IDs
         """
     @classmethod
     def threadfix_upload_desc(cls):
         return """
-        Upload a local specified scan file to an application in ThreadFix.
+        Upload a scan from to a Team's Application in ThreadFix.
         """
 
 # LOWER-LEVEL COMMANDS
