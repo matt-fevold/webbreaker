@@ -27,7 +27,7 @@ class WebinspectClient(object):
         lb = WebInspectJitScheduler(endpoints=config.endpoints,
                                     size_list=config.sizing,
                                     size_needed=webinspect_setting['webinspect_scan_size'])
-        Logger.app.info("Finding endpoints. Expect up to two minute delay")
+        Logger.app.info("Finding endpoints. Expect a slight delay")
         endpoint = lb.get_endpoint()
         if not endpoint:
             raise EnvironmentError("Scheduler found no available endpoints.")
