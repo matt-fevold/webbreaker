@@ -7,15 +7,16 @@ import webinspectapi.webinspect as webinspectapi
 from webbreaker.webinspectconfig import WebInspectConfig
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.confighelper import Config
+from webbreaker.webinspectjitscheduler import WebInspectJitScheduler
 
 
 class WebinspectProxyClient(object):
-    def __init__(self, host, proxy_name, port, upload):
+    def __init__(self, proxy_name, port, upload, host=None):
         self.upload = upload
 
         if proxy_name is None:
             self.proxy_name = "webinspect" + "-" + "".join(
-                        random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+                random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
         else:
             self.proxy_name = proxy_name
@@ -28,8 +29,14 @@ class WebinspectProxyClient(object):
         if host:
             self.host = host
         else:
-            # Make random like webinspect config
-            self.host = WebInspectConfig().endpoints[0][0]
+            config = WebInspectConfig()
+            lb = WebInspectJitScheduler(endpoints=config.endpoints,
+                                        size_list=config.sizing)
+            Logger.app.info("Finding endpoints. Expect a slight delay")
+            endpoint = lb.get_endpoint()
+            if not endpoint:
+                raise EnvironmentError("Scheduler found no available endpoints.")
+            self.host = endpoint
 
     def get_cert_proxy(self):
         path = Config().cert
@@ -60,7 +67,7 @@ class WebinspectProxyClient(object):
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
         response = api.delete_proxy(self.proxy_name)
         if response.success:
-            Logger.app.info("Successfully deleted proxy: {}".format(self.proxy_name))
+            Logger.app.info("Proxy: '{0}' deleted from '{1}'".format(self.proxy_name, self.host))
         else:
             Logger.app.critical("{}".format(response.message))
 
@@ -87,8 +94,8 @@ class WebinspectProxyClient(object):
 
         if response.success:
             try:
-                with open('{0}.{1}'.format(self.proxy_name, extension), 'wb') as f:
-                    Logger.app.info('Scan results file is available: {0}.{1}'.format(self.proxy_name, extension))
+                with open('{0}-proxy.{1}'.format(self.proxy_name, extension), 'wb') as f:
+                    Logger.app.info('Scan results file is available: {0}-proxy.{1}'.format(self.proxy_name, extension))
                     f.write(response.data)
             except UnboundLocalError as e:
                 Logger.app.error('Error saving file locally {}'.format(e))
@@ -109,3 +116,9 @@ class WebinspectProxyClient(object):
         except (ValueError, UnboundLocalError) as e:
             Logger.app.error("Error uploading policy {}".format(e))
             return 1
+
+    def get_proxy(self):
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        response = api.get_proxy_information(self.proxy_name)
+        if response.success:
+            return response.data
