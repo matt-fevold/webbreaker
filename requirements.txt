@@ -16,4 +16,4 @@ requests
 testfixtures
 tox
 validators
-webinspectapi>=1.0.24
+webinspectapi>=1.0.23

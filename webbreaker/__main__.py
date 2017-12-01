@@ -410,6 +410,10 @@ def download(config, server, scan_name, scan_id, x, protocol):
 @webinspect.command(name='proxy',
                     short_help="Interact with WebInspect proxy",
                     help=WebBreakerHelper().webinspect_proxy_desc())
+@click.option('--download',
+              required=False,
+              is_flag=True,
+              help="Flag to specify download")
 @click.option('--list',
               required=False,
               is_flag=True,
@@ -417,9 +421,13 @@ def download(config, server, scan_name, scan_id, x, protocol):
 @click.option('--port',
               required=False,
               help="Assign WebInspect proxy port")
-@click.option('--proxy_id',
+@click.option('--proxy_name',
               required=False,
               help="Assign WebInspect proxy ID")
+@click.option('--setting',
+              required=False,
+              is_flag=True,
+              help="Flag to download setting file from proxy_name")
 @click.option('--server',
               required=False,
               help="Optional URL of specific WebInspect server")
@@ -431,9 +439,16 @@ def download(config, server, scan_name, scan_id, x, protocol):
               required=False,
               is_flag=True,
               help="Stop & delete a WebInspect proxy service")
-def webinspect_proxy(list, port, proxy_id, server, start, stop):
+@click.option('--upload',
+              required=False,
+              help="Webmacro file path to upload")
+@click.option('--webmacro',
+              required=False,
+              is_flag=True,
+              help="Flag to download webmacro file from proxy_name")
+def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload,  webmacro):
     # TODO: setup config.ini
-    proxy_client = WebinspectProxyClient(server, proxy_id, port)
+    proxy_client = WebinspectProxyClient(server, proxy_name, port, upload)
     if list:
         results = proxy_client.list_proxy()
         if results and len(results):
@@ -442,8 +457,10 @@ def webinspect_proxy(list, port, proxy_id, server, start, stop):
             print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
             for match in results:
                 print("{0:80} {1:40} {2:10}".format(match['instanceId'], match['address'], match['port']))
+            Logger.app.info("Completed listing proxies from {}".format(proxy_client.host))
         else:
             Logger.app.error("No proxies found on {}".format(proxy_client.host))
+            return 1
 
     elif start:
         proxy_client.get_cert_proxy()
@@ -455,16 +472,25 @@ def webinspect_proxy(list, port, proxy_id, server, start, stop):
             print("Port\t\t\t:\t{}".format(result['port']))
         else:
             Logger.app.error("Unable to start proxy on {}".format(proxy_client.host))
+            return 1
+    elif not proxy_name:
+        Logger.app.error("Please enter a proxy name.")
+        return 1
 
     elif stop:
-        if proxy_id:
-            proxy_client.delete_proxy()
-        else:
-            Logger.app.error("Please enter a proxy ID to delete.")
+        proxy_client.download_proxy(True, setting)
+        proxy_client.delete_proxy()
+
+    elif download:
+        proxy_client.download_proxy(webmacro, setting)
+
+    elif upload:
+        proxy_client.upload_proxy()
 
     else:
         Logger.app.error("Error: No proxy command was given.")
         return 1
+
 
 @cli.group(help="""Collaborative web application for managing WebInspect and Fortify SCA security bugs
 across the entire secure SDLC-from development to QA and through production.""")
