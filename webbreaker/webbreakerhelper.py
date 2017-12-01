@@ -31,30 +31,29 @@ class WebBreakerHelper(object):
     @classmethod
     def webbreaker_desc(cls):
         return """
-        WebBreaker is a light-weight, scalable, distributed, and automated dynamic security testing framework 
-        with a rich command set providing both high-level Product operations and Dynamic Application Security 
-        Test Orchestration (DASTO) on Products.
+        WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams 
+        to release secure software with continuous delivery, visibility, and scalability..
         """
 
     @classmethod
     def webinspect_desc(cls):
         return """
-        WebInspect is Dynamic Application Security Testing (DAST) software for assessing security of Web applications 
-        and Web services.
+        WebInspect is commercial software for Dynamic Application Security Testing (DAST) of Web applications 
+        and services.
         """
 
     @classmethod
     def webinspect_scan_desc(cls):
         return """
-        Create or launch a WebInspect scan from a fully licensed WebInspect server or host. Scan results are 
-        automatically downloaded in both XML and FPR formats.
+        Launch a WebInspect scan from the WebInspect RESTFul API with scan results downloaded locally in both XML
+        and FPR formats.
         """
 
     @classmethod
     def webinspect_list_desc(cls):
         return """
-        List WebInspect scans. Default protocol is https. If no server is specified it will list all 
-        scans from config.ini settings. 
+        List WebInspect scans configured in the config.ini or from an explicit server option. All communication implies 
+        https unless http is specified. 
         """
 
     @classmethod
@@ -66,79 +65,81 @@ class WebBreakerHelper(object):
     @classmethod
     def webinspect_download_desc(cls):
         return """
-        Download or export a WebInspect scan file locally. Default protocol is https.
+        Download or export a WebInspect scan file to the local file system. Default protocol is https.
         """
 
     @classmethod
     def fortify_desc(cls):
         return """
-        Micro Focus Security Fortify Software Security Center is a centralized management repository for scan results,
-        including WebInspect scans.
+        Fortify's  Software Security Center (SSC) is a centralized management repository for both WebInspect and 
+        Fortify Sourceanalyzer (SCA) scan results.
         """
 
     @classmethod
     def fortify_download_desc(cls):
         return """
-        Download the .fpr scan of a Fortify version using application/project & version name.
+        Download a Fortify Sourceanalyzer (SCA) or WebInspect scan from a specified Project/Application Version.  All 
+        scan results are included in a .fpr file.
         
-        WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
-        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
+        WARNING :: Do not specify fortify username and password using options unless you are willing to have 
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
         """
 
     @classmethod
     def fortify_list_desc(cls):
         return """
-        Interactive Listing of all Fortify SSC application versions. 
+        Interactive Listing of all Fortify SSC Project/Application Versions. 
         
         WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
-        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved! 
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials! 
         """
 
     @classmethod
     def fortify_scan_desc(cls):
         return """
-        Retrieve and store Fortify Version url and Jenkins BuildID in agent.json. If application 
-        is not provided, WebBreaker will use the application in fortify.ini
+        Retrieve Fortify SSC Application Version URL and Jenkins $BUILD_ID in agent.json. If application 
+        is not provided, the default SSC Application/Project is declared in the config.ini under application_name.
         
         WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
-        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
         """
 
     @classmethod
     def fortify_upload_desc(cls):
         return """
-        Upload a WebInspect scan matching '--version' with a '.fpr' extension to Fortify 
-        Security Center (SSC). 
+        Upload a WebInspect .fpr scan to an explicit Fortify SSC Application/Project Version with '--version'
         
         WARNING :: Do not specify fortify username and & password using options unless you are willing to have 
-        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
         """
 
     @classmethod
     def admin_desc(cls):
         return """
-        WebBreaker administrative commands for managing 3rd party product credentials, agent, and notifiers.       
+        WebBreaker administrative commands for managing 3rd party product credentials, agent, and email/notifiers.       
         """
 
     @classmethod
     def admin_notifier_desc(cls):
         return """
-        Retrieve and store public emails of contributors to the webbreaker repo.
+        Retrieve and store emails from a specified Github repo.  An OAuth Github token is typically required for this action
+        under the config.ini
         """
 
     @classmethod
     def admin_agent_desc(cls):
         return """
-        Poll Fortify SSC Cloudscan from Sourceanalyzer Build ID and email the Github's repo contributors upon scan completion.
+        Poll the Fortify SSC Cloudscan API endpoint from a Fortify Sourceanalyzer Build ID and email the Github repo's 
+        contributors upon scan completion.
         """
 
     @classmethod
     def admin_credentials_desc(cls):
         return """
-        Interactive prompt to encrypt and store new Fortify credentials. 
+        Interactive prompt to encrypt and store Fortify SSC credentials. 
         
         WARNING :: Do not specify username and & password using options unless you are willing to have 
-        your credentials in your terminal history. There is a pompt to input credentials if you do not have any saved!
+        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
         """
 
     @classmethod
