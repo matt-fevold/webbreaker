@@ -3,6 +3,7 @@
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
 [![Open Hub statistics](https://www.openhub.net/p/webbreaker/widgets/project_thin_badge.gif)](https://www.openhub.net/p/webbreaker)
 [![Coverage Status](https://coveralls.io/repos/github/target/webbreaker/badge.svg?branch=master)](https://coveralls.io/github/target/webbreaker?branch=master)
+[ ![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03) ](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
 
 ## Introduction
 
