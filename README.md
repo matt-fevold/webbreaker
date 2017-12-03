@@ -13,32 +13,41 @@ Create pipelines with integrating a portfolio of web application security testin
 ## Download
 [![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
 
-[![download](images/download-icon.png)][Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg)
-[![download](images/download-icon.png)][CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm)
+:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg)]
+:arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm)
 
-## System Architecture
-![WebBreaker System Architecture](images/WebBreakerSystemArchitecture.jpg)
+## Configuration
+:white_check_mark: Add your webbreaker executable to your $PATH or %PATH%
+
+:white_check_mark: Configure `$HOME/.webbreaker/config.ini` or `%USERPROFILE%\.webbreaker\config.ini`
+
+:white_check_mark: Each supported product Webinspect, Fortify SSC, and ThreadFix has a section. Modify the ones you need.
+
+
+```
+# Change to an absolute path
+[webbreaker_install]
+dir = .
+
+# Your Fortify SSC URL without /ssc
+[fortify]
+ssc_url = https://ssc.example.com:8443
+
+# Your Threadfix URL
+[threadfix]
+host = https://threadfix.example.com:8443/threadfix
+api_key = ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX
+
+# Your Webinspect installation, default port is 8083/tcp. Feel free to add more servers here
+[webinspect_endpoints]
+server01 = https://webinspect.example.com:8083
+```
+**NOTES:**
+* Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
 
 ## Release Notes
 
 New Features, bugs and enhancements for this release are documented in our [WebBreaker Release Notes](docs/release.md)
-
-## Quick Local Installation and Configurations
-
-1. ```git clone https://github.com/target/webbreaker```
-1. ```./build.sh```
-1. Modify the working directory of your [webbreaker installation directory](https://github.com/target/webbreaker/blob/master/config.ini.example#L2)
-1. Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
-1. Add your _WebInspect_ API server(s) to [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L21)
-1. Add your _Fortify SSC_ URL to [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L5)
-1. Add your _Threadfix_ URL and API Token to [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L12)
-
-**NOTES:**
-
-* _Optional_: Include your Python site-packages, if they are not already in your $PATH with ```export PATH=$PATH:$PYTHONPATH```.
-* _Optional_: SMTP settings on email notifications and a message template can be edited in [config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L81)
-* _Optional_: Create your own remote GIT repo for your WebInspect [settings](https://github.com/automationdomination/WebInspect/tree/master/settings), [policies](https://github.com/automationdomination/WebInspect/tree/master/policies), and [webmacros](https://github.com/automationdomination/WebInspect/tree/master/webmacros). Simply, add the [GIT URL to the config.ini.example](https://github.com/target/webbreaker/blob/master/config.ini.example#L50) and their respective directories.
-
 
 ## Usage
 
