@@ -1,7 +1,6 @@
 %global user webbreaker
 %global installdir /opt/webbreaker
 %global allocated_id 666
-%define build_timestamp %(date +"%m-%d-%Y")
 %define _topdir %(pwd)/
 
 Summary:    Client for Dynamic Application Security Test Orchestration (DASTO).
