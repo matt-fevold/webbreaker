@@ -3,7 +3,6 @@
 [![Versions](https://img.shields.io/pypi/pyversions/webinspectapi.svg)](https://img.shields.io/pypi/pyversions/webinspectapi.svg)
 [![Open Hub statistics](https://www.openhub.net/p/webbreaker/widgets/project_thin_badge.gif)](https://www.openhub.net/p/webbreaker)
 [![Coverage Status](https://coveralls.io/repos/github/target/webbreaker/badge.svg?branch=master)](https://coveralls.io/github/target/webbreaker?branch=master)
-[ ![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03) ](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
 
 ## Introduction
 
@@ -11,9 +10,11 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 
 Create pipelines with integrating a portfolio of web application security testing products, such as WebInspect, Fortify SSC, and ThreadFix.
 
-## Downloads Package distributions
+## Download
+[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
+
 [![download](images/download-icon.png)][Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg)
-[![download](images/download-icon.png)][Lnux CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm)
+[![download](images/download-icon.png)][CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm)
 
 ## System Architecture
 ![WebBreaker System Architecture](images/WebBreakerSystemArchitecture.jpg)
