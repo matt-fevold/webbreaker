@@ -1,6 +1,8 @@
 #!/bin/sh
-#
-# pyinstaller --clean -y --onefile --dist $(pwd)/webbreaker/dist --name webbreaker-cli $(pwd)/webbreaker/webbreaker/__main__.py 
+# pyinstaller --clean -y --windowed webbreaker.spec
+# --paths /Library/Python/2.7/site-packages
+# hdiutil create ./webbreaker.dmg -srcfolder webbreaker.app -ov
+# pyinstaller --clean -y --onefile --dist $(pwd)/dist --name webbreaker-cli $(pwd)/webbreaker/__main__.py 
 
 if type pip 2>/dev/null; then
         if [ ! -f ./requirements.txt ]; then
