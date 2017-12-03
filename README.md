@@ -197,10 +197,6 @@ To remove the environment gracefully, perform the following command:
 docker stop test_env && docker rm test_env
 ```
 
-## Console Output
-
-![WebBreaker](images/WebBreakerScreen.jpg)
-
 ## Bugs and Feature Requests
 
 Found something that doesn't seem right or have a feature request? [Please open a new issue](https://github.com/target/webbreaker/issues/new/).
