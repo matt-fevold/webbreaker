@@ -13,13 +13,11 @@ Create pipelines with integrating a portfolio of web application security testin
 ## Download & Install
 [![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
 
-:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg)
-* Mac installation is available on tap @ [homebrew](https://brew.sh)
+:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg), Mac installation is available on tap @ [homebrew](https://brew.sh)
 
 `brew install webbreaker`
 
-:arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm)
-* Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
+:arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm), Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
 
 `yum install webbreaker`
 
@@ -29,7 +27,6 @@ Create pipelines with integrating a portfolio of web application security testin
 :white_check_mark: Configure `$HOME/.webbreaker/config.ini` or `%USERPROFILE%\.webbreaker\config.ini`
 
 :white_check_mark: Each supported product Webinspect, Fortify SSC, and ThreadFix has a section. Modify the ones you need.
-
 
 ```
 # Change to an absolute path
