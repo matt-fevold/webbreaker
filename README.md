@@ -10,11 +10,18 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 
 Create pipelines with integrating a portfolio of web application security testing products, such as WebInspect, Fortify SSC, and ThreadFix.
 
-## Download
+## Download & Install
 [![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
 
-:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg)]
+:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg)
+* Mac installation is available on tap @ [homebrew](https://brew.sh)
+
+`brew install webbreaker`
+
 :arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm)
+* Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
+
+`yum install webbreaker`
 
 ## Configuration
 :white_check_mark: Add your webbreaker executable to your $PATH or %PATH%
@@ -43,7 +50,7 @@ api_key = ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX
 server01 = https://webinspect.example.com:8083
 ```
 **NOTES:**
-* Turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).
+* If you are using WebInspect turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).  Go to your Swagger doc for validation https://webinspecct.example.com:8083/webinspect/api
 
 ## Release Notes
 
