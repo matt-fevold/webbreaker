@@ -1,14 +1,14 @@
 %global user webbreaker
 %global installdir /opt/webbreaker
 %global allocated_id 666
-%define build_timestamp %(date +"%m-%d-%Y")
 %define _topdir %(pwd)/
 
 Summary:    Client for Dynamic Application Security Test Orchestration (DASTO).
 Name:       webbreaker
 Version:    2.0
-Release:    04%{?dist}
+Release:    03%{?dist}
 Source0:    %{name}-%{version}.tar.gz
+Group:      Security Tools
 License:    MIT
 Requires:   shadow-utils, cronie, crontabs, glibc
 Requires:   /bin/rm, /usr/sbin/useradd, /usr/sbin/groupadd, /bin/ln, /usr/sbin/alternatives, /bin/sed, /usr/bin/getent, /usr/sbin/userdel
@@ -64,6 +64,9 @@ cp opt/webbreaker/webbreaker-cli $RPM_BUILD_ROOT/opt/webbreaker/webbreaker-cli
 %attr(755,%{user},%{user}) %{installdir}/webbreaker-cli
 
 %changelog
+* Fri Dec 1 2017 Target Product Security Engineering <brandon.spruth2@target.com> - 2.0-03
+- Added Webinspect proxy functionality.
+
 * Tue Nov 28 2017 Target Product Security Engineering <brandon.spruth2@target.com> - 2.0-04
 - Refactored to just webinspect-cli binary
 
