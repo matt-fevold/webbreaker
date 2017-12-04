@@ -13,13 +13,17 @@ Create pipelines with integrating a portfolio of web application security testin
 ## Download & Install
 [![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
 
-:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg), Mac installation is available on tap @ [homebrew](https://brew.sh)
+:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMMING SOON
 
 `brew install webbreaker`
 
 :arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm), Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
 
 `yum install webbreaker`
+
+:arrow_down: [Windows 7](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.exe), Windows installation is available @ [Chocolatey](https://chocolatey.org) - COMMING SOON
+
+`choco install webbreaker`
 
 ## Configuration
 :white_check_mark: Add your webbreaker executable to your $PATH or %PATH%
