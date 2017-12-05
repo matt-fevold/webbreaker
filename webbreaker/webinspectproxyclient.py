@@ -86,7 +86,7 @@ class WebinspectProxyClient(object):
             response = api.download_proxy_webmacro(self.proxy_name)
             extension = 'webmacro'
         elif setting:
-            response = api.download_proxy_webmacro(self.proxy_name)
+            response = api.download_proxy_setting(self.proxy_name)
             extension = 'xml'
         else:
             Logger.app.error("Please enter a file type to download.")
