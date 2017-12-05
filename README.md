@@ -61,7 +61,7 @@ New Features, bugs and enhancements for this release are documented in our [WebB
 
 WebBreaker is a command-line interface (CLI) client.  See our complete [_WebBreaker Documentation_](https://target.github.io/webbreaker/) for further configuration, usage, and installation.
 
-The CLI supports upper-level and lower-level commands with respective options to enable interaction with Dynamic Application Security Test (DAST) products.  Current supported products are WebInspect, Fortfiy, and ThreadFix (more to come in the future!!).  Please see the [WebBreaker Cheatsheet](docs/cheatsheet.md) for further examples
+The CLI supports upper-level and lower-level commands with respective options to enable interaction with Dynamic Application Security Test (DAST) products.  Current supported products are WebInspect, Fortfiy, and ThreadFix (more to come in the future!!). 
 
 Illustrated below is a fully automated WebBreaker workflow of a WebInspect Scan.  Please see the [WebBreaker Cheatsheet](docs/cheatsheet.md) for further examples.
 
