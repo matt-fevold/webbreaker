@@ -1,8 +1,17 @@
 sudo: false
 language: python
-python:
-  - "2.7"
-  - "3.6"
+
+matrix:
+  include:
+    - os: linux
+      python:
+      - "2.7"
+      - "3.6"
+    - os: osx
+      language: generic
+  allow_failures:
+    - os: osx
+    
 install:
   - pip install tox-travis -rrequirements.txt
   - python setup.py build
