@@ -269,8 +269,8 @@ class WebInspectConfig(object):
             elif os.path.isdir(git_dir):
                 Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
                 check_output(['git', 'init', etc_dir])
-                check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
-                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
+                check_output(['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'reset', '--hard'])
+                check_output(['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'pull', '--rebase'])
                 sys.stdout.flush()
             elif not os.path.isdir(etc_dir):
                 Logger.app.info("Cloning your specified WebInspect configurations to {}".format(etc_dir))
