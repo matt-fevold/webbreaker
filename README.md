@@ -33,10 +33,6 @@ Create pipelines with integrating a portfolio of web application security testin
 :white_check_mark: Each supported product Webinspect, Fortify SSC, and ThreadFix has a section. Modify the ones you need.
 
 ```
-# Change to an absolute path
-[webbreaker_install]
-dir = .
-
 # Your Fortify SSC URL without /ssc
 [fortify]
 ssc_url = https://ssc.example.com:8443
