@@ -11,13 +11,13 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 Create pipelines with integrating a portfolio of web application security testing products, such as WebInspect, Fortify SSC, and ThreadFix.
 
 ## Download & Install
-[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.03)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.03/link)
+[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.04)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.04/link)
 
-:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.dmg), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
+:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.04/webbreaker.dmg), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
 `brew install webbreaker`
 
-:arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker-2.0-03.el7.centos.x86_64.rpm), Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
+:arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.04/webbreaker-2.0-04.el7.centos.x86_64.rpm), Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
 
 `yum install webbreaker`
 
