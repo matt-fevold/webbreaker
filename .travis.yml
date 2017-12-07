@@ -1,16 +1,11 @@
 sudo: false
 language: python
-
-matrix:
-  include:
-    - os: linux
-      python: 2.7, 3.7
-    - os: osx
-      python: 2.7    
+python:
+  - "2.7"
+  - "3.6"
 install:
   - pip install tox-travis -rrequirements.txt
   - python setup.py build
-  - if [ "$TRAVIS_OS_NAME" == "osx"   ] ; then   echo "Hello World!" ; fi
 script:
   - tox
 notifications:
