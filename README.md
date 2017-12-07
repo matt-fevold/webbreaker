@@ -13,15 +13,15 @@ Create pipelines with integrating a portfolio of web application security testin
 ## Download & Install
 [![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.05)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.05/link)
 
-:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases/download/2.0.04/webbreaker.dmg), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
+:arrow_down: [Mac OS](https://github.com/target/webbreaker/releases), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
 `brew install webbreaker`
 
-:arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases/download/2.0.04/webbreaker-2.0-04.el7.centos.x86_64.rpm), Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
+:arrow_down: [CentOS/RedHat/Fedora](https://github.com/target/webbreaker/releases), Linux installation is available @ [artifactory](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/)
 
 `yum install webbreaker`
 
-:arrow_down: [Windows 7](https://github.com/target/webbreaker/releases/download/2.0.03/webbreaker.exe), Windows installation is available @ [Chocolatey](https://chocolatey.org) - COMING SOON
+:arrow_down: [Windows 7](https://github.com/target/webbreaker/releases), Windows installation is available @ [Chocolatey](https://chocolatey.org) - COMING SOON
 
 `choco install webbreaker`
 
