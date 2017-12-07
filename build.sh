@@ -1,7 +1,8 @@
 #!/bin/sh
-# pyinstaller --clean -y --windowed webbreaker.spec
-# --paths /Library/Python/2.7/site-packages
+# osx build
+# pyinstaller --clean -y --windowed webbreaker-osx.spec
 # hdiutil create ./webbreaker.dmg -srcfolder webbreaker.app -ov
+# linux build
 # pyinstaller --clean -y --onefile --dist $(pwd)/dist --name webbreaker-cli $(pwd)/webbreaker/__main__.py 
 
 if type pip 2>/dev/null; then
