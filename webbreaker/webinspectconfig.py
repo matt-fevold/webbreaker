@@ -262,19 +262,19 @@ class WebInspectConfig(object):
         config_helper = Config()
         etc_dir = config_helper.etc
         git_dir = os.path.join(config_helper.git, '.git')
-
+        
         try:
             if options['settings'] == 'Default':
                 Logger.app.debug("Default settings were used")
-            elif os.path.isdir(git_dir):
+            elif os.path.exists(git_dir):
                 Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
                 check_output(['git', 'init', etc_dir])
-                check_output(['git', '--git-dir=' + git_dir, '--work-tree=' + 'str(etc_dir)', 'reset', '--hard'])
-                check_output(['git', '--git-dir=' + git_dir, '--work-tree=' + 'str(etc_dir)', 'pull', '--rebase'])
+                check_output(['git', '--git-dir=' + git_dir, 'reset', '--hard'])
+                check_output(['git', '--git-dir=' + git_dir, 'pull', '--rebase'])
                 sys.stdout.flush()
-            elif not os.path.isdir(etc_dir):
-                Logger.app.info("Cloning your specified WebInspect configurations to {}".format(etc_dir))
-                check_output(['git', 'clone', self.webinspect_git, etc_dir])
+            elif not os.path.exists(git_dir):
+                Logger.app.info("Cloning your specified WebInspect configurations to {}".format(config_helper.git))
+                check_output(['git', 'clone', self.webinspect_git, config_helper.git])
             else:
                 Logger.app.error(
                     "No GIT Repo was declared in your .config, therefore nothing will be cloned!")
