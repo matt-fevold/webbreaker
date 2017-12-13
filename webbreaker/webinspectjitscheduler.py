@@ -9,7 +9,7 @@ from webbreaker.webbreakerlogger import Logger
 
 
 class WebInspectJitScheduler(object):
-    def __init__(self, endpoints, size_list, size_needed='large'):
+    def __init__(self, endpoints, size_list, size_needed='size_large'):
         self.endpoints = endpoints
         self.size_list = size_list
         self.size_needed = size_needed

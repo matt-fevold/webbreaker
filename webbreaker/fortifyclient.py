@@ -86,7 +86,7 @@ class FortifyClient(object):
             response = api.commit_project_version(project_version_id=project_version_id)
             if not response.success:
                 raise ValueError("Failed to commit new project version")
-                #Logger.app.debug("Created new project version id {0}".format(project_version_id))
+                # Logger.app.debug("Created new project version id {0}".format(project_version_id))
             return project_version_id
 
         except Exception as e:
@@ -100,9 +100,9 @@ class FortifyClient(object):
         try:
             # It's kinda dumb for this api call to require both project name and id?
             response = api.create_new_project_version(project_name=self.application_name,
-                                                  project_template=self.project_template,
-                                                  version_name=self.fortify_version,
-                                                  description=self.__project_version_description__())
+                                                      project_template=self.project_template,
+                                                      version_name=self.fortify_version,
+                                                      description=self.__project_version_description__())
 
             if not response.success:
                 raise ValueError("Failed to create a new project version")
@@ -155,9 +155,9 @@ class FortifyClient(object):
                             return project_version['id']
                 # Didn't find a matching project version, verify that our project exists
                 for project_version in response.data['data']:
-                        if project_version['project']['name'] == self.application_name:
-                            # Our project exsits, so create a new version
-                            return self.__create_project_version__()
+                    if project_version['project']['name'] == self.application_name:
+                        # Our project exsits, so create a new version
+                        return self.__create_project_version__()
                 # Let upload_scan know that our project doesn't exist
                 return -2
             elif "401" in response.message:
@@ -202,7 +202,7 @@ class FortifyClient(object):
         response = api.get_projects()
         if response.success:
             Logger.console.info("{0:^5} {1:30}".format('ID', 'Name'))
-            Logger.console.info("{0:5} {1:30}".format('-'*5, '-'*30))
+            Logger.console.info("{0:5} {1:30}".format('-' * 5, '-' * 30))
             for proj in response.data['data']:
                 Logger.console.info("{0:^5} {1:30}".format(proj['id'], proj['name']))
         return None
@@ -214,7 +214,8 @@ class FortifyClient(object):
             Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
             Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
             for version in response.data['data']:
-                Logger.console.info("{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
+                Logger.console.info(
+                    "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
         elif not response.success and "401" in response.message:
             return response.response_code
         return None
@@ -223,23 +224,25 @@ class FortifyClient(object):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
         response = api.get_project_versions()
         if response.success:
-            Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application','Version'))
+            Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
             Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
-            for version  in response.data['data']:
+            for version in response.data['data']:
                 if version['project']['name'] == application:
-                    Logger.console.info("{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
+                    Logger.console.info(
+                        "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
         elif not response.success and "401" in response.message:
             return response.response_code
         return None
 
-    def find_version_id(self, application, version_name):
+    def find_version_id(self, version_name):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
         response = api.get_project_versions()
         if response.success:
-            for version  in response.data['data']:
-                if version['project']['name'] == application:
+            for version in response.data['data']:
+                if version['project']['name'] == self.application_name:
                     if version['name'] == version_name:
                         return version['id']
+
         return False
 
     def download_scan(self, version_id):
@@ -272,9 +275,9 @@ class FortifyClient(object):
                     Logger.console.error("Unable to create new project version, see logs for details.")
                     return None
             if self.ssc_server[-1] == '/':
-                self.ssc_server= self.ssc_server[:-1]
+                self.ssc_server = self.ssc_server[:-1]
 
         except UnboundLocalError as e:
             Logger.app.critical("Exception trying to build Project Version URL. {0}".format(e))
-            
+
         return self.ssc_server + '/ssc/html/ssc/index.jsp#!/version/' + str(version_id)

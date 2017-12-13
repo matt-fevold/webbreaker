@@ -46,42 +46,44 @@ class WebInspectConfig(object):
             self.sizing = webinspect_dict['size_list']
             self.default_size = webinspect_dict['default_size']
             self.webinspect_git = webinspect_dict['git']
-            self.webinspect_dir = webinspect_dict['dir']
             self.mapped_policies = webinspect_dict['mapped_policies']
         except KeyError as e:
-            Logger.console.error(
-                "Your configurations file or scan setting is incorrect see log: {}!!!".format(Logger.app_logfile))
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
 
-    # TODO: Move to webbreakerconfig
     def __get_webinspect_settings__(self):
         Logger.app.debug("Getting webinspect settings from config file")
         webinspect_dict = {}
-        webinspect_setting = Config().config
+        wb_config = Config()
+        webinspect_setting = wb_config.config
 
         try:
             config.read(webinspect_setting)
-            webinspect_dict['git'] = config.get("webinspect_repo", "git")
-            webinspect_dict['dir'] = config.get("webinspect_repo", "dir")
-            webinspect_dict['default_size'] = config.get("webinspect_default_size", "default")
-            webinspect_dict['mapped_policies'] = [[option, config.get('webinspect_policies', option)] for option in
-                                                  config.options('webinspect_policies')]
+            endpoints = []
+            sizes = []
+            endpoint = re.compile('endpoint_\d*')
+            size = re.compile('size_')
 
-            # python 2.7 config parser doesn't offer cross-section interpolation so be a bit magical about
-            # which entries under webinspect_endpoints get list comp'd. i.e. starts with e
-            webinspect_endpoints = [[option, config.get('webinspect_endpoints', option)] for option in
-                                    config.options('webinspect_endpoints')]
+            for option in config.items('webinspect'):
+                if endpoint.match(option[0]):
+                    endpoints.append([option[0], option[1]])
+                elif size.match(option[0]):
+                    sizes.append([option[0], option[1]])
+
+            webinspect_dict['git'] = wb_config.conf_get('webinspect', 'git_repo')
+            webinspect_dict['default_size'] = wb_config.conf_get('webinspect', 'default_size')
             webinspect_dict['endpoints'] = [[endpoint[1].split('|')[0], endpoint[1].split('|')[1]] for endpoint in
-                                            webinspect_endpoints if endpoint[0].startswith('e')]
-            webinspect_dict['size_list'] = [[option, config.get('webinspect_size', option)] for option in
-                                            config.options('webinspect_size')]
+                                            endpoints]
+            webinspect_dict['size_list'] = sizes
 
-        except (configparser.NoOptionError, CalledProcessError) as noe:
-            Logger.app.error("{} has incorrect or missing values {}".format(webinspect_setting, noe))
+            webinspect_dict['mapped_policies'] = [[option, config.get('webinspect_policy', option)] for option in
+                                                  config.options('webinspect_policy')]
+
+        except (configparser.NoOptionError, CalledProcessError) as e:
+            Logger.app.error("{} has incorrect or missing values {}".format(webinspect_setting, e))
         except configparser.Error as e:
             Logger.app.error("Error reading webinspect settings {} {}".format(webinspect_setting, e))
-        Logger.app.debug("Got webinspect settings from .config")
+        Logger.app.debug("Got webinspect settings from config.ini")
         return webinspect_dict
 
     def __getScanTargets__(self, settings_file_path):
@@ -139,13 +141,12 @@ class WebInspectConfig(object):
 
         if options['upload_settings']:
             # Full path is specified in settings
-            # TODO: Move al os.path functions to helper class
             if os.path.isfile(options['upload_settings'] + '.xml'):
                 options['upload_settings'] = options['upload_settings'] + '.xml'
             if not os.path.isfile(options['upload_settings']):
                 try:
                     options['upload_scan_settings'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                                   self.webinspect_dir, 'settings',
+                                                                                   Config().git, 'settings',
                                                                                    options[
                                                                                        'upload_settings'] + '.xml')))
                 except (AttributeError, TypeError) as e:
@@ -157,7 +158,7 @@ class WebInspectConfig(object):
                 options['settings'] = options['settings'] + '.xml'
             if not os.path.isfile(options['settings']) and options['settings'] != 'Default':
                 options['upload_settings'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                          self.webinspect_dir, 'settings',
+                                                                          Config().git, 'settings',
                                                                           options['settings'] + '.xml')))
             elif options['settings'] == 'Default':
                 # All WebInspect servers come with a Default.xml settings file, no need to upload it
@@ -196,7 +197,7 @@ class WebInspectConfig(object):
                         webmacro = webmacro + '.webmacro'
                     if not os.path.isfile(webmacro):
                         corrected_paths.append(str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                            self.webinspect_dir, 'webmacros',
+                                                                            Config().git, 'webmacros',
                                                                             webmacro + '.webmacro'))))
                     else:
                         corrected_paths.append(webmacro)
@@ -205,13 +206,14 @@ class WebInspectConfig(object):
             except (AttributeError, TypeError) as e:
                 Logger.app.error("The {0} is unable to be assigned! {1}".format(options['upload_webmacros'], e))
 
+        webinspect_dir = Config().git
         # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
         if options['upload_policy']:
             if os.path.isfile(options['upload_policy'] + '.policy'):
                 options['upload_policy'] = options['upload_policy'] + '.policy'
             if not os.path.isfile(options['upload_policy']):
                 options['upload_policy'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                        self.webinspect_dir, 'policies',
+                                                                        webinspect_dir, 'policies',
                                                                         options['upload_policy'] + '.policy')))
 
         elif options['scan_policy']:
@@ -219,7 +221,7 @@ class WebInspectConfig(object):
                 options['scan_policy'] = options['scan_policy'] + '.policy'
             if not os.path.isfile(options['scan_policy']):
                 options['upload_policy'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                        self.webinspect_dir, 'policies',
+                                                                        webinspect_dir, 'policies',
                                                                         options['scan_policy'] + '.policy')))
             else:
                 options['upload_policy'] = options['scan_policy']
@@ -262,22 +264,24 @@ class WebInspectConfig(object):
         config_helper = Config()
         etc_dir = config_helper.etc
         git_dir = os.path.join(config_helper.git, '.git')
-        
+
         try:
             if options['settings'] == 'Default':
                 Logger.app.debug("Default settings were used")
             elif os.path.exists(git_dir):
                 Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
                 check_output(['git', 'init', etc_dir])
-                check_output(['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'reset', '--hard'])
-                check_output(['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'pull', '--rebase'])
+                check_output(
+                    ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'reset', '--hard'])
+                check_output(
+                    ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'pull', '--rebase'])
                 sys.stdout.flush()
             elif not os.path.exists(git_dir):
                 Logger.app.info("Cloning your specified WebInspect configurations to {}".format(config_helper.git))
                 check_output(['git', 'clone', self.webinspect_git, config_helper.git])
             else:
                 Logger.app.error(
-                    "No GIT Repo was declared in your .config, therefore nothing will be cloned!")
+                    "No GIT Repo was declared in your config.ini, therefore nothing will be cloned!")
         except (CalledProcessError, AttributeError) as e:
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!\nError: {}".format(e))
         Logger.app.debug("Completed webinspect config fetch")

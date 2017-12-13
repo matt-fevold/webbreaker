@@ -113,6 +113,7 @@ def read_agent_info():
             data['fortify_pv_url'] = None
         if 'git_emails' not in data:
             data['git_emails'] = None
+        AgentVerifier(json_file_path)
         return data
 
     except json.decoder.JSONDecodeError:

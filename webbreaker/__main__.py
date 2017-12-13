@@ -31,6 +31,7 @@ from webbreaker.fortifyconfig import FortifyConfig
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
+from webbreaker.gitclient import AgentVerifier
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
@@ -250,12 +251,10 @@ def scan(config, **kwargs):
         webinspect_client.export_scan_results(scan_id, 'xml')
 
     except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
-        Logger.console.error(
-            "Unable to connect to WebInspect {0}, see log: {1}".format(webinspect_settings['webinspect_url'],
-                                                                       Logger.app_logfile))
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-
+    # except NameError as e:
+    #     Logger.app.error("{}".format(e))
     # # TODO
     # # And wrap up by writing out the issues we found
     # # this should be moved into a function...probably a whole 'nother class, tbh
@@ -671,7 +670,7 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
                 Logger.app.info("Fortify credentials stored")
-        version_id = fortify_client.find_version_id(application, version)
+        version_id = fortify_client.find_version_id(version)
         if version_id:
             filename = fortify_client.download_scan(version_id)
             if filename:
@@ -753,8 +752,8 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
             # The given application doesn't exist
             Logger.console.critical("Fortify Application {} does not exist. Unable to upload scan.".format(application))
 
-    except:
-        Logger.console.critical("Unable to complete command 'fortify upload'")
+    except IOError as e:
+        Logger.console.critical("Unable to complete command 'fortify upload': {}".format(e))
 
 
 @fortify.command(name='scan',
@@ -941,29 +940,24 @@ def credentials(config, fortify, webinspect, clear, username, password):
         fortify_config = FortifyConfig()
         if clear:
             fortify_config.clear_credentials()
+            Logger.app.info("Successfully cleared fortify credentials from config.ini")
         else:
             if username and password:
                 try:
-                    # TODO: Remove Fortify Client - not used
-                    fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                                   fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
                     fortify_config.write_password(password)
-                    sys.stdout.write(str("Credentials stored successfully\n"))
-                except ValueError as e:
-                    sys.stdout.write(str("Unable to validate Fortify credentials. Credentials were not stored\n"))
+                    Logger.app.info("Credentials stored successfully")
+                except ValueError:
+                    Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
 
             else:
                 username, password = fortify_prompt()
                 try:
-                    # TODO: Remove Fortify Client - not used
-                    fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                                   fortify_username=username, fortify_password=password)
                     fortify_config.write_username(username)
                     fortify_config.write_password(password)
-                    sys.stdout.write(str("Credentials stored successfully\n"))
-                except ValueError as e:
-                    sys.stdout.write(str("Unable to validate Fortify credentials. Credentials were not stored\n"))
+                    Logger.app.info("Credentials stored successfully")
+                except ValueError:
+                    Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
     elif webinspect:
         if clear:
             sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))

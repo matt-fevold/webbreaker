@@ -92,7 +92,7 @@ class SecretClient(object):
 
     def wipe_all_credentials(self):
         # TODO if any other values are encrypted, make sure to add them here
-        self.clear_credentials('fortify', 'fortify_username', 'fortify_password')
+        self.clear_credentials('fortify', 'username', 'password')
 
     def write_secret(self, overwrite=False):
         secret_path = Config().secret

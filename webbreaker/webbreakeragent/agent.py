@@ -19,7 +19,8 @@ class AgentClient(object):
         self.fqdn = socket.getfqdn()
         data = self.__read_json__(agent_json)
         try:
-            self.payload = self.__formatted_elk_payload__(scan=data['fortify_build_id'], host=self.fqdn, version=__version__,
+            self.payload = self.__formatted_elk_payload__(scan=data['fortify_build_id'], host=self.fqdn,
+                                                          version=__version__,
                                                           notifiers=data['git_emails'], git_url=data['git_url'],
                                                           fortify_url=data['fortify_pv_url'])
             self.payload['start'] = datetime.now().isoformat()
@@ -34,11 +35,11 @@ class AgentClient(object):
         try:
             api = FortifyApi(host=self.fortify_config.ssc_url, username=self.fortify_config.username,
                              password=self.fortify_config.password, verify_ssl=False)
-    
+
             response = api.get_cloudscan_job_status(self.scan_id)
         except (KeyError, AttributeError, UnboundLocalError) as e:
             self.log("Agent was either misconfigured or unable to communicate with Fortify SSC {0}\n".format(e))
-        
+
         if response.success:
             self.log("CHECK", response.data['data']['jobState'])
             return response.data['data']['jobState']
@@ -62,7 +63,7 @@ class AgentClient(object):
             response = api.get_cloudscan_jobs()
         except (AttributeError, UnboundLocalError) as e:
             self.log("Agent was either misconfigured or unable to communicate with agent {0}\n".format(e))
-            
+
         if response.success:
             for scan in response.data['data']:
                 if scan['scaBuildId'] == self.payload['scan']:
@@ -70,7 +71,7 @@ class AgentClient(object):
                     self.log('SCAN FOUND', self.scan_id)
                     self.payload['status'].append(scan['jobState'])
                     return
-            for i in range(0,6):
+            for i in range(0, 6):
                 time.sleep(15)
                 response = api.get_cloudscan_jobs()
                 for scan in response.data['data']:
@@ -132,7 +133,7 @@ class AgentClient(object):
                     pass
             json_file.close()
         else:
-            logs = {'logs':[]}
+            logs = {'logs': []}
         logs['logs'].append(self.payload)
         with open('/tmp/webbreaker.json', 'w') as json_file:
             json.dump(logs, json_file, sort_keys=True, indent=4, separators=(',', ': '))
@@ -141,7 +142,8 @@ class AgentClient(object):
     @staticmethod
     def __formatted_elk_payload__(scan, host, version, notifiers, git_url, fortify_url):
 
-        elk_json = dict(scan='', host='', version='', notifiers=[], name=None, settings=None, overrides=None, git_url='',
+        elk_json = dict(scan='', host='', version='', notifiers=[], name=None, settings=None, overrides=None,
+                        git_url='',
                         start=None, end=None, events=None, status=[], fortify_url='')
 
         elk_json['scan'] = scan

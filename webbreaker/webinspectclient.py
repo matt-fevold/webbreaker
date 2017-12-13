@@ -295,7 +295,7 @@ class WebinspectClient(object):
                 Logger.app.error("Error uploading settings {0}. {1}".format(self.webinspect_upload_settings,
                                                                             response.message))
 
-        except (ValueError, UnboundLocalError) as e:
+        except (ValueError, UnboundLocalError, NameError) as e:
             Logger.app.error("Error uploading settings {}".format(e))
 
     def upload_webmacros(self):
