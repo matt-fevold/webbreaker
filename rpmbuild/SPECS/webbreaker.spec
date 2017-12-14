@@ -6,7 +6,7 @@
 Summary:    Client for Dynamic Application Security Test Orchestration (DASTO).
 Name:       webbreaker
 Version:    2.0
-Release:    03%{?dist}
+Release:    09%{?dist}
 Source0:    %{name}-%{version}.tar.gz
 Group:      Security Tools
 License:    MIT
@@ -64,6 +64,11 @@ cp opt/webbreaker/webbreaker-cli $RPM_BUILD_ROOT/opt/webbreaker/webbreaker-cli
 %attr(755,%{user},%{user}) %{installdir}/webbreaker-cli
 
 %changelog
+* Thu Dec 14 2017 Target Product Security Engineering <brandon.spruth2@target.com> - 2.0-09
+- Refactored config.ini, reducing ini blocks to only two webinspect blocks, several bug fixes.
+  file handling of setting files for webinspect scans and uploads to include .fpr and .xml
+  deleted deprecated code and improved exception handling.
+  
 * Fri Dec 1 2017 Target Product Security Engineering <brandon.spruth2@target.com> - 2.0-03
 - Added Webinspect proxy functionality.
 
