@@ -565,14 +565,14 @@ def fortify_list(config, fortify_user, fortify_password, application):
             fortify_config.write_password(fortify_password)
             Logger.app.info("Fortify credentials stored")
         else:
-            Logger.app.info("No Fortify username or password provided. Checking .config for credentials")
+            Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
             if fortify_config.has_auth_creds():
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                fortify_username=fortify_config.username,
                                                fortify_password=fortify_config.password)
-                Logger.app.info("Fortify username and password successfully found in .config")
+                Logger.app.info("Fortify username and password successfully found in config.ini")
             else:
-                Logger.app.info("Fortify credentials not found in .config")
+                Logger.app.info("Fortify credentials not found in config.ini")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                fortify_username=fortify_user,
@@ -624,16 +624,16 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
             fortify_config.write_password(fortify_password)
             Logger.app.info("Fortify credentials stored")
         else:
-            Logger.app.info("No Fortify username or password provided. Checking .config for credentials")
+            Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
             if fortify_config.has_auth_creds():
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
                                                application_name=fortify_config.application_name,
                                                fortify_username=fortify_config.username,
                                                fortify_password=fortify_config.password)
-                Logger.app.info("Fortify username and password successfully found in .config")
+                Logger.app.info("Fortify username and password successfully found in config.ini")
             else:
-                Logger.app.info("Fortify credentials not found in .config")
+                Logger.app.info("Fortify credentials not found in config.ini")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,

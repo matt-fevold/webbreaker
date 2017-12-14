@@ -11,7 +11,7 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 Create pipelines with integrating a portfolio of web application security testing products, such as WebInspect, Fortify SSC, and ThreadFix.
 
 ## Download & Install
-[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.08)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.08/link)
+[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.09)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.09/link)
 
 :arrow_down: [Mac OS](https://github.com/target/webbreaker/releases), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
