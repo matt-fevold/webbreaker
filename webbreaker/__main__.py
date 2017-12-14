@@ -407,8 +407,7 @@ def download(config, server, scan_name, scan_id, x, protocol):
 def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro):
     if server:
         servers = []
-        for s in server:
-            servers.append(format_webinspect_server(s))
+        servers.append(format_webinspect_server(server))
     else:
         servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
 
@@ -475,7 +474,7 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
             if result:
                 proxy_client.download_proxy(webmacro, setting)
                 return 0
-        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+        Logger.app.error("Proxy: '{}' not found.".format(proxy_name))
         return 1
 
     elif upload:
