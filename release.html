@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Webbreaker</title>
+
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/highlight.dark.css">
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/main.css">
+    </head>
+    <body>
+
+        <header class="navbar navbar-default navbar-fixed-top">
+
+            <a class="navbar-brand" href="https://target.github.io/webbreaker/">
+                Webbreaker
+                <small class="hidden-xs hidden-sm">
+                    Centrally administer Dynamic Application Security Testing (DAST), as part of your DevOps pipeline
+                </small>
+            </a>
+
+                            <a href="https://github.com/target/webbreaker">
+                    <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
+                </a>
+            
+        </header>
+
+        <main class="container">
+            <div class="row">
+
+                
+                <section id="content" class="col-sm-12">
+                    <h1 id="release-199">Release 1.99</h1>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Feature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product Support</td>
+<td>Command-line (CLI) scan administration of WebInspect with Foritfy SSC products.</td>
+</tr>
+<tr>
+<td>Integration</td>
+<td><a href="https://jenkins.io">Jenkins</a> Environmental Variable &amp; String Parameter support (i.e. $BUILD_TAG)</td>
+</tr>
+<tr>
+<td>Integration</td>
+<td>Docker container v17.x support</td>
+</tr>
+<tr>
+<td>Integration</td>
+<td>Custom email alerting or notifications for scan launch and completion.</td>
+</tr>
+<tr>
+<td>Administration</td>
+<td>Extensible event logging for scan administration and scan results.</td>
+</tr>
+<tr>
+<td>API Support</td>
+<td><a href="https://pypi.python.org/pypi/webinspectapi">WebInspect REST API</a> support for v9.30 and later.</td>
+</tr>
+<tr>
+<td>API Support</td>
+<td><a href="https://pypi.python.org/pypi/fortifyapi">Fortify Software Security Center (SSC) REST API</a> support for v16.10 and later.</td>
+</tr>
+<tr>
+<td>Administratin</td>
+<td>WebInspect scan cluster support between two (2) or greater WebInspect servers/sensors.</td>
+</tr>
+<tr>
+<td>Administration</td>
+<td>Capabilities for extensible scan telemetry with ELK and Splunk.</td>
+</tr>
+<tr>
+<td>Integration</td>
+<td>GIT support for centrally managing <a href="https://github.com/automationdomination/Webinspect">WebInspect scan configurations</a>.</td>
+</tr>
+<tr>
+<td>Product Support</td>
+<td>Replaces most functionality of Fortify's <code>fortifyclient</code></td>
+</tr>
+<tr>
+<td>Runtime Support</td>
+<td>Python versions 2.6 and 3.x</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Provides AES 128-bit key management for all secrets from the <a href="https://pypi.python.org/pypi/cryptography/">Fernet encryption</a> Python library.</td>
+</tr>
+</tbody>
+</table>
+                </section>
+
+            </div>
+        </main>
+
+        <footer>
+            <div class="container">
+                <p class="text-muted">
+                    website generated with <a href="http://couscous.io" title="Markdown website generator">Couscous</a>
+                </p>
+            </div>
+        </footer>
+
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//yastatic.net/highlightjs/8.2/highlight.min.js"></script>
+
+        <script>
+            $(function() {
+                $("section>h1").wrap('<div class="page-header" />');
+                // Syntax highlighting
+                hljs.initHighlightingOnLoad();
+            });
+        </script>
+
+    </body>
+</html>
