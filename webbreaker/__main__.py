@@ -134,7 +134,7 @@ def webinspect(config):
               help="Upload policy file to WebInspect")
 @click.option('--upload_settings',
               required=False,
-              help="Upload setting file without .xml extension")
+              help="Upload .xml settings file")
 @click.option('--upload_webmacros',
               required=False,
               help="Upload webmacro to WebInspect")
@@ -157,8 +157,6 @@ def scan(config, **kwargs):
     try:
         webinspect_config.fetch_webinspect_configs(ops)
     except GitCommandError as e:
-        Logger.console.critical("{} does not have permission to access the git repo, see log {}".format(
-            webinspect_config.webinspect_git, Logger.app_logfile))
         Logger.app.critical("{} does not have permission to access the git repo: {}".format(
             webinspect_config.webinspect_git, e))
         sys.exit(1)
@@ -168,15 +166,13 @@ def scan(config, **kwargs):
         webinspect_settings = webinspect_config.parse_webinspect_options(ops)
     except AttributeError as e:
         Logger.app.error("Your configuration or settings are incorrect see log {}!!!".format(Logger.app_logfile))
-
+        exit(1)
     # OK, we're ready to actually do something now
 
     # The webinspect client is our point of interaction with the webinspect server farm
     try:
         webinspect_client = WebinspectClient(webinspect_settings)
     except (UnboundLocalError, EnvironmentError) as e:
-        Logger.console.critical(
-            "Incorrect WebInspect configurations found!! See log {}".format(str(Logger.app_logfile)))
         Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
         exit(1)
 
@@ -253,28 +249,6 @@ def scan(config, **kwargs):
     except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-    # except NameError as e:
-    #     Logger.app.error("{}".format(e))
-    # # TODO
-    # # And wrap up by writing out the issues we found
-    # # this should be moved into a function...probably a whole 'nother class, tbh
-    # if scan_id:
-    #     Logger.app.debug("Scan log: {}".format(webinspect_client.get_scan_log(scan_guid=scan_id)))
-    #     with open('/tmp/' + webinspect_client.scan_name + '.issues', 'w') as outfile:
-    #         end_date = str(datetime.datetime.now())
-    #         sessions = json.loads(webinspect_client.get_scan_issues(scan_guid=scan_id))
-    #         # inject scan-level data into each issue
-    #         for session in sessions:
-    #             print(24)
-    #             issues = session['issues']
-    #             print(25)
-    #             for issue in issues:
-    #                 print(26)
-    #                 issue['scan_name'] = webinspect_settings['webinspect_settings']
-    #                 issue['scan_policy'] = webinspect_settings['webinspect_overrides_scan_policy']
-    #                 issue['end_date'] = end_date
-    #                 output = str(json.dumps(issue))
-    #                 outfile.write(output + '\n')
 
     Logger.app.info("Webbreaker WebInspect has completed.")
 

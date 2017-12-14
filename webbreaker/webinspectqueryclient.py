@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
+import os
 import json
 import webinspectapi.webinspect as webinspectapi
 from webbreaker.webbreakerlogger import Logger
@@ -17,6 +18,7 @@ class WebinspectQueryClient(object):
         :param scan_name:
         :return: List of search results
         """
+        scan_name = self.trim_ext(scan_name)
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
         return api.get_scan_by_name(scan_name).data
 
@@ -27,6 +29,7 @@ class WebinspectQueryClient(object):
         :param scan_name:
         :param extension:
         """
+        scan_name = self.trim_ext(scan_name)
         Logger.app.debug('Exporting scan: {}'.format(scan_id))
         detail_type = 'Full' if extension == 'xml' else None
         api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
@@ -68,3 +71,6 @@ class WebinspectQueryClient(object):
         except (ValueError, TypeError, UnboundLocalError) as e:
             Logger.app.error("get_scan_status failed: {}".format(e))
             return None
+
+    def trim_ext(self, file):
+        return os.path.splitext(os.path.basename(file))[0]

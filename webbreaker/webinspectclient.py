@@ -101,7 +101,7 @@ class WebinspectClient(object):
 
         if response.success:
             scan_id = response.data['ScanId']
-            sys.stdout.write(str('WebInspect scan launched on {0} your scan id: {1} !!\n'.format(self.url, scan_id)))
+            sys.stdout.write(str('WebInspect scan launched on {0} your scan id: {1}\n'.format(self.url, scan_id)))
         else:
             Logger.app.error("No scan was launched!")
             Logger.app.error("{}".format(response.message))
@@ -260,6 +260,7 @@ class WebinspectClient(object):
             api = webinspectapi.WebInspectApi(self.url, verify_ssl=False)
             # bit of ugliness here. I'd like to just have the policy name at this point but I don't
             # so find it in the full path
+            # TODO: Verify split here
             response = api.get_policy_by_name(ntpath.basename(self.webinspect_upload_policy).split('.')[0])
             if response.success and response.response_code == 200:  # the policy exists on the server already
                 api = webinspectapi.WebInspectApi(self.url, verify_ssl=False)

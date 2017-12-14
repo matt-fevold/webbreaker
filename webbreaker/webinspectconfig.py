@@ -93,6 +93,7 @@ class WebInspectConfig(object):
         :param settings_file_path: Path to WebInspect settings file
         :return: unordered set of targets
         """
+        # TODO: Validate settings_file_path
         targets = set()
         try:
             tree = ElementTree.parse(settings_file_path)
@@ -106,7 +107,7 @@ class WebInspectConfig(object):
                                        "xmlns:string",
                                        namespaces={'xmlns': 'http://spidynamics.com/schemas/scanner/1.0'}):
                 targets.add(target.text)
-        except Exception as e:
+        except IOError as e:
             Logger.app.error("Unable to read the config file {0}".format(e))
 
         return targets
@@ -114,25 +115,26 @@ class WebInspectConfig(object):
     def parse_webinspect_options(self, options):
         webinspect_dict = {}
 
-        # Remove any unneeded file extentions
-        if options['settings'] is not None and options['settings'][-4:] == '.xml':
-            options['settings'] = options['settings'][:-4]
-
-        if options['upload_webmacros'] is not None and options['upload_webmacros'][-9:] == '.webmacro':
-            options['upload_webmacros'] = options['upload_webmacros'][:-9]
-
-        if options['upload_policy'] is not None and options['upload_policy'][-7:] == '.policy':
-            options['upload_policy'] = options['upload_policy'][:-7]
-
-        if options['scan_policy'] is not None and options['scan_policy'][-7:] == '.policy':
-            options['scan_policy'] = options['scan_policy'][:-7]
+        # Trim .xml
+        options['settings'] = self.trim_ext(options['settings'])
+        # Trim .webmacro
+        options['upload_webmacros'] = self.trim_ext(options['upload_webmacros'], True)
+        options['workflow_macros'] = self.trim_ext(options['workflow_macros'], True)
+        options['login_macro'] = self.trim_ext(options['login_macro'])
+        # Trim .policy
+        options['upload_policy'] = self.trim_ext(options['upload_policy'])
+        # Trim .policy
+        options['scan_policy'] = self.trim_ext(options['scan_policy'])
+        # Trim .xml
+        options['upload_settings'] = self.trim_ext(options['upload_settings'])
 
         if not options['scan_name']:
             try:
                 if runenv == "jenkins":
-                    options['scan_name'] = os.getenv("JOB_NAME")
-                    if "/" in options['scan_name']:
+                    if "/" in os.getenv("JOB_NAME"):
                         options['scan_name'] = os.getenv("BUILD_TAG")
+                    else:
+                        options['scan_name'] = os.getenv("JOB_NAME")
                 else:
                     options['scan_name'] = "webinspect" + "-" + "".join(
                         random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
@@ -145,6 +147,7 @@ class WebInspectConfig(object):
                 options['upload_settings'] = options['upload_settings'] + '.xml'
             if not os.path.isfile(options['upload_settings']):
                 try:
+                    # TODO: Change to abs path
                     options['upload_scan_settings'] = str("{}".format(os.path.join(os.path.dirname(__file__),
                                                                                    Config().git, 'settings',
                                                                                    options[
@@ -153,10 +156,14 @@ class WebInspectConfig(object):
                     Logger.app.error("The {0} is unable to be assigned! {1}".format(options['upload_settings'], e))
             else:
                 options['upload_scan_settings'] = options['upload_settings']
+
+
+
         else:
             if os.path.isfile(options['settings'] + '.xml'):
                 options['settings'] = options['settings'] + '.xml'
             if not os.path.isfile(options['settings']) and options['settings'] != 'Default':
+                # TODO: Change to abs path
                 options['upload_settings'] = str("{}".format(os.path.join(os.path.dirname(__file__),
                                                                           Config().git, 'settings',
                                                                           options['settings'] + '.xml')))
@@ -196,6 +203,7 @@ class WebInspectConfig(object):
                     if os.path.isfile(webmacro + '.webmacro'):
                         webmacro = webmacro + '.webmacro'
                     if not os.path.isfile(webmacro):
+                        # TODO: Change to abs path
                         corrected_paths.append(str("{}".format(os.path.join(os.path.dirname(__file__),
                                                                             Config().git, 'webmacros',
                                                                             webmacro + '.webmacro'))))
@@ -212,6 +220,7 @@ class WebInspectConfig(object):
             if os.path.isfile(options['upload_policy'] + '.policy'):
                 options['upload_policy'] = options['upload_policy'] + '.policy'
             if not os.path.isfile(options['upload_policy']):
+                # TODO: Change to abs path
                 options['upload_policy'] = str("{}".format(os.path.join(os.path.dirname(__file__),
                                                                         webinspect_dir, 'policies',
                                                                         options['upload_policy'] + '.policy')))
@@ -220,6 +229,7 @@ class WebInspectConfig(object):
             if os.path.isfile(options['scan_policy'] + '.policy'):
                 options['scan_policy'] = options['scan_policy'] + '.policy'
             if not os.path.isfile(options['scan_policy']):
+                # TODO: Change to abs path
                 options['upload_policy'] = str("{}".format(os.path.join(os.path.dirname(__file__),
                                                                         webinspect_dir, 'policies',
                                                                         options['scan_policy'] + '.policy')))
@@ -285,3 +295,15 @@ class WebInspectConfig(object):
         except (CalledProcessError, AttributeError) as e:
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!\nError: {}".format(e))
         Logger.app.debug("Completed webinspect config fetch")
+
+    def trim_ext(self, file, list=False):
+        try:
+            if list:
+                result = []
+                for f in file:
+                    result.append(os.path.splitext(os.path.basename(f))[0])
+                return result
+            else:
+                return os.path.splitext(os.path.basename(file))[0]
+        except (TypeError, AttributeError):
+            return file
