@@ -690,16 +690,16 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
         scan_name = version
     try:
         if not fortify_user or not fortify_password:
-            Logger.console.info("No Fortify username or password provided. Checking .config for secret")
+            Logger.console.info("No Fortify username or password provided. Validating config.ini for secret")
             if fortify_config.has_auth_creds():
-                Logger.console.info("Fortify credentials found in .config")
+                Logger.console.info("Fortify credentials found in config.ini")
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
                                                application_name=fortify_config.application_name, scan_name=version,
                                                extension=x, fortify_username=fortify_config.username,
                                                fortify_password=fortify_config.password)
             else:
-                Logger.console.info("Fortify credentials not found in .config")
+                Logger.console.info("Fortify credentials not found in config.ini")
                 fortify_user, fortify_password = fortify_prompt()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
@@ -726,8 +726,8 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
             # The given application doesn't exist
             Logger.console.critical("Fortify Application {} does not exist. Unable to upload scan.".format(application))
 
-    except IOError as e:
-        Logger.console.critical("Unable to complete command 'fortify upload': {}".format(e))
+    except (IOError, ValueError) as e:
+        Logger.console.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
 
 
 @fortify.command(name='scan',

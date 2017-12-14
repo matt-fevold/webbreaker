@@ -293,8 +293,9 @@ class WebinspectClient(object):
             if response.success:
                 Logger.console.debug("Uploaded settings {} to server.".format(self.webinspect_upload_settings))
             else:
-                Logger.app.error("Error uploading settings {0}. {1}".format(self.webinspect_upload_settings,
-                                                                            response.message))
+                Logger.app.error(
+                    "Error uploading settings {0}. \nResponse Message: {1}".format(self.webinspect_upload_settings,
+                                                                                   response.message))
 
         except (ValueError, UnboundLocalError, NameError) as e:
             Logger.app.error("Error uploading settings {}".format(e))

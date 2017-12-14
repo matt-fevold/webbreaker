@@ -171,6 +171,7 @@ class FortifyClient(object):
         return None
 
     def upload_scan(self, file_name):
+        file_name = self.trim_ext(file_name)
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
         project_version_id = self.__get_project_version__()
         # If our project doesn't exist, exit upload_scan
@@ -193,7 +194,6 @@ class FortifyClient(object):
         elif not response.success and "401" in response.message:
             return response.response_code
         else:
-            Logger.console.error("Error uploading {0}.{1}!!!".format(self.fortify_version, self.extension))
             Logger.app.error("Error uploading {0}.{1}!!!".format(self.fortify_version, self.extension))
         return response
 
@@ -281,3 +281,15 @@ class FortifyClient(object):
             Logger.app.critical("Exception trying to build Project Version URL. {0}".format(e))
 
         return self.ssc_server + '/ssc/html/ssc/index.jsp#!/version/' + str(version_id)
+
+    def trim_ext(self, file, list=False):
+        try:
+            if list:
+                result = []
+                for f in file:
+                    result.append(os.path.splitext(os.path.basename(f))[0])
+                return result
+            else:
+                return os.path.splitext(os.path.basename(file))[0]
+        except (TypeError, AttributeError):
+            return file

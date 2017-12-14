@@ -107,9 +107,12 @@ class WebInspectConfig(object):
                                        "xmlns:string",
                                        namespaces={'xmlns': 'http://spidynamics.com/schemas/scanner/1.0'}):
                 targets.add(target.text)
-        except IOError as e:
-            Logger.app.error("Unable to read the config file {0}".format(e))
-
+        except FileNotFoundError:
+            Logger.app.error("Unable to read the config file {0}".format(settings_file_path))
+            exit(1)
+        except ElementTree.ParseError:
+            Logger.app.error("Settings file is not configured properly")
+            exit(1)
         return targets
 
     def parse_webinspect_options(self, options):
@@ -118,8 +121,8 @@ class WebInspectConfig(object):
         # Trim .xml
         options['settings'] = self.trim_ext(options['settings'])
         # Trim .webmacro
-        options['upload_webmacros'] = self.trim_ext(options['upload_webmacros'], True)
-        options['workflow_macros'] = self.trim_ext(options['workflow_macros'], True)
+        options['upload_webmacros'] = self.trim_ext(options['upload_webmacros'])
+        options['workflow_macros'] = self.trim_ext(options['workflow_macros'])
         options['login_macro'] = self.trim_ext(options['login_macro'])
         # Trim .policy
         options['upload_policy'] = self.trim_ext(options['upload_policy'])
@@ -296,14 +299,18 @@ class WebInspectConfig(object):
             Logger.app.error("Uh oh something is wrong with your WebInspect configurations!!\nError: {}".format(e))
         Logger.app.debug("Completed webinspect config fetch")
 
-    def trim_ext(self, file, list=False):
-        try:
-            if list:
-                result = []
-                for f in file:
+    def trim_ext(self, file):
+        if type(file) is list:
+            result = []
+            for f in file:
+                if os.path.isfile(f):
+                    result.append(os.path.splitext(f)[0])
+                else:
                     result.append(os.path.splitext(os.path.basename(f))[0])
-                return result
-            else:
-                return os.path.splitext(os.path.basename(file))[0]
-        except (TypeError, AttributeError):
+            return result
+        elif file is None:
             return file
+        else:
+            if os.path.isfile(file):
+                return os.path.splitext(file)[0]
+            return os.path.splitext(os.path.basename(file))[0]

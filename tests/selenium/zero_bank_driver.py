@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
+import random
+import string
 from subprocess import Popen, PIPE, check_output
 
 WEBBREAKER_EXE = "/usr/local/bin/webbreaker"
-PROXY_NAME = "ZeroBankTest"
+PROXY_NAME = "ZeroBankTest" + "-" + "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 PROXY_SERVER = ""
 PROXY_PORT = 9001
 THREADFIX_APPLICATION = "ZeroBankTest"
