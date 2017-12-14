@@ -35,8 +35,8 @@ def test_fortify_list_success(client_mock, test_mock, runner, caplog):
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in config.ini'),
         ('__webbreaker__', 'INFO', 'Fortify list has successfully completed'),
     )
     caplog.uninstall()
@@ -54,7 +54,7 @@ def test_fortify_list_client_init_exeception(client_mock, test_mock, runner, cap
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
         ('__webbreaker__', 'ERROR', 'Unable to obtain a Fortify API token. Invalid Credentials'),
     )
     caplog.uninstall()
@@ -73,8 +73,8 @@ def test_fortify_list_list_list_exeception(client_mock, test_mock, runner, caplo
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in config.ini'),
         ('__webbreaker__', 'ERROR', 'Unable to obtain a Fortify API token. Invalid Credentials'),
     )
     caplog.uninstall()
@@ -95,8 +95,8 @@ def test_fortify_list_prompt_success(prompt_mock, client_mock, test_mock, runner
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify credentials not found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify credentials not found in config.ini'),
         ('__webbreaker__', 'INFO', 'Fortify credentials stored'),
         ('__webbreaker__', 'INFO', 'Fortify list has successfully completed'),
     )
@@ -118,8 +118,8 @@ def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runn
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify credentials not found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify credentials not found in config.ini'),
         ('__webbreaker__', 'ERROR', 'Unable to obtain a Fortify API token. Invalid Credentials'),
     )
     caplog.uninstall()
@@ -140,8 +140,8 @@ def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runn
     result = runner.invoke(webbreaker, ['fortify', 'list'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify credentials not found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify credentials not found in config.ini'),
         ('__webbreaker__', 'INFO', 'Fortify credentials stored'),
         ('__webbreaker__', 'ERROR', 'Unable to obtain a Fortify API token. Invalid Credentials'),
     )
@@ -208,8 +208,8 @@ def test_fortify_list_application_success(client_mock, test_mock, runner, caplog
 
     caplog.check(
         (
-            '__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
+            '__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in config.ini'),
         ('__webbreaker__', 'INFO', 'Fortify list has successfully completed'),
     )
     caplog.uninstall()
@@ -228,8 +228,8 @@ def test_fortify_list_application_exception(client_mock, test_mock, runner, capl
     result = runner.invoke(webbreaker, ['fortify', 'list', '--application', 'test'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in config.ini'),
         ('__webbreaker__', 'CRITICAL', "Unable to complete command 'fortify list': Test Failure"),
     )
     caplog.uninstall()
@@ -249,8 +249,8 @@ def test_fortify_download_success(client_mock, test_mock, runner, caplog):
     result = runner.invoke(webbreaker, ['fortify', 'download', '--version', 'test_version'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in config.ini'),
         ('__webbreaker__', 'INFO', 'Scan file for version 123 successfully written to testfile.fpr'),
     )
     caplog.uninstall()
@@ -270,8 +270,8 @@ def test_fortify_download_failure(client_mock, test_mock, runner, caplog):
     result = runner.invoke(webbreaker, ['fortify', 'download', '--version', 'test_version'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in config.ini'),
         ('__webbreaker__', 'ERROR', 'Scan download for version 123 has failed'),
     )
     caplog.uninstall()
@@ -291,8 +291,8 @@ def test_fortify_download_version_id_failure(client_mock, test_mock, runner, cap
     result = runner.invoke(webbreaker, ['fortify', 'download', '--application', 'test_app', '--version', 'test_version'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking .config for credentials'),
-        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in .config'),
+        ('__webbreaker__', 'INFO', 'No Fortify username or password provided. Checking config.ini for credentials'),
+        ('__webbreaker__', 'INFO', 'Fortify username and password successfully found in config.ini'),
         ('__webbreaker__', 'ERROR', 'No version matching test_version found under test_app in Fortify'),
     )
     caplog.uninstall()
