@@ -169,19 +169,16 @@ This is a compelte example of what will be generated under ~/.webbreaker/config.
 
 To import your own config file just put 'config.ini' into ~/.webbreaker/config.ini
 ### Example 
-````ini
-[webbreaker_install]
-dir = .
-
+````
 [fortify]
 ssc_url = https://stage-ssc.target.com
 project_template = Prioritized High Risk Issue Template
 application_name = WEBINSPECT
-fortify_username = 
-fortify_password = 
+username = 
+password = 
 
 [threadfix]
-host = https://stage-threadfix.target.com/threadfix
+host = https://threadfix.example.com:8443/threadfix
 api_key = this_is_my_super_secret_api_key
 
 [git]
@@ -190,7 +187,7 @@ token = this_is_my_super_secret_token
 [webinspect_endpoints]
 large = 2
 medium = 1
-server01 = https://tcttswie001p.hq.target.com:8083
+server01 = https://webinspect-server.example.com:8083
 e01 = %(server01)s|%(large)s
 
 [webinspect_size]
@@ -201,8 +198,7 @@ medium = 1
 default = large
 
 [webinspect_repo]
-git = git@git.target.com:tts-pse/webinspect.git
-dir = /opt/webbreaker/etc
+git = git@github.com:automationdomination/webinspect.git
 
 [webinspect_policies]
 aggressivesqlinjection = 032b1266-294d-42e9-b5f0-2a4239b23941
