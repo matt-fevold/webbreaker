@@ -116,6 +116,7 @@ class WebInspectConfig(object):
         return targets
 
     def parse_webinspect_options(self, options):
+        webinspect_dir = Config().git
         webinspect_dict = {}
 
         # Trim .xml
@@ -145,38 +146,30 @@ class WebInspectConfig(object):
                 Logger.app.error("The {0} is unable to be created! {1}".format(options['scan_name'], e))
 
         if options['upload_settings']:
-            # Full path is specified in settings
             if os.path.isfile(options['upload_settings'] + '.xml'):
                 options['upload_settings'] = options['upload_settings'] + '.xml'
-            if not os.path.isfile(options['upload_settings']):
+            if os.path.isfile(options['upload_settings']):
+                options['upload_scan_settings'] = options['upload_settings']
+            else:
                 try:
-                    # TODO: Change to abs path
-                    options['upload_scan_settings'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                                   Config().git, 'settings',
-                                                                                   options[
-                                                                                       'upload_settings'] + '.xml')))
+                    options['upload_scan_settings'] = os.path.join(webinspect_dir,
+                                                                   'settings',
+                                                                   options['upload_settings'] + '.xml')
                 except (AttributeError, TypeError) as e:
                     Logger.app.error("The {0} is unable to be assigned! {1}".format(options['upload_settings'], e))
-            else:
-                options['upload_scan_settings'] = options['upload_settings']
-
-
 
         else:
-            if os.path.isfile(options['settings'] + '.xml'):
+            if os.path.isfile(options['settings']):
                 options['settings'] = options['settings'] + '.xml'
             if not os.path.isfile(options['settings']) and options['settings'] != 'Default':
-                # TODO: Change to abs path
-                options['upload_settings'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                          Config().git, 'settings',
-                                                                          options['settings'] + '.xml')))
+                options['upload_settings'] = os.path.join(webinspect_dir,
+                                                          'settings',
+                                                          options['settings'] + '.xml')
             elif options['settings'] == 'Default':
                 # All WebInspect servers come with a Default.xml settings file, no need to upload it
                 options['upload_settings'] = None
             else:
                 options['upload_settings'] = options['settings']
-                # Settings is used later by the api so we need to cut off the filepath info
-                options['settings'] = re.search('.*/(.*)\.xml', options['settings']).group(1)
 
         # if login macro has been specified, ensure it's uploaded.
         if options['login_macro']:
@@ -206,10 +199,9 @@ class WebInspectConfig(object):
                     if os.path.isfile(webmacro + '.webmacro'):
                         webmacro = webmacro + '.webmacro'
                     if not os.path.isfile(webmacro):
-                        # TODO: Change to abs path
-                        corrected_paths.append(str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                            Config().git, 'webmacros',
-                                                                            webmacro + '.webmacro'))))
+                        corrected_paths.append(os.path.join(webinspect_dir,
+                                                            'webmacros',
+                                                            webmacro + '.webmacro'))
                     else:
                         corrected_paths.append(webmacro)
                 options['upload_webmacros'] = corrected_paths
@@ -217,27 +209,27 @@ class WebInspectConfig(object):
             except (AttributeError, TypeError) as e:
                 Logger.app.error("The {0} is unable to be assigned! {1}".format(options['upload_webmacros'], e))
 
-        webinspect_dir = Config().git
         # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
         if options['upload_policy']:
             if os.path.isfile(options['upload_policy'] + '.policy'):
                 options['upload_policy'] = options['upload_policy'] + '.policy'
-            if not os.path.isfile(options['upload_policy']):
-                # TODO: Change to abs path
-                options['upload_policy'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                        webinspect_dir, 'policies',
-                                                                        options['upload_policy'] + '.policy')))
+            elif os.path.isfile(options['upload_policy']):
+                options['upload_policy'] = options['upload_policy']
+            else:
+                options['upload_policy'] = os.path.join(webinspect_dir,
+                                                        'policies',
+                                                        options['upload_policy'] + '.policy')
 
         elif options['scan_policy']:
             if os.path.isfile(options['scan_policy'] + '.policy'):
                 options['scan_policy'] = options['scan_policy'] + '.policy'
-            if not os.path.isfile(options['scan_policy']):
-                # TODO: Change to abs path
-                options['upload_policy'] = str("{}".format(os.path.join(os.path.dirname(__file__),
-                                                                        webinspect_dir, 'policies',
-                                                                        options['scan_policy'] + '.policy')))
+            elif os.path.isfile(options['upload_policy']):
+                options['scan_policy'] = options['scan_policy']
+
             else:
-                options['upload_policy'] = options['scan_policy']
+                options['upload_policy'] = os.path.join(webinspect_dir,
+                                                        'policies',
+                                                        options['scan_policy'] + '.policy')
 
         # Determine the targets specified in a settings file
         if options['upload_settings']:
