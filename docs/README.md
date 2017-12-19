@@ -171,7 +171,7 @@ To import your own config file just put 'config.ini' into ~/.webbreaker/config.i
 ### Example 
 ````
 [fortify]
-ssc_url = https://stage-ssc.target.com
+ssc_url = https://fortify.example.com
 project_template = Prioritized High Risk Issue Template
 application_name = WEBINSPECT
 username = 
@@ -228,26 +228,42 @@ standard = cb72a7c2-9207-4ee7-94d0-edd14a47c15c
 transportlayersecurity = 0fa627de-3f1c-4640-a7d3-154e96cda93c
 
 [emailer]
-smtp_host=smtp.target.com
+# smnp email host, port and email addresses required for email functionality.
+smtp_host=smtp.example.com
 smtp_port=25
-from_address=webbreaker-no-reply@target.com
-to_address=TTS-WebInspect-Activity@target.com
-email_template = <html>
-	<head></head>
-	<body></body>
-	</html>
-
-[agent_emailer]
-smtp_host=smtp.target.com
-smtp_port=25
-from_address=webbreaker-no-reply@target.com
-default_to_address = 
-chatroom = 
-email_template = <html>
-	<head></head>
-	<body></body>
-	</html>
+from_address=webbreaker-no-reply@example.com
+to_address=webbreaker-no-reply@example.com
+default_to_address =
+chatroom =
+email_template =
+        <html>
+        <head></head>
+        <body>
+        <p>Hello,<br /><br />
+        The following scan has logged new activity:
+        <ul>
+        <li>Attack traffic source: {0}</li>
+        <li>Attack traffic target(s):</li>
+        <ul>
+        {4}
+        </ul>
+        <li>Scan name: {1}</li>
+        <li>Scan ID: {2}</li>
+        <li><b>Action: {3}</b></li>
+        </ul>
+        </p>
+        <p>
+        Questions? Concerns? Please contact us in our Hipchat room, &quot;WebBreaker Activity&quot;,
+        or <a href="mailto:webbreaker-no-reply@target.com">email us</a>.
+        </p>
+        <p>
+        Want to manage your subscription to these emails? Use <a href="http://wiki.example.com/tgtwiki/index.php/GroupID">GroupID</a>, and
+        add/remove yourself from WebBreaker Activity.
+        </p>
+        </body>
+        </html>
 ````
+
 ### WebBreaker `webbreaker_config`
 Global settings for webbreaker.
 
