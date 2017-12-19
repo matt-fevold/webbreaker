@@ -5,8 +5,15 @@ import os
 import random
 import string
 from subprocess import Popen, PIPE, check_output
+from sys import platform
 
-WEBBREAKER_EXE = "/usr/local/bin/webbreaker"
+if platform == "darwin":
+    WEBBREAKER_EXE = "/usr/local/bin/webbreaker"
+elif platform == "linux2":
+    WEBBREAKER_EXE = "/usr/bin/webbreaker"
+elif platform == "win32":
+    WEBBREAKER_EXE = ""
+    
 PROXY_NAME = "ZeroBankTest" + "-" + "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 PROXY_SERVER = ""
 PROXY_PORT = 9001

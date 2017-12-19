@@ -4,39 +4,24 @@
 import random
 import string
 import webinspectapi.webinspect as webinspectapi
-from webbreaker.webinspectconfig import WebInspectConfig
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.confighelper import Config
-from webbreaker.webinspectjitscheduler import WebInspectJitScheduler
 
 
 class WebinspectProxyClient(object):
-    def __init__(self, proxy_name, port, upload, host=None):
-        self.upload = upload
+    def __init__(self, proxy_name, port, host):
+        self.host = host
 
-        if proxy_name is None:
+        if proxy_name:
+            self.proxy_name = proxy_name
+        else:
             self.proxy_name = "webinspect" + "-" + "".join(
                 random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-        else:
-            self.proxy_name = proxy_name
-
-        if port is None:
-            self.port = ""
-        else:
+        if port:
             self.port = port
-
-        if host:
-            self.host = host
         else:
-            config = WebInspectConfig()
-            lb = WebInspectJitScheduler(endpoints=config.endpoints,
-                                        size_list=config.sizing)
-            Logger.app.info("Finding endpoints. Expect a slight delay")
-            endpoint = lb.get_endpoint()
-            if not endpoint:
-                raise EnvironmentError("Scheduler found no available endpoints.")
-            self.host = endpoint
+            self.port = ""
 
     def get_cert_proxy(self):
         path = Config().cert
@@ -102,16 +87,16 @@ class WebinspectProxyClient(object):
         else:
             Logger.app.error('Unable to retrieve file. {} '.format(response.message))
 
-    def upload_proxy(self):
+    def upload_proxy(self, upload_file):
         Logger.app.info("Uploading to: '{}'".format(self.proxy_name))
         try:
             api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
-            response = api.download_proxy_webmacro(self.proxy_name)
+            response = api.upload_webmacro_proxy(self.proxy_name, upload_file)
 
             if response.success:
-                Logger.app.info("Uploaded '{0}' to '{1}' on: {2}.".format(self.upload, self.proxy_name, self.host))
+                Logger.app.info("Uploaded '{0}' to '{1}' on: {2}.".format(upload_file, self.proxy_name, self.host))
             else:
-                Logger.app.error("Uploading {0} gave error: {1}".format(self.upload, response.message))
+                Logger.app.error("Uploading {0} gave error: {1}".format(upload_file, response.message))
                 return 1
         except (ValueError, UnboundLocalError) as e:
             Logger.app.error("Error uploading policy {}".format(e))

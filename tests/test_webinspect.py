@@ -27,8 +27,12 @@ def general_exception():
     raise Exception('Test Failure')
 
 
-def general_func(**kwargs):
-    return True
+def environment_error_exception():
+    raise EnvironmentError('Test Failure')
+
+
+def unbound_local_error_exception():
+    raise UnboundLocalError('Test Failure')
 
 
 # Move hard coded values to params
@@ -306,3 +310,372 @@ def test_webinspect_servers(test_mock, runner, caplog):
     caplog.uninstall()
 
     assert result.exit_code == 0
+
+
+# WebInspect CLI Proxy Testing
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_list_success(test_mock, runner, caplog):
+    test_mock.return_value.list_proxy.return_value = [{'instanceId': 'test-id', 'address': 'localhost', 'port': '80'}]
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--list', '--server', 'test-server'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', "Succesfully listed proxies from: 'https://test-server'"),
+    )
+    caplog.uninstall()
+    assert 'test-id' in result.output
+    assert 'localhost' in result.output
+    assert '80' in result.output
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_list_no_result(test_mock, runner, caplog):
+    test_mock.return_value.list_proxy.return_value = None
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--list', '--server', 'test-server'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "No proxies found on 'https://test-server'"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_list_success_no_server(test_mock, runner):
+    test_mock.return_value.list_proxy.return_value = [{'instanceId': 'test-id', 'address': 'localhost', 'port': '80'}]
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--list'])
+
+    assert 'test-id' in result.output
+    assert 'localhost' in result.output
+    assert '80' in result.output
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_start_success(test_mock, runner, caplog):
+    test_mock.return_value.get_cert_proxy.return_value = True
+    test_mock.return_value.start_proxy.return_value = {'instanceId': 'test-id', 'address': 'localhost',
+                                                       'uri': '/webinspect/proxy/test-id',
+                                                       'port': '80'}
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+
+    caplog.check(
+        ('__webbreaker__', 'INFO', "Proxy successfully started"),
+    )
+    caplog.uninstall()
+
+    assert 'test-id' in result.output
+    assert 'localhost' in result.output
+    assert '80' in result.output
+    assert 'test-server' in result.output
+
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_start_exception_unbound(test_mock, runner, caplog):
+    test_mock.return_value.get_cert_proxy.side_effect = unbound_local_error_exception
+    test_mock.return_value.start_proxy.return_value = {'instanceId': 'test-id', 'address': 'localhost',
+                                                       'uri': '/webinspect/proxy/test-id',
+                                                       'port': '80'}
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_start_exception_env(test_mock, runner, caplog):
+    test_mock.return_value.get_cert_proxy.side_effect = environment_error_exception
+    test_mock.return_value.start_proxy.return_value = {'instanceId': 'test-id', 'address': 'localhost',
+                                                       'uri': '/webinspect/proxy/test-id',
+                                                       'port': '80'}
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_start_no_results(test_mock, runner, caplog):
+    test_mock.return_value.get_cert_proxy.return_value = True
+    test_mock.return_value.start_proxy.return_value = None
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+
+    print(result.output)
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Unable to start proxy on 'https://test-server'"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_stop_success(test_mock, runner):
+    test_mock.return_value.get_proxy.return_value = True
+    test_mock.return_value.download_proxy.return_value = True
+    test_mock.return_value.delete_proxy.return_value = True
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--server', 'test-server', '--stop', '--proxy_name', 'test-id'])
+
+    # Logging and printing handled in webinespctproxyclient
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_stop_exception_unbound(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.side_effect = unbound_local_error_exception
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--stop', '--server', 'test-server', '--proxy_name', 'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_stop_exception_env(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.side_effect = environment_error_exception
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--stop', '--server', 'test-server', '--proxy_name', 'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_stop_no_results(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.return_value = None
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--stop', '--server', 'test-server', '--proxy_name', 'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Proxy: 'test-id' not found on any server."),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_stop_no_proxy_name(test_mock, runner, caplog):
+    test_mock.return_value.get_cert_proxy.return_value = True
+    test_mock.return_value.start_proxy.return_value = None
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--stop'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Please enter a proxy name."),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_download_success(test_mock, runner):
+    test_mock.return_value.get_proxy.return_value = True
+    test_mock.return_value.download_proxy.return_value = True
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--server', 'test-server', '--download', '--proxy_name', 'test-id'])
+
+    # Logging and printing handled in webinespctproxyclient
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_download_exception_unbound(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.side_effect = unbound_local_error_exception
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--download', '--server', 'test-server', '--proxy_name', 'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_download_exception_env(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.side_effect = environment_error_exception
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--download', '--server', 'test-server', '--proxy_name', 'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_download_no_results(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.return_value = None
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--download', '--server', 'test-server', '--proxy_name', 'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Proxy: 'test-id' not found on any server."),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_download_no_proxy_name(test_mock, runner, caplog):
+    test_mock.return_value.get_cert_proxy.return_value = True
+    test_mock.return_value.start_proxy.return_value = None
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--download'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Please enter a proxy name."),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+# TODO: webinspect proxy --upload --proxy_name (result == None)
+# TODO: webinspect proxy --upload (UnboundLocalError from get_cert_proxy)
+# TODO: webinspect proxy --upload (EnvironmentError from get_cert_proxy)
+# TODO: webinspect proxy --upload (No Proxy Name Failure)
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_upload_success(test_mock, runner):
+    test_mock.return_value.get_proxy.return_value = True
+    test_mock.return_value.upload_proxy.return_value = True
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                            'test-id'])
+
+    # Logging and printing handled in webinespctproxyclient
+    assert result.exit_code == 0
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_upload_exception_unbound(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.side_effect = unbound_local_error_exception
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                            'test-id'])
+    print(result.output)
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_upload_exception_env(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.side_effect = environment_error_exception
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                            'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
+    )
+    caplog.uninstall()
+    assert result.exit_code == 1
+
+
+@mock.patch('webbreaker.__main__.WebinspectProxyClient')
+def test_webinspect_proxy_upload_no_results(test_mock, runner, caplog):
+    test_mock.return_value.get_proxy.return_value = None
+
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                            'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Proxy: 'test-id' not found on any server."),
+    )
+    caplog.uninstall()
+    assert result.exit_code == 1
+
+
+def test_webinspect_proxy_upload_no_proxy_name(runner, caplog):
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--upload', 'test-file'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Please enter a proxy name."),
+    )
+    caplog.uninstall()
+    assert result.exit_code == 1
+
+
+def test_webinspect_no_proxy_name(runner, caplog):
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Please enter a proxy name."),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1
+
+
+def test_webinspect_no_proxy_command(runner, caplog):
+    result = runner.invoke(webbreaker,
+                           ['webinspect', 'proxy', '--proxy_name', 'test-id'])
+
+    caplog.check(
+        ('__webbreaker__', 'ERROR', "Error: No proxy command was given."),
+    )
+    caplog.uninstall()
+
+    assert result.exit_code == 1

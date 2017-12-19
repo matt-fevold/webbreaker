@@ -418,7 +418,8 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
 
     if list:
         for server in servers:
-            proxy_client = WebinspectProxyClient(proxy_name, port, upload, 'https://' + server)
+            server = 'https://' + server
+            proxy_client = WebinspectProxyClient(proxy_name, port, server)
             results = proxy_client.list_proxy()
             if results and len(results):
                 print("Proxies found on {}".format(proxy_client.host))
@@ -426,79 +427,82 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
                 print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
                 for match in results:
                     print("{0:80} {1:40} {2:10}".format(match['instanceId'], match['address'], match['port']))
+                Logger.app.info("Succesfully listed proxies from: '{}'".format(server))
             else:
-                Logger.app.error("No proxies found on '{}'".format(proxy_client.host))
+                Logger.app.error("No proxies found on '{}'".format(server))
 
     elif start:
-        proxy_client = WebinspectProxyClient(proxy_name, port, upload)
+        server = 'https://' + servers[0]
+        proxy_client = WebinspectProxyClient(proxy_name, port, server)
         try:
             proxy_client.get_cert_proxy()
             result = proxy_client.start_proxy()
         except (UnboundLocalError, EnvironmentError) as e:
-            Logger.app.critical(
-                "Incorrect WebInspect configurations found!! See log {}".format(str(Logger.app_logfile)))
-            Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
-            return 1
+            Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
+            exit(1)
 
-        if result:
-            print("Proxy started on\t:\t{}".format(proxy_client.host))
-            print("Instance ID\t\t:\t{}".format(result['instanceId']))
-            print("Address\t\t\t:\t{}".format(result['address']))
-            print("Port\t\t\t:\t{}".format(result['port']))
+        if result and len(result):
+            Logger.app.info("Proxy successfully started")
+            print("Server\t\t:\t'{}'".format(server))
+            print("Instance ID\t:\t{}".format(result['instanceId']))
+            print("Address\t\t:\t{}".format(result['address']))
+            print("Port\t\t:\t{}".format(result['port']))
         else:
-            Logger.app.error("Unable to start proxy on '{}'".format(proxy_client.host))
-            return 1
+            Logger.app.error("Unable to start proxy on '{}'".format(server))
+            exit(1)
     elif not proxy_name:
         Logger.app.error("Please enter a proxy name.")
-        return 1
+        exit(1)
 
     elif stop:
         for server in servers:
             server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, upload, server)
+            proxy_client = WebinspectProxyClient(proxy_name, port, server)
             try:
                 result = proxy_client.get_proxy()
-            except (UnboundLocalError, EnvironmentError):
-                Logger.app.debug("Proxy_name was not on this server")
-            if result:
-                proxy_client.download_proxy(webmacro=False, setting=True)
-                proxy_client.download_proxy(webmacro=True, setting=False)
-                proxy_client.delete_proxy()
-                return 0
+                if result:
+                    proxy_client.download_proxy(webmacro=False, setting=True)
+                    proxy_client.download_proxy(webmacro=True, setting=False)
+                    proxy_client.delete_proxy()
+                    exit(0)
+            except (UnboundLocalError, EnvironmentError) as e:
+                Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
+                exit(1)
         Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-        return 1
+        exit(1)
 
     elif download:
         for server in servers:
             server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, upload, server)
+            proxy_client = WebinspectProxyClient(proxy_name, port, server)
             try:
                 result = proxy_client.get_proxy()
-            except (UnboundLocalError, EnvironmentError):
-                Logger.app.debug("{} was not on this server".format(proxy_name))
-            if result:
-                proxy_client.download_proxy(webmacro, setting)
-                return 0
-        Logger.app.error("Proxy: '{}' not found.".format(proxy_name))
-        return 1
+                if result:
+                    proxy_client.download_proxy(webmacro, setting)
+                    exit(0)
+            except (UnboundLocalError, EnvironmentError) as e:
+                Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
+                exit(1)
+        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+        exit(1)
 
     elif upload:
         for server in servers:
             server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, upload, server)
+            proxy_client = WebinspectProxyClient(proxy_name, port, server)
             try:
                 result = proxy_client.get_proxy()
-            except (UnboundLocalError, EnvironmentError):
-                Logger.app.debug("{} was not on this server".format(proxy_name))
-            if result:
-                proxy_client.upload_proxy()
-                return 0
+                if result:
+                    proxy_client.upload_proxy(upload)
+                    exit(0)
+            except (UnboundLocalError, EnvironmentError) as e:
+                Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
+                exit(1)
         Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-        return 1
-
+        exit(1)
     else:
         Logger.app.error("Error: No proxy command was given.")
-        return 1
+        exit(1)
 
 
 def webinspect_list(config, server, scan_name, protocol):
