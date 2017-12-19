@@ -253,8 +253,8 @@ email_template =
         </ul>
         </p>
         <p>
-        Questions? Concerns? Please contact us in our Hipchat room, &quot;WebBreaker Activity&quot;,
-        or <a href="mailto:webbreaker-no-reply@target.com">email us</a>.
+        Questions? Concerns? Please contact us in our Slack channel, &quot;WebBreaker Activity&quot;,
+        or <a href="mailto:webbreaker-no-reply@example.com">email us</a>.
         </p>
         <p>
         Want to manage your subscription to these emails? Use <a href="http://wiki.example.com/tgtwiki/index.php/GroupID">GroupID</a>, and
