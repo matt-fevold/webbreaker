@@ -27,6 +27,10 @@ def general_exception():
     raise Exception('Test Failure')
 
 
+def general_func(**kwargs):
+    return True
+
+
 # Move hard coded values to params
 class WebInspectResponseTest(object):
     """Container for all WebInspect API responses, even errors."""
@@ -258,11 +262,12 @@ def test_webinspect_list_protocol_change_success(test_mock, runner, caplog):
 # Write a test for False success and failure in create_scan. Just change WebInspectResponseTest() to False
 
 
+@mock.patch('webbreaker.__main__.create_scan_event_handler')
 @mock.patch('webbreaker.webinspectclient.WebInspectJitScheduler')
 @mock.patch('webbreaker.webinspectclient.webinspectapi.WebInspectApi')
 @mock.patch('webbreaker.webinspectclient.open', new_callable=mock_open, read_data="data")
 @mock.patch('webbreaker.__main__.open', new_callable=mock_open, read_data="data")
-def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock, runner, caplog):
+def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock, email_mock, runner, caplog):
     endpoint_mock.return_value.get_endpoint.return_value = "test.hq.target.com"
     endpoint_mock.has_auth_creds()
 
@@ -272,6 +277,8 @@ def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock
     scan_mock.get_current_status()
     scan_mock.return_value.export_scan_format.return_value = WebInspectResponseTest()
     scan_mock.export_scan_format()
+
+    email_mock.handle_scan_event = True
 
     result = runner.invoke(webbreaker,
                            ['webinspect', 'scan'])

@@ -38,14 +38,12 @@ class EmailNotifier(Notifier):
             msg['From'] = self.emailer_settings['from_address']
             msg['To'] = self.emailer_settings['to_address']
             msg['Subject'] = "{0} {1}".format(event['subject'], event['scanname'])
-
+            targets = "".join(["<li>{0}</li>".format(t) for t in event['targets']]) if event['targets'] else ""
             html = str(self.emailer_settings['email_template']).format(event['server'],
                                                                        event['scanname'],
                                                                        event['scanid'],
                                                                        event['subject'],
-                                                                       "".join(
-                                                                           ["<li>{0}</li>".format(t) for t in
-                                                                            event['targets']]))
+                                                                       targets)
             msg.attach(MIMEText(html, 'html'))
 
             mail_server = smtplib.SMTP(self.emailer_settings['smtp_host'], self.emailer_settings['smtp_port'])
@@ -53,8 +51,7 @@ class EmailNotifier(Notifier):
 
             mail_server.quit()
         except (Exception, AttributeError) as e:  # we don't want email failure to stop us, just log that it happened
-            Logger.app.error("Error sending email. {}".format(e.message))
-            Logger.console.error("Error sending email, see log: {}!".format(Logger.app_logfile))
+            Logger.app.error("Error sending email. Error: {}".format(e.message))
 
     def cloudscan_notify(self, recipient, subject, git_url, ssc_url, state, scan_id, scan_name):
         try:
@@ -71,8 +68,7 @@ class EmailNotifier(Notifier):
 
             mail_server.quit()
         except (Exception, AttributeError) as e:  # we don't want email failure to stop us, just log that it happened
-            Logger.app.error("Error sending email. {}".format(e.message))
-            Logger.console.error("Error sending email, see log: {}!".format(Logger.app_logfile))
+            Logger.app.error("Error sending email. Error: {}".format(e.message))
 
     def __read_agent_settings__(self):
         settings_file = Config().config

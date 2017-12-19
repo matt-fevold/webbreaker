@@ -28,6 +28,7 @@ from webbreaker.webinspectclient import WebinspectClient
 from webbreaker.webinspectqueryclient import WebinspectQueryClient
 from webbreaker.fortifyclient import FortifyClient
 from webbreaker.fortifyconfig import FortifyConfig
+from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
@@ -230,6 +231,9 @@ def scan(config, **kwargs):
     try:
         scan_id = webinspect_client.create_scan()
         if scan_id:
+            global handle_scan_event
+            handle_scan_event = create_scan_event_handler(webinspect_client, scan_id, webinspect_settings)
+            handle_scan_event('scan_start')
             Logger.app.debug("Starting scan handling")
             Logger.app.info("Execution is waiting on scan status change")
             with scan_running():
@@ -250,6 +254,7 @@ def scan(config, **kwargs):
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
 
+    handle_scan_event('scan_end')
     Logger.app.info("Webbreaker WebInspect has completed.")
 
 

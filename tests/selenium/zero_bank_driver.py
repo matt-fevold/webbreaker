@@ -10,6 +10,7 @@ WEBBREAKER_EXE = "/usr/local/bin/webbreaker"
 PROXY_NAME = "ZeroBankTest" + "-" + "".join(random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 PROXY_SERVER = ""
 PROXY_PORT = 9001
+THREADFIX_TEAM = "TEST"
 THREADFIX_APPLICATION = "ZeroBankTest"
 FORTIFY_USER = ""
 FORTIFY_PASSWORD = ""
@@ -42,6 +43,10 @@ class ZeroBankDriver(object):
              str(PROXY_NAME)], stdout=PIPE).stdout.read())
 
         if os.path.isfile(PROXY_NAME + '.xml'):
+            print(Popen(
+                [str(WEBBREAKER_EXE), "threadfix", "create", "-team", str(THREADFIX_TEAM),
+                  "--url", "http://zero.webappsecurity.com/"], stdout=PIPE).stdout.read())
+
             print(Popen(
                 [str(WEBBREAKER_EXE), "threadfix", "upload", "--application", str(THREADFIX_APPLICATION),
                   "--scan_file", str(os.path.abspath(os.path.join(PROXY_NAME + '.xml')))], stdout=PIPE).stdout.read())

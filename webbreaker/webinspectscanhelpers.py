@@ -21,7 +21,7 @@ def create_scan_event_handler(webinspect_client, scan_id, webinspect_settings):
         try:
             event = {}
             event['scanid'] = scan_id
-            event['server'] = urlparse(webinspect_client.url).geturl()
+            event['server'] = webinspect_client.url
             event['scanname'] = webinspect_settings['webinspect_scan_name']
             event['event'] = event_type
             event['timestamp'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
