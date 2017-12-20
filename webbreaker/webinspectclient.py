@@ -268,7 +268,7 @@ class WebinspectClient(object):
                 if response.success:
                     Logger.app.debug("Deleted policy {} from server".format(
                         ntpath.basename(self.webinspect_upload_policy).split('.')[0]))
-        except (ValueError, UnboundLocalError) as e:
+        except (ValueError, UnboundLocalError, TypeError) as e:
             Logger.app.error("Verify if deletion of existing policy failed: {}".format(e))
 
         try:
@@ -281,7 +281,7 @@ class WebinspectClient(object):
                 Logger.app.error("Error uploading policy {0}. {1}".format(self.webinspect_upload_policy,
                                                                           response.message))
 
-        except (ValueError, UnboundLocalError) as e:
+        except (ValueError, UnboundLocalError, TypeError) as e:
             Logger.app.error("Error uploading policy {}".format(e))
 
     def upload_settings(self):

@@ -173,11 +173,12 @@ def scan(config, **kwargs):
     # The webinspect client is our point of interaction with the webinspect server farm
     try:
         webinspect_client = WebinspectClient(webinspect_settings)
-    except (UnboundLocalError, EnvironmentError) as e:
+    except (UnboundLocalError, EnvironmentError, NameError) as e:
         Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
         exit(1)
 
     # if a scan policy has been specified, we need to make sure we can find/use it
+
     if webinspect_client.scan_policy:
         # two happy paths: either the provided policy refers to an existing builtin policy, or it refers to
         # a local policy we need to first upload and then use.
@@ -205,14 +206,15 @@ def scan(config, **kwargs):
             if policy:
                 policy_guid = policy['uniqueId']
             else:
-                Logger.app.error("The policy name is either incorrect or it is not available in {}."
-                                 .format('etc/webinspect/policies'))
+                Logger.app.error("The policy name is either incorrect or not available in {}."
+                                 .format('.webbreaker/etc/webinspect/policies'))
                 exit(1)
 
         # Change the provided policy name into the corresponding policy id for scan creation.
         policy_id = webinspect_client.get_policy_by_guid(policy_guid)['id']
         webinspect_client.scan_policy = policy_id
         Logger.app.debug("New scan policy has been set")
+
 
     # Upload whatever configurations have been provided...
     # All skipped unless explicitly declared in CLI
@@ -887,7 +889,7 @@ def agent(config, start):
         try:
             # If any data is missing, verifier will output and exit
             # verifier = AgentVerifier('webbreaker/etc/agent.json')
-            pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', 'webbreaker/etc/agent.json'])
+            pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', '.webbreaker/etc/agent.json'])
             sys.stdout.write(str("WebBreaker agent started successfully.\n"))
         except TypeError as e:
             Logger.app.error("Unable to complete command 'admin agent': {}".format(e))

@@ -6,7 +6,7 @@
 Summary:    Client for Dynamic Application Security Test Orchestration (DASTO).
 Name:       webbreaker
 Version:    2.0
-Release:    11%{?dist}
+Release:    13%{?dist}
 Source0:    %{name}-%{version}.tar.gz
 Group:      Security Tools
 License:    MIT
@@ -64,6 +64,10 @@ cp opt/webbreaker/webbreaker-cli $RPM_BUILD_ROOT/opt/webbreaker/webbreaker-cli
 %attr(755,%{user},%{user}) %{installdir}/webbreaker-cli
 
 %changelog
+* Tue Dec 20 2017 Target Product Security Engineering <brandon.spruth2@target.com> - 2.0-12
+- Hotfix for --scan_policy option config.ini value not being initialized and conditions for upload not triggering.
+  The --size option refactoring from the config.ini was not refactored to the config class.
+
 * Tue Dec 19 2017 Target Product Security Engineering <brandon.spruth2@target.com> - 2.0-11
 - Hotfix for remediating email notification not triggering, email and scan pytests,
   exception handling, as well as improved local filesystem handling of settings, webmacros, and policy

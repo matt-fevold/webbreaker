@@ -210,26 +210,29 @@ class WebInspectConfig(object):
                 Logger.app.error("The {0} is unable to be assigned! {1}".format(options['upload_webmacros'], e))
 
         # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
-        if options['upload_policy']:
-            if os.path.isfile(options['upload_policy'] + '.policy'):
-                options['upload_policy'] = options['upload_policy'] + '.policy'
-            elif os.path.isfile(options['upload_policy']):
-                options['upload_policy'] = options['upload_policy']
-            else:
-                options['upload_policy'] = os.path.join(webinspect_dir,
-                                                        'policies',
-                                                        options['upload_policy'] + '.policy')
+        try:
+            if options['upload_policy']:
+                if os.path.isfile(options['upload_policy'] + '.policy'):
+                    options['upload_policy'] = options['upload_policy'] + '.policy'
+                elif os.path.isfile(options['upload_policy']):
+                    options['upload_policy'] = options['upload_policy']
+                else:
+                    options['upload_policy'] = os.path.join(webinspect_dir,
+                                                            'policies',
+                                                            options['upload_policy'] + '.policy')
 
-        elif options['scan_policy']:
-            if os.path.isfile(options['scan_policy'] + '.policy'):
-                options['scan_policy'] = options['scan_policy'] + '.policy'
-            elif os.path.isfile(options['upload_policy']):
-                options['scan_policy'] = options['scan_policy']
+            elif options['scan_policy']:
+                if os.path.isfile(options['scan_policy'] + '.policy'):
+                    options['scan_policy'] = options['scan_policy'] + '.policy'
+                elif os.path.isfile(options['upload_policy']):
+                    options['scan_policy'] = options['scan_policy']
 
-            else:
-                options['upload_policy'] = os.path.join(webinspect_dir,
-                                                        'policies',
-                                                        options['scan_policy'] + '.policy')
+                else:
+                    options['upload_policy'] = os.path.join(webinspect_dir,
+                                                            'policies',
+                                                            options['scan_policy'] + '.policy')
+        except TypeError as e:
+            Logger.app.error("There was an error with the policy provided from --scan_policy option! ".format(e))
 
         # Determine the targets specified in a settings file
         if options['upload_settings']:
@@ -255,7 +258,7 @@ class WebInspectConfig(object):
             webinspect_dict['webinspect_scan_targets'] = targets
             webinspect_dict['webinspect_workflow_macros'] = options['workflow_macros']
             webinspect_dict['webinspect_allowed_hosts'] = options['allowed_hosts']
-            webinspect_dict['webinspect_scan_size'] = options['size'] if options['size'] else self.default_size
+            webinspect_dict['webinspect_scan_size'] = 'size_' + options['size'] if options['size'] else self.default_size
             webinspect_dict['fortify_user'] = options['fortify_user']
 
         except argparse.ArgumentError as e:
