@@ -288,7 +288,7 @@ def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock
                            ['webinspect', 'scan'])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', "Finding endpoints. Expect a slight delay"),
+        ('__webbreaker__', 'INFO', "Querying WebInspect scan engines for availability."),
         ('__webbreaker__', 'INFO', "Launching a scan"),
         ('__webbreaker__', 'INFO', "Execution is waiting on scan status change"),
         ('__webbreaker__', 'INFO', "Scan status has changed to complete."),

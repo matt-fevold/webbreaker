@@ -165,15 +165,15 @@ def scan(config, **kwargs):
     # ...and settings...
     try:
         webinspect_settings = webinspect_config.parse_webinspect_options(ops)
-    except AttributeError as e:
-        Logger.app.error("Your configuration or settings are incorrect see log {}!!!".format(Logger.app_logfile))
+    except (AttributeError, UnboundLocalError):
+        Logger.app.error("Your configuration or settings are incorrect see log {}: ERROR: {}!!!".format(Logger.app_logfile))
         exit(1)
     # OK, we're ready to actually do something now
 
     # The webinspect client is our point of interaction with the webinspect server farm
     try:
         webinspect_client = WebinspectClient(webinspect_settings)
-    except (UnboundLocalError, EnvironmentError, NameError) as e:
+    except (UnboundLocalError, EnvironmentError, NameError, TypeError) as e:
         Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
         exit(1)
 
@@ -188,7 +188,7 @@ def scan(config, **kwargs):
                    y[0] == str(webinspect_client.scan_policy).lower()]
             policy_guid = webinspect_config.mapped_policies[idx[0]][1]
             Logger.app.info(
-                "Provided scan_policy {} listed as builtin policyID {}".format(webinspect_client.scan_policy,
+                "scan_policy {} with policyID {} has been selected.".format(webinspect_client.scan_policy,
                                                                                policy_guid))
             Logger.app.info("Checking to make sure a policy with that ID exists in WebInspect.")
             if not webinspect_client.policy_exists(policy_guid):

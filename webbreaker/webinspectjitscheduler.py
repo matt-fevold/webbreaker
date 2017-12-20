@@ -20,12 +20,13 @@ class WebInspectJitScheduler(object):
         try:
             endpoint = self.__get_available_endpoints__()
             if endpoint:
-                Logger.app.info("JIT Scheduler has selected endpoint {}.".format(endpoint[0]))
+                Logger.app.info("WebBreaker has selected: {} for your WebInspect scan.".format(endpoint[0]))
             else:
-                Logger.app.error("No available endpoints discovered!")
+                Logger.app.error("No available WebInspect servers are available, due to misconfigation or "
+                                 "all scan engines are fully utilized!")
             return endpoint[0]
         except Exception as e:  # Ugly. Not sure what to expect for problems, so Pokemon handling, catch'em all :(
-            Logger.app.error("Error finding endpoints. {}".format(e))
+            Logger.app.error("Error has occured with identifying an appropriate WebInspect scan engine. {}".format(e))
             return None
 
     def __convert_size_to_count__(self):
@@ -80,7 +81,7 @@ class WebInspectJitScheduler(object):
             for scan in response.data:
                 if scan['Status'] == 'Running':
                     active_scans += 1
-                    Logger.app.debug('Engine {} has {} active scans'.format(endpoint, str(active_scans)))
+                    Logger.app.debug('WebInspect scanner {} has {} active scans'.format(endpoint, str(active_scans)))
             if active_scans < int(max_concurrent_scans):
                 return True
 

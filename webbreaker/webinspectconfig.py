@@ -83,7 +83,7 @@ class WebInspectConfig(object):
             Logger.app.error("{} has incorrect or missing values {}".format(webinspect_setting, e))
         except configparser.Error as e:
             Logger.app.error("Error reading webinspect settings {} {}".format(webinspect_setting, e))
-        Logger.app.debug("Got webinspect settings from config.ini")
+        Logger.app.debug("Initializing webinspect settings from config.ini")
         return webinspect_dict
 
     def __getScanTargets__(self, settings_file_path):
@@ -129,6 +129,7 @@ class WebInspectConfig(object):
         options['upload_policy'] = self.trim_ext(options['upload_policy'])
         # Trim .policy
         options['scan_policy'] = self.trim_ext(options['scan_policy'])
+
         # Trim .xml
         options['upload_settings'] = self.trim_ext(options['upload_settings'])
 
@@ -226,19 +227,22 @@ class WebInspectConfig(object):
                     options['scan_policy'] = options['scan_policy'] + '.policy'
                 elif os.path.isfile(options['upload_policy']):
                     options['scan_policy'] = options['scan_policy']
-
                 else:
                     options['upload_policy'] = os.path.join(webinspect_dir,
                                                             'policies',
                                                             options['scan_policy'] + '.policy')
         except TypeError as e:
             Logger.app.error("There was an error with the policy provided from --scan_policy option! ".format(e))
-
+            
         # Determine the targets specified in a settings file
-        if options['upload_settings']:
-            targets = self.__getScanTargets__(options['upload_settings'])
-        else:
-            targets = None
+        try:
+            if options['upload_settings']:
+                targets = self.__getScanTargets__(options['upload_settings'])
+            else:
+                targets = None
+        except NameError as e:
+            Logger.app.error("The setting file does not exist: {}".format(e))
+
         # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
         if not options['allowed_hosts']:
             options['allowed_hosts'] = options['start_urls']

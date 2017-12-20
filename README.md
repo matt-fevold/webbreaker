@@ -11,7 +11,7 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 Create pipelines with integrating a portfolio of web application security testing products, such as WebInspect, Fortify SSC, and ThreadFix.
 
 ## Download & Install
-[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.09)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.09/link)
+[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.13)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.13/link)
 
 :arrow_down: [Mac OS](https://github.com/target/webbreaker/releases), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
@@ -44,8 +44,10 @@ api_key = ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX
 
 # Your Webinspect installation, default port is 8083/tcp. Feel free to add more servers here
 [webinspect]
-server_01 = https://webinspect.example.com:8083
+server_01 = https://webinspect-1.example.com:8083
+server_02 = https://webinspect-2.example.com:8083
 endpoint_01 = %(server_01)s|%(size_large)s
+endpoint_02 = %(server_01)s|%(size_medium)s
 ```
 **NOTES:**
 * If you are using WebInspect turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).  Go to your Swagger doc for validation https://webinspecct.example.com:8083/webinspect/api
