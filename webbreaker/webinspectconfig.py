@@ -215,9 +215,7 @@ class WebInspectConfig(object):
             if options['upload_policy']:
                 if os.path.isfile(options['upload_policy'] + '.policy'):
                     options['upload_policy'] = options['upload_policy'] + '.policy'
-                elif os.path.isfile(options['upload_policy']):
-                    options['upload_policy'] = options['upload_policy']
-                else:
+                if not os.path.isfile(options['upload_policy']):
                     options['upload_policy'] = os.path.join(webinspect_dir,
                                                             'policies',
                                                             options['upload_policy'] + '.policy')
@@ -225,12 +223,13 @@ class WebInspectConfig(object):
             elif options['scan_policy']:
                 if os.path.isfile(options['scan_policy'] + '.policy'):
                     options['scan_policy'] = options['scan_policy'] + '.policy'
-                elif os.path.isfile(options['upload_policy']):
-                    options['scan_policy'] = options['scan_policy']
-                else:
+                if not os.path.isfile(options['scan_policy']):
                     options['upload_policy'] = os.path.join(webinspect_dir,
                                                             'policies',
                                                             options['scan_policy'] + '.policy')
+            else:
+                options['upload_policy'] = options['scan_policy']
+
         except TypeError as e:
             Logger.app.error("There was an error with the policy provided from --scan_policy option! ".format(e))
             
