@@ -165,7 +165,7 @@ def scan(config, **kwargs):
     # ...and settings...
     try:
         webinspect_settings = webinspect_config.parse_webinspect_options(ops)
-    except (AttributeError, UnboundLocalError):
+    except (AttributeError, UnboundLocalError, IndexError):
         Logger.app.error("Your configuration or settings are incorrect see log {}: ERROR: {}!!!".format(Logger.app_logfile))
         exit(1)
     # OK, we're ready to actually do something now
@@ -244,7 +244,9 @@ def scan(config, **kwargs):
             Logger.app.info("Scan status has changed to {0}.".format(status))
 
             if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
-                Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
+                Logger.app.error("See the WebInspect server scan log --> {}, typically the application to be scanned is"
+                     "unavailable.".format(WebInspectConfig().endpoints))
+                #Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
                 handle_scan_event('scan_end')
                 exit(1)
         else:
@@ -252,13 +254,12 @@ def scan(config, **kwargs):
         webinspect_client.export_scan_results(scan_id, 'fpr')
         webinspect_client.export_scan_results(scan_id, 'xml')
 
-    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
+    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, NameError) as e:
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
 
     handle_scan_event('scan_end')
     Logger.app.info("Webbreaker WebInspect has completed.")
-
 
 @webinspect.command(name='list',
                     short_help="List WebInspect scans",
@@ -738,6 +739,8 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
 
     except (IOError, ValueError) as e:
         Logger.console.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
+    except (UnboundLocalError):
+        Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")
 
 
 @fortify.command(name='scan',

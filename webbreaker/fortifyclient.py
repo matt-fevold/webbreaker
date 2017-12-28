@@ -124,7 +124,7 @@ class FortifyClient(object):
                 raise ValueError("Failed to commit new project version")
                 # Logger.app.debug("Created new project version id {0}".format(project_version_id))
         except (AttributeError, UnboundLocalError) as e:
-            Logger.app.critical("Exception trying to create project version. {0}".format(e))
+            Logger.app.critical("Exception creating project version. {0}".format(e))
 
         return project_version_id
 
@@ -171,30 +171,35 @@ class FortifyClient(object):
         return None
 
     def upload_scan(self, file_name):
-        file_name = self.trim_ext(file_name)
-        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        project_version_id = self.__get_project_version__()
-        # If our project doesn't exist, exit upload_scan
-        if project_version_id == -1:
-            return -1
-        project_id = self.__get_project_id__(self.application_name)
-        if not project_id:
-            project_version_id = self.__create_new_project_version__()
-        if not project_version_id:
-            project_version_id = self.__create_project_version__()
-        if project_version_id:
-            response = api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
-                                                project_version_id=project_version_id)
+        try:
+            file_name = self.trim_ext(file_name)
+            api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
+            project_version_id = self.__get_project_version__()
+            # If our project doesn't exist, exit upload_scan
+            if project_version_id == -1:
+                return -1
+            project_id = self.__get_project_id__(self.application_name)
+            if not project_id:
+                project_version_id = self.__create_new_project_version__()
+            if not project_version_id:
+                project_version_id = self.__create_project_version__()
+            if project_version_id:
+                response = api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
+                                                    project_version_id=project_version_id)
 
-        if response.success:
-            Logger.console.info(
-                "Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name,
-                                                                                        self.extension,
-                                                                                        self.ssc_server))
-        elif not response.success and "401" in response.message:
-            return response.response_code
-        else:
-            Logger.app.error("Error uploading {0}.{1}!!!".format(self.fortify_version, self.extension))
+            if response.success:
+                Logger.console.info(
+                    "Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name,
+                                                                                            self.extension,
+                                                                                            self.ssc_server))
+            elif not response.success and "401" in response.message:
+                return response.response_code
+            else:
+                Logger.app.error("Error uploading {0}.{1}!!!".format(self.fortify_version, self.extension))
+
+        except UnboundLocalError as e:
+            Logger.app.critical("Exception trying to create SSC project version: {}".format(e.message))
+
         return response
 
     def list_projects(self):

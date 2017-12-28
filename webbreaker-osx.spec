@@ -2,8 +2,8 @@
 
 block_cipher = None
 
-a = Analysis(['/tmp/webbreaker/webbreaker/__main__.py'],
-             pathex=['/private/tmp/webbreaker', '/Library/Python/2.7/site-packages'],
+a = Analysis(['/Users/z002khz/webbreaker/webbreaker/__main__.py'],
+             pathex=['/Users/z002khz/webbreaker', '/Library/Python/2.7/site-packages'],
              binaries=[],
              datas=[],
              hiddenimports=[],
