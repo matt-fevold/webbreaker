@@ -6,6 +6,7 @@ python:
 install:
   - pip install tox-travis -rrequirements.txt
   - python setup.py build
+  - python setup.py pyinstaller
 script:
   - tox
 notifications:
@@ -21,7 +22,8 @@ deploy:
   api_key:
     secure: MpetQNPt7UCpb4TXPZbADTcraPg9SUUGE+OOwpt62xmUAOPHf55vT6JUdgCJZzzrPEMXPAjIx9S7o53ppum8I7+1mDtvvG8U/xibv92Jz1n0+Pg3Z+v4n7EP2qIl3ZkT/rI8f2FWCDwM1cvUV370odqhINnYb/ztgzr4l7R3fvbT9za2WmSvVedWkei4u8xg0MUgZImKG4X1Hi93ZEtUmSdbD6wWJ9UYO66tR4DcGmTl+BtGfRk1DmtDbJKrTVpO5aD1lfafoe7cF4i6bIHh0mz3OridV/B15pf+zQf70I7a083tLx/ZfCRsxLlxSeuZgpVc0yJvd7/pY9DEjs9e05uwLxGaNSrj9rPlB2dJjxRBqlg+25r4GX5BtXP1TqAiA9wHx0XnL4wbu/LOKvFYO6sMuRD7O7ofbudU9VMA9IOxxYzPtnE68KeqYCboAWV0YljIV+OI0zUkR1sKnHnwBhWvWwcB9q+KappY775Wf/v9/zkCwVlIIEU76520RW+nMBD+gUqyWAXXaeRVA4k/JvMQdu6YDLUyT7QbVG65J5E9EccBh/8uxvWyUlgGVA+skVhfhVC1k43GP6Ebn/Nlcl4T+TNWzTRPQNQoqVS0jkWTe1oClhvokHutMaRCqRp5jyPFnbJj3NLlxPEHjdBo76cN8+VN14xxpIl/0Rlmfh0=
   file_glob: true
-  file: dist/*.zip
+  file:
+  - dist/*.zip
   skip_cleanup: true
   on:
     repo: target/webbreaker

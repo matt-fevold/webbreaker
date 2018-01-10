@@ -11,6 +11,7 @@ mock
 ndg-httpsclient
 pyasn1
 pyOpenSSL
+pyinstaller==3.3
 pytest-runner
 requests
 testfixtures

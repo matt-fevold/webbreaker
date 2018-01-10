@@ -28,6 +28,11 @@ if os.path.isfile('requirements.txt'):
         if item.req:
             requires.append(str(item.req))
 
+# run pyinstaller
+if sys.argv[-1] == 'pyinstaller':
+    os.system('python build.py')
+    sys.exit(0)
+
 if sys.argv[-1] == 'build':
     os.system('python setup.py sdist --formats=zip bdist_wheel')
     sys.exit(0)
@@ -60,7 +65,7 @@ setup(
     install_requires=requires,
     dependency_links=links,
     license='MIT',
-    long_description=open('README.md').read(),
+    long_description='WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams to create Continuous Delivery (CD) pipelines, as well as triaging security vulnerabilities from WebInspect, Fortify SSC, and ThreadFix.',
     name='webbreaker',
     packages=find_packages(exclude=['docs', 'images', 'tests*']),
     tests_require=['pytest'],

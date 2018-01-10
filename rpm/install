@@ -1,0 +1,5 @@
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+install -m 755 -d $RPM_BUILD_ROOT%{_bindir}
+cp dist/webbreaker $RPM_BUILD_ROOT%{_bindir}/webbreaker
+install -m 755 dist/webbreaker $RPM_BUILD_ROOT%{_bindir}/webbreaker
+echo /usr/bin/webbreaker >> INSTALLED_FILES

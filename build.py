@@ -1,171 +1,106 @@
+
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
 import os
-import platform
-from subprocess import Popen, PIPE, check_output
+from subprocess import Popen, PIPE, check_output, CalledProcessError, STDOUT
 import sys
 
-
-PIP = "pip"
+# Set up your files and dirs for the build
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REQUIREMENTS_FILE = os.path.join(os.path.abspath(BASE_DIR), 'requirements.txt')
 SETUP_FILE = os.path.join(os.path.abspath(BASE_DIR), 'setup.py')
 WEBBREAKER_MAIN = os.path.join(os.path.abspath(BASE_DIR), 'webbreaker', '__main__.py')
+PYINSTALLER_FILE= os.path.join(os.path.abspath(BASE_DIR), 'dist', 'webbreaker')
+DISTRO = sys.platform
+PIP = "pip"
+PYINSTALLER = "pyinstaller"
 
-# Mac Python
-if sys.platform == "darwin":
+# initialize python
+try:
+    # Use Mac OS Python Standard
     PYTHON = os.path.abspath(os.path.join('/System', 'Library', 'Frameworks', 'Python.framework', 'Versions', '2.7',
-                                        'bin', 'python2.7'))
-    SITEPACKAGES_CMD = [PYTHON, '-m', 'site', '--user-site']
-    SITEPACKAGES_RES = Popen(SITEPACKAGES_CMD, stdout=PIPE)
-    SITEPACKAGES = str(SITEPACKAGES_RES.communicate()[0].decode()).rstrip()
-
-    PYINSTALLER_CMD = ['pyinstaller', "--clean", "-y", "--windowed", "--noconsole", "--onefile", "--name", "webbreaker",
-                       "-p",
-                       SITEPACKAGES, WEBBREAKER_MAIN]
-    # Make a macos dmg file
-    HDIUTIL_DIR = os.path.join(os.path.abspath(BASE_DIR), 'dist', 'webbreaker.app')
-    HDIUTIL_CMD = ['hdiutil', 'create', BASE_DIR, '-srcfolder', HDIUTIL_DIR, '-ov']
-
-# Linux
-elif sys.platform == "linux2":
+                                          'bin', 'python2.7'))
+except (NameError, OSError, AttributeError):
+    # Every other OS use this
     PYTHON = os.path.abspath(os.path.join('/usr', 'bin', 'python'))
-    # TODO: Clean this up
-    SITEPACKAGES_CMD = [PYTHON, '-m', 'site', '--user-site']
-    SITEPACKAGES_RES = Popen(SITEPACKAGES_CMD, stdout=PIPE)
-    SITEPACKAGES = str(SITEPACKAGES_RES.communicate()[0].decode()).rstrip()
-    #
-    RPMBUILD_DIR = os.path.join(os.path.abspath(BASE_DIR), 'rpmbuild', 'SOURCES', 'webbreaker-2.0', 'opt', 'webbreaker')
-    PYINSTALLER_CMD = ['pyinstaller', "--clean", "-y", "--windowed", "--noconsole", "--onefile", "--dist", RPMBUILD_DIR,
-                       "--name", "webbreaker-cli", "-p",
-                       SITEPACKAGES, WEBBREAKER_MAIN]
-
-REQ_INSTALL = [PIP, "install", "--user", "-r", REQUIREMENTS_FILE, "--upgrade"]
-OPEN_SSL_REQ = [PIP, "install", "--user", "pyOpenSSL", "--upgrade"]
-WHEEL_REQ = [PIP, "install", "--user", "wheel", "--upgrade"]
-PYINSTALLER_REQ = [PIP, "install", "--user", "PyInstaller", "--upgrade"]
-SETUP_BUILD = [PYTHON, SETUP_FILE, "build"]
-SETUP_INSTALL = [PYTHON, SETUP_FILE, "install", "--user"]
+finally:
+    # When all else fails
+    PYTHON = sys.executable
 
 
-def cmdline(command):
-    process = Popen(
-        args=command,
-        stdout=PIPE,
-        stderr=False
-    )
-    return str(process.communicate()[0].decode()).rstrip()
+def main():
+    # Declare exe and install deps
+    requirements_install = [PIP, "install", "--user", "-r", REQUIREMENTS_FILE]
+    open_ssl_module = [PIP, "install", "--user", "pyOpenSSL"]
+    wheel_module = [PIP, "install", "--user", "wheel"]
+    # Required for darwin mac
+    hdiutil_dir = os.path.join(os.path.abspath(BASE_DIR), 'dist', 'webbreaker.app')
+    hdiutil_cmd = ['/usr/bin/hdiutil', 'create', PYINSTALLER_FILE, '-srcfolder', hdiutil_dir, '-ov']
 
+    def cmdline(command):
+        process = Popen(
+            args=command,
+            stdout=PIPE,
+            stderr=STDOUT
+        )
+        output = str(process.communicate()[0].decode('utf-8')).rstrip()
+        if process.returncode != 0:
+            sys.stderr.write("An error occurred while executing {} command.\n".format(command))
+            raise SystemExit
+        return output
 
-# MacOS
-if sys.platform == "darwin":
-    if sys.version_info[0] > 2:
-        sys.stderr.write("You must have python 2.7 or later to create installer\n")
-        exit(1)
+    sitepackages_command = [PYTHON, '-m', 'site', '--user-site']
+    pyinstaller_cmd = [PYINSTALLER, "--clean", "-y", "--windowed", "--noconsole", "--onefile",
+                       "--name", "webbreaker", "-p",
+                       cmdline(sitepackages_command), WEBBREAKER_MAIN]
+
     try:
         if os.path.exists(PYTHON):
             if cmdline(PIP):
-                # Install openssl, wheel and pyinstaller
-                check_output(OPEN_SSL_REQ, shell=True)
-                check_output(WHEEL_REQ, shell=True)
-                # Build and install from setup.py
-                # TODO: should breaker this out into an argv
-                if os.path.isfile(SETUP_FILE):
-                    cmdline(SETUP_BUILD)
-                    cmdline(SETUP_INSTALL)
-                    # Run install requirements.txt for pyinstaller
+                try:
+                    # Install openssl, wheel and pyinstaller
+                    print("Validating and/or installing pip open_ssl and wheel modules...\n")
+                    cmdline(open_ssl_module)
+                    cmdline(wheel_module)
+                    # Run requirements
                     if os.path.isfile(REQUIREMENTS_FILE):
-                        check_output(REQ_INSTALL, shell=True)
+                        cmdline(requirements_install)
                         # Install and run pyinstaller
-                        check_output(PYINSTALLER_REQ, shell=True)
-                        check_output(PYINSTALLER_CMD)
-                        cmdline(HDIUTIL_CMD)
+                        print("Starting pyinstaller build...\n")
+                        cmdline(pyinstaller_cmd)
+                        print("Successfully built {}!\n".format(PYINSTALLER_FILE))
                     else:
-                        sys.stderr.write("requirements.txt does not exist\n")
-                        exit(1)
-                else:
-                    sys.stderr.write("Error with build and install with setup.py\n")
+                        sys.stderr.write("{} does not exist\n".format(REQUIREMENTS_FILE))
+                        raise SystemExit
+                except (OSError, NameError):
+                    print(
+                        "There was an issue installing the python requirements and executing pyinstaller, "
+                        "these commands manually --> \npip install --user -r{0}\n{1}{2}{3}".format(
+                            "pyinstaller --clean -y --windowed --onefile --name webbreaker -p ",
+                            REQUIREMENTS_FILE, cmdline(sitepackages_command), WEBBREAKER_MAIN, REQUIREMENTS_FILE))
                     exit(1)
+
+                if DISTRO == "darwin":
+                    try:
+                        cmdline(hdiutil_cmd)
+                        print("Successfully built your DMG package {}.dmg!\n".format(PYINSTALLER_FILE))
+                    except OSError:
+                        print(
+                            "There was an issue executing --> {0}{1}{2}{3}{4}".format('hdiutil create', PYINSTALLER_FILE,
+                                                                                      '-srcfolder', hdiutil_dir, '-ov'))
+                else:
+                    sys.stderr.write("Congratulations your build is successful on {0} version {1}!\n"
+                                     .format(DISTRO, os.uname()[2]))
             else:
                 sys.stderr.write("Please install pip\n")
                 exit(1)
         else:
-            sys.stderr.write("PyInstaller bindings prefer the original macos Python 2.7\n")
+            sys.stderr.write("PyInstaller bindings prefer the original OSX Python 2.7\n")
             exit(1)
 
-    # Run without pyinstaller
-    except (IOError, NameError):
-        sys.stderr.write("Performing build and install from source only!\n")
-        if cmdline(PIP):
-            # Install openssl and wheel
-            check_output(OPEN_SSL_REQ, shell=True)
-            check_output(WHEEL_REQ, shell=True)
-            if os.path.isfile(SETUP_FILE):
-                cmdline(SETUP_BUILD)
-                cmdline(SETUP_INSTALL)
-            else:
-                sys.stderr.write("Error with build and install with setup.py\n")
-                exit(1)
-        else:
-            sys.stderr.write("Please install pip\n")
-            exit(1)
+    except (IOError, NameError, CalledProcessError):
+        sys.stderr.write("Your system does not meet the minimum requirements to compile the WebBreaker static binary!\n")
 
-if sys.platform == "linux2":
-    if sys.version_info[0] > 2:
-        sys.stderr.write("You must have python 2.7 or later to create installer\n")
-        exit(1)
-    try:
-        if os.path.exists(PYTHON):
-            # Install openssl, wheel and pyinstaller
-            if cmdline(PIP):
-                check_output(OPEN_SSL_REQ, shell=True)
-                check_output(WHEEL_REQ, shell=True)
-                # Build and install from setup.py
-                # TODO: should breaker this out into an argv
-                if os.path.isfile(SETUP_FILE):
-                    cmdline(SETUP_BUILD)
-                    cmdline(SETUP_INSTALL)
-                    # Install from requirements.txt
-                    if os.path.isfile(REQUIREMENTS_FILE):
-                        check_output(REQ_INSTALL, shell=True)
-                        # Added to check for centos distro
-                        if str(platform.dist()[0]) == "centos":
-                            # Install and run pyinstaller
-                            check_output(PYINSTALLER_REQ, shell=True)
-                            check_output(PYINSTALLER_CMD)
-                            '''
-                            TODO: add rpmbuild -ba rpmbuild/SPECS/webbreaker.spec
-                            and tar cvzf webbreaker-2.0.tar.gz rpmbuild/SOURCES/webbreaker
-                            '''
-                        else:
-                            sys.stderr.write("We are not on RedHat or CentOS\n")
-                    else:
-                        sys.stderr.write("requirements.txt does not exist\n")
-                        exit(1)
-                else:
-                    sys.stderr.write("Error with build and install with setup.py\n")
-                    exit(1)
-            else:
-                sys.stderr.write("Please install pip\n")
-                exit(1)
-        else:
-            sys.stderr.write("PyInstaller bindings prefer the original Python 2.7\n")
-            exit(1)
-        # Run without pyinstaller
-    except (IOError, NameError):
-        sys.stderr.write("Performing build and install from source!\n")
-        if cmdline(PIP):
-            # Install openssl, wheel and pyinstaller
-            check_output(WHEEL_REQ, shell=True)
-            check_output(OPEN_SSL_REQ, shell=True)
-            if os.path.isfile(SETUP_FILE):
-                cmdline(SETUP_BUILD)
-                cmdline(SETUP_INSTALL)
-            else:
-                sys.stderr.write("Error with build and install with setup.py\n")
-                exit(1)
-        else:
-            sys.stderr.write("Please install pip\n")
-            exit(1)
-
+if __name__ == "__main__":
+    main()

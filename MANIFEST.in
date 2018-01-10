@@ -1,4 +1,5 @@
 include README.md LICENSE.txt CONTRIBUTING.md
+include dist/webbreaker
 recursive-include images *.jpg
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
