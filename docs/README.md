@@ -95,6 +95,7 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
         - servers
         - list
         - download
+        - proxy
     - fortify
         - list
         - upload
@@ -227,6 +228,12 @@ sqlinjection = 6df62f30-4d47-40ec-b3a7-dad80d33f613
 standard = cb72a7c2-9207-4ee7-94d0-edd14a47c15c
 transportlayersecurity = 0fa627de-3f1c-4640-a7d3-154e96cda93c
 
+[webinspect]
+authenticate = false
+username =
+password =
+
+
 [emailer]
 # smnp email host, port and email addresses required for email functionality.
 smtp_host=smtp.example.com
@@ -346,6 +353,10 @@ policies shipped with WebInspect are mapped with their respective GUID within th
 *Note:* All custom polices are automatically uploaded to the targeted WebInspect server and must be referenced 
 as a GUID.  
 
+####[webinspect]
+If authentication is set to true, all WebInspect requests will use basic auth. A user will be prompted for
+credentials which, if valid, will be encrypted and saved. Credentials can also be set via the
+'webbreaker admin credentials --webinspect' command.
 
 ### Email `email_config`
 Notifications for start-scan and end-scan events. A simple publisher/subscriber pattern is implemented under 

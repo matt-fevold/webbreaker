@@ -9,9 +9,10 @@ from webbreaker.confighelper import Config
 
 
 class WebinspectProxyClient(object):
-    def __init__(self, proxy_name, port, host):
+    def __init__(self, proxy_name, port, host, username=None, password=None):
         self.host = host
-
+        self.username = username
+        self.password = password
         if proxy_name:
             self.proxy_name = proxy_name
         else:
@@ -26,8 +27,11 @@ class WebinspectProxyClient(object):
     def get_cert_proxy(self):
         path = Config().cert
 
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         response = api.cert_proxy()
+        if response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         if response.success:
             try:
                 with open(path, 'wb') as f:
@@ -40,8 +44,11 @@ class WebinspectProxyClient(object):
 
     def start_proxy(self):
 
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         response = api.start_proxy(self.proxy_name, self.port, "")
+        if response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         if response.success:
             return response.data
         else:
@@ -49,16 +56,22 @@ class WebinspectProxyClient(object):
 
     def delete_proxy(self):
 
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         response = api.delete_proxy(self.proxy_name)
+        if response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         if response.success:
             Logger.app.info("Proxy: '{0}' deleted from '{1}'".format(self.proxy_name, self.host))
         else:
             Logger.app.critical("{}".format(response.message))
 
     def list_proxy(self):
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         response = api.list_proxies()
+        if response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         if response.success:
             return response.data
         else:
@@ -66,7 +79,7 @@ class WebinspectProxyClient(object):
 
     def download_proxy(self, webmacro, setting):
         Logger.app.debug('Downloading from: {}'.format(self.proxy_name))
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         if webmacro:
             response = api.download_proxy_webmacro(self.proxy_name)
             extension = 'webmacro'
@@ -76,7 +89,9 @@ class WebinspectProxyClient(object):
         else:
             Logger.app.error("Please enter a file type to download.")
             return 1
-
+        if response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         if response.success:
             try:
                 with open('{0}-proxy.{1}'.format(self.proxy_name, extension), 'wb') as f:
@@ -90,9 +105,11 @@ class WebinspectProxyClient(object):
     def upload_proxy(self, upload_file):
         Logger.app.info("Uploading to: '{}'".format(self.proxy_name))
         try:
-            api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+            api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
             response = api.upload_webmacro_proxy(self.proxy_name, upload_file)
-
+            if response.response_code == 401:
+                Logger.app.critical("An Authorization Error occured.")
+                exit(1)
             if response.success:
                 Logger.app.info("Uploaded '{0}' to '{1}' on: {2}.".format(upload_file, self.proxy_name, self.host))
             else:
@@ -103,7 +120,10 @@ class WebinspectProxyClient(object):
             return 1
 
     def get_proxy(self):
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         response = api.get_proxy_information(self.proxy_name)
+        if response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         if response.success:
             return response.data

@@ -8,8 +8,10 @@ from webbreaker.webbreakerlogger import Logger
 
 
 class WebinspectQueryClient(object):
-    def __init__(self, host, protocol):
+    def __init__(self, host, protocol, username=None, password=None):
         self.host = protocol + '://' + host
+        self.username = username
+        self.password = password
         Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
 
     def get_scan_by_name(self, scan_name):
@@ -19,8 +21,15 @@ class WebinspectQueryClient(object):
         :return: List of search results
         """
         scan_name = self.trim_ext(scan_name)
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
-        return api.get_scan_by_name(scan_name).data
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
+
+        response = api.get_scan_by_name(scan_name)
+
+        if response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
+
+        return response.data
 
     def export_scan_results(self, scan_id, scan_name, extension):
         """
@@ -32,7 +41,7 @@ class WebinspectQueryClient(object):
         scan_name = self.trim_ext(scan_name)
         Logger.app.debug('Exporting scan: {}'.format(scan_id))
         detail_type = 'Full' if extension == 'xml' else None
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         response = api.export_scan_format(scan_id, extension, detail_type)
 
         if response.success:
@@ -42,6 +51,9 @@ class WebinspectQueryClient(object):
                     f.write(response.data)
             except UnboundLocalError as e:
                 Logger.app.error('Error saving file locally {}'.format(e))
+        elif response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         else:
             Logger.app.error('Unable to retrieve scan results. {} '.format(response.message))
 
@@ -50,10 +62,13 @@ class WebinspectQueryClient(object):
         List all scans found on host
         :return: response.data from the Webinspect server
         """
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         response = api.list_scans()
         if response.success:
             return response.data
+        elif response.response_code == 401:
+            Logger.app.critical("An Authorization Error occured.")
+            exit(1)
         else:
             Logger.app.critical("{}".format(response.message))
 
@@ -63,9 +78,12 @@ class WebinspectQueryClient(object):
         :param scan_guid:
         :return: Current status of scan
         """
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False)
+        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
         try:
             response = api.get_current_status(scan_guid)
+            if response.response_code == 401:
+                Logger.app.critical("An Authorization Error occured.")
+                exit(1)
             status = json.loads(response.data_json())['ScanStatus']
             return status
         except (ValueError, TypeError, UnboundLocalError) as e:

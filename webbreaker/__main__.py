@@ -23,7 +23,7 @@ from git.exc import GitCommandError
 import click
 from webbreaker import __version__ as version
 from webbreaker.webbreakerlogger import Logger
-from webbreaker.webinspectconfig import WebInspectConfig
+from webbreaker.webinspectconfig import WebInspectConfig, WebInspectAuthConfig
 from webbreaker.webinspectclient import WebinspectClient
 from webbreaker.webinspectqueryclient import WebinspectQueryClient
 from webbreaker.fortifyclient import FortifyClient
@@ -58,6 +58,11 @@ def fortify_prompt():
     fortify_password = click.prompt('Fortify password', hide_input=True)
     return fortify_user, fortify_password
 
+def webinspect_prompt():
+    webinspect_user = click.prompt('WebInspect user')
+    webinspect_password = click.prompt('WebInspect password', hide_input=True)
+    return webinspect_user, webinspect_password
+
 
 def format_webinspect_server(server):
     server = server.replace('https://', '')
@@ -89,6 +94,12 @@ def webinspect(config):
                     short_help="Launch WebInspect scan",
                     help=WebBreakerHelper().webinspect_scan_desc()
                     )
+@click.option('--username',
+              required=False,
+              help="Specify WebInspect username")
+@click.option('--password',
+              required=False,
+              help="Specify WebInspect password")
 @click.option('--allowed_hosts',
               required=False,
               multiple=True,
@@ -149,6 +160,23 @@ def scan(config, **kwargs):
     webinspect_config = WebInspectConfig()
 
     ops = kwargs.copy()
+
+    username = ops['username']
+    password = ops['password']
+
+    auth_config = WebInspectAuthConfig()
+    if auth_config.authenticate:
+        if username is not None and password is not None:
+            pass
+        elif auth_config.username and auth_config.password:
+            username = auth_config.username
+            password = auth_config.password
+        else:
+            username, password = webinspect_prompt()
+    else:
+        username = None
+        password = None
+
     # Convert multiple args from tuples to lists
     ops['allowed_hosts'] = list(kwargs['allowed_hosts'])
     ops['start_urls'] = list(kwargs['start_urls'])
@@ -172,7 +200,7 @@ def scan(config, **kwargs):
 
     # The webinspect client is our point of interaction with the webinspect server farm
     try:
-        webinspect_client = WebinspectClient(webinspect_settings)
+        webinspect_client = WebinspectClient(webinspect_settings, username=username, password=password)
     except (UnboundLocalError, EnvironmentError, NameError, TypeError) as e:
         Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
         exit(1)
@@ -257,7 +285,11 @@ def scan(config, **kwargs):
     except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, NameError) as e:
         Logger.app.error(
             "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-
+    # If we've made it this far, our new credentials are valid and should be saved
+    if username is not None and password is not None and not auth_config.has_auth_creds():
+        auth_config.write_username(username)
+        auth_config.write_password(password)
+    
     handle_scan_event('scan_end')
     Logger.app.info("Webbreaker WebInspect has completed.")
 
@@ -276,8 +308,14 @@ def scan(config, **kwargs):
               required=False,
               multiple=True,
               help="Specify WebInspect server URL(S)")
+@click.option('--username',
+              required=False,
+              help="Specify WebInspect username")
+@click.option('--password',
+              required=False,
+              help="Specify WebInspect password")
 @pass_config
-def webinspect_list(config, server, scan_name, protocol):
+def webinspect_list(config, server, scan_name, protocol, username, password):
     if len(server):
         servers = []
         for s in server:
@@ -285,8 +323,21 @@ def webinspect_list(config, server, scan_name, protocol):
     else:
         servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
 
+    auth_config = WebInspectAuthConfig()
+    if auth_config.authenticate:
+        if username is not None and password is not None:
+            pass
+        elif auth_config.username and auth_config.password:
+            username = auth_config.username
+            password = auth_config.password
+        else:
+            username, password = webinspect_prompt()
+    else:
+        username = None
+        password = None
     for server in servers:
-        query_client = WebinspectQueryClient(host=server, protocol=protocol)
+        query_client = WebinspectQueryClient(host=server, protocol=protocol, username=username,
+                                             password=password)
         if scan_name:
             results = query_client.get_scan_by_name(scan_name)
             if results and len(results):
@@ -308,8 +359,11 @@ def webinspect_list(config, server, scan_name, protocol):
                     print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
             else:
                 print("No scans found on {}".format(server))
-
         print('\n\n\n')
+    # If we've made it this far, our new credentials are valid and should be saved
+    if username is not None and password is not None and not auth_config.has_auth_creds():
+        auth_config.write_username(username)
+        auth_config.write_password(password)
 
 
 @webinspect.command(name='servers',
@@ -346,10 +400,30 @@ def servers_list(config):
               type=click.Choice(['http', 'https']),
               default='https',
               help="Protocol used to contact WebInspect server")
+@click.option('--username',
+              required=False,
+              help="Specify WebInspect username")
+@click.option('--password',
+              required=False,
+              help="Specify WebInspect password")
 @pass_config
-def download(config, server, scan_name, scan_id, x, protocol):
+def download(config, server, scan_name, scan_id, x, protocol, username, password):
     server = format_webinspect_server(server)
-    query_client = WebinspectQueryClient(host=server, protocol=protocol)
+
+    auth_config = WebInspectAuthConfig()
+    if auth_config.authenticate:
+        if username is not None and password is not None:
+            pass
+        if auth_config.username and auth_config.password:
+            username = auth_config.username
+            password = auth_config.password
+        else:
+            username, password = webinspect_prompt()
+    else:
+        username = None
+        password = None
+
+    query_client = WebinspectQueryClient(host=server, protocol=protocol, username=username, password=password)
 
     if not scan_id:
         results = query_client.get_scan_by_name(scan_name)
@@ -372,6 +446,10 @@ def download(config, server, scan_name, scan_id, x, protocol):
         else:
             Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
 
+    # If we've made it this far, our new credentials are valid and should be saved
+    if username is not None and password is not None and not auth_config.has_auth_creds():
+        auth_config.write_username(username)
+        auth_config.write_password(password)
 
 @webinspect.command(name='proxy',
                     short_help="Interact with WebInspect proxy",
@@ -412,17 +490,36 @@ def download(config, server, scan_name, scan_id, x, protocol):
               required=False,
               is_flag=True,
               help="Flag to download webmacro file from proxy_name")
-def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro):
+@click.option('--username',
+              required=False,
+              help="Specify WebInspect username")
+@click.option('--password',
+              required=False,
+              help="Specify WebInspect password")
+def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username, password):
     if server:
         servers = []
         servers.append(format_webinspect_server(server))
     else:
         servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
 
+    auth_config = WebInspectAuthConfig()
+    if auth_config.authenticate:
+        if username is not None and password is not None:
+            pass
+        if auth_config.username and auth_config.password:
+            username = auth_config.username
+            password = auth_config.password
+        else:
+            username, password = webinspect_prompt()
+    else:
+        username = None
+        password = None
+
     if list:
         for server in servers:
             server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server)
+            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
             results = proxy_client.list_proxy()
             if results and len(results):
                 print("Proxies found on {}".format(proxy_client.host))
@@ -436,7 +533,7 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
 
     elif start:
         server = 'https://' + servers[0]
-        proxy_client = WebinspectProxyClient(proxy_name, port, server)
+        proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
         try:
             proxy_client.get_cert_proxy()
             result = proxy_client.start_proxy()
@@ -460,7 +557,7 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
     elif stop:
         for server in servers:
             server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server)
+            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
             try:
                 result = proxy_client.get_proxy()
                 if result:
@@ -477,7 +574,7 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
     elif download:
         for server in servers:
             server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server)
+            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
             try:
                 result = proxy_client.get_proxy()
                 if result:
@@ -492,7 +589,7 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
     elif upload:
         for server in servers:
             server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server)
+            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
             try:
                 result = proxy_client.get_proxy()
                 if result:
@@ -507,40 +604,10 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
         Logger.app.error("Error: No proxy command was given.")
         exit(1)
 
-
-def webinspect_list(config, server, scan_name, protocol):
-    if len(server):
-        servers = []
-        for s in server:
-            servers.append(format_webinspect_server(s))
-    else:
-        servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
-
-    for server in servers:
-        query_client = WebinspectQueryClient(host=server, protocol=protocol)
-        if scan_name:
-            results = query_client.get_scan_by_name(scan_name)
-            if results and len(results):
-                print("Scans matching the name {} found on {}".format(scan_name, server))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for match in results:
-                    print("{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
-            else:
-                Logger.app.error("No scans matching the name {} were found on {}".format(scan_name, server))
-
-        else:
-            results = query_client.list_scans()
-            if results and len(results):
-                print("Scans found on {}".format(server))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for scan in results:
-                    print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
-            else:
-                print("No scans found on {}".format(server))
-
-        print('\n\n\n')
+    # If we've made it this far, our new credentials are valid and should be saved
+    if username is not None and password is not None and not auth_config.has_auth_creds():
+        auth_config.write_username(username)
+        auth_config.write_password(password)
 
 
 @cli.group(short_help="Interaction with Fortify API",
@@ -559,7 +626,7 @@ def fortify(config):
               help="Specify Fortify username")
 @click.option('--fortify_password',
               required=False,
-              help="Specify Fortify username")
+              help="Specify Fortify password")
 @click.option('--application',
               required=False,
               help="Specify Fortify app name"
@@ -611,7 +678,7 @@ def fortify_list(config, fortify_user, fortify_password, application):
               help="Specify Fortify username")
 @click.option('--fortify_password',
               required=False,
-              help="Specify Fortify username")
+              help="Specify Fortify password")
 @click.option('--application',
               required=False,
               help="Specify Fortify app name"
@@ -678,7 +745,7 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
               help="Specify Fortify username")
 @click.option('--fortify_password',
               required=False,
-              help="Specify Fortify username")
+              help="Specify Fortify password")
 @click.option('--application',
               required=False,
               help="Assign Fortify app name"
@@ -751,7 +818,7 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
               help="Specify Fortify username")
 @click.option('--fortify_password',
               required=False,
-              help="Specify Fortify username")
+              help="Specify Fortify password")
 @click.option('--application',
               required=False,
               help="Assign Fortify app name"
@@ -946,10 +1013,27 @@ def credentials(config, fortify, webinspect, clear, username, password):
                 except ValueError:
                     Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
     elif webinspect:
+        webinspect_config = WebInspectAuthConfig()
         if clear:
-            sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
+            webinspect_config.clear_credentials()
+            Logger.app.info("Successfully cleared WebInspect credentials from config.ini")
         else:
-            sys.stdout.write(str("There are currently no stored credentials for WebInspect\n"))
+            if username and password:
+                try:
+                    webinspect_config.write_username(username)
+                    webinspect_config.write_password(password)
+                    Logger.app.info("Credentials stored successfully")
+                except ValueError:
+                    Logger.app.error("Unable to validate WebInspect credentials. Credentials were not stored")
+
+            else:
+                username, password = webinspect_prompt()
+                try:
+                    webinspect_config.write_username(username)
+                    webinspect_config.write_password(password)
+                    Logger.app.info("Credentials stored successfully")
+                except ValueError:
+                    Logger.app.error("Unable to validate WebInspect credentials. Credentials were not stored")
     else:
         sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
 

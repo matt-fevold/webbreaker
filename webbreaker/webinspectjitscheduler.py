@@ -9,10 +9,12 @@ from webbreaker.webbreakerlogger import Logger
 
 
 class WebInspectJitScheduler(object):
-    def __init__(self, endpoints, size_list, size_needed='size_large'):
+    def __init__(self, endpoints, size_list, size_needed='size_large', username=None, password=None):
         self.endpoints = endpoints
         self.size_list = size_list
         self.size_needed = size_needed
+        self.username = username
+        self.password = password
         self.max_scans = self.__convert_size_to_count__()
 
     def get_endpoint(self):
@@ -74,7 +76,7 @@ class WebInspectJitScheduler(object):
         :param endpoint: The endpoint to evaluate
         :param max_concurrent_scans:  The max number of allowed scans to be running on the endpoint
         """
-        api = webinspectapi.WebInspectApi(endpoint[0], verify_ssl=False)
+        api = webinspectapi.WebInspectApi(endpoint[0], verify_ssl=False, username=self.username, password=self.password)
         response = api.list_scans()
         active_scans = 0
         if response.success:

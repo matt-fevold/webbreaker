@@ -112,6 +112,9 @@ class Config(object):
         self.conf_get('webinspect', 'server_01', 'https://webinspect-server-1.example.com:8083')
         self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(size_large)s')
         self.conf_get('webinspect', 'git_repo', 'git@github.com:automationdomination/WebInspect.git')
+        self.conf_get('webinspect', 'authenticate', 'false')
+        self.conf_get('webinspect', 'username', '')
+        self.conf_get('webinspect', 'password', '')
 
         self.conf_get('webinspect_policy', 'aggressivesqlinjection', '032b1266-294d-42e9-b5f0-2a4239b23941')
         self.conf_get('webinspect_policy', 'allchecks', '08cd4862-6334-4b0e-abf5-cb7685d0cde7')

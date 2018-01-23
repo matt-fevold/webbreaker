@@ -18,8 +18,14 @@
     List with http:
     webbreaker webinspect list --server webinspect-1.example.com:8083 --protocol http
 
+    List all WebInspect scans on all servers using command line auth credentials (only needed if authentication is enable in config.ini):
+    webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
+
     Download WebInspect scan from server or sensor:
     webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth
+
+    Download WebInspect scan from server or sensor using command line auth credentials (only needed if authentication is enable in config.ini):
+    webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
     Download WebInspect scan as XML:
     webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth -x xml
@@ -32,6 +38,9 @@
 
     Basic WebInspect scan:
     webbreaker webinspect scan --settings important_site_auth
+
+    Basic WebInspect scan using command line auth credentials (only needed if authentication is enable in config.ini):
+    webbreaker webinspect scan --settings important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
     Advanced WebInspect Scan with Scan overrides:
     webbreaker webinspect scan --settings important_site_auth --allowed_hosts example.com --allowed_hosts m.example.com
