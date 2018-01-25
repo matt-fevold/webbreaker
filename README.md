@@ -9,7 +9,7 @@
 WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams to create Continuous Delivery (CD) pipelines, as well as triaging security vulnerabilities from WebInspect, Fortify SSC, and ThreadFix.
 
 ## Download & Install
-[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg?version=2.0.14)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.14/link)
+[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.15/link)
 
 :arrow_down: [Mac OS](https://github.com/target/webbreaker/releases), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
