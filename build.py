@@ -1,42 +1,39 @@
-
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
 import os
-from subprocess import Popen, PIPE, check_output, CalledProcessError, STDOUT
+from subprocess import Popen, PIPE, CalledProcessError, STDOUT
 import sys
-
-# Set up your files and dirs for the build
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-REQUIREMENTS_FILE = os.path.join(os.path.abspath(BASE_DIR), 'requirements.txt')
-SETUP_FILE = os.path.join(os.path.abspath(BASE_DIR), 'setup.py')
-WEBBREAKER_MAIN = os.path.join(os.path.abspath(BASE_DIR), 'webbreaker', '__main__.py')
-PYINSTALLER_FILE= os.path.join(os.path.abspath(BASE_DIR), 'dist', 'webbreaker')
-DISTRO = sys.platform
-PIP = "pip"
-PYINSTALLER = "pyinstaller"
-
-# initialize python
-try:
-    # Use Mac OS Python Standard
-    PYTHON = os.path.abspath(os.path.join('/System', 'Library', 'Frameworks', 'Python.framework', 'Versions', '2.7',
-                                          'bin', 'python2.7'))
-except (NameError, OSError, AttributeError):
-    # Every other OS use this
-    PYTHON = os.path.abspath(os.path.join('/usr', 'bin', 'python'))
-finally:
-    # When all else fails
-    PYTHON = sys.executable
 
 
 def main():
+    # Set up your files and dirs for the build
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    requirements_file = os.path.join(os.path.abspath(base_dir), 'requirements.txt')
+    print("{}".format(requirements_file))
+    webbreaker_main = os.path.join(os.path.abspath(base_dir), 'webbreaker', '__main__.py')
+    pyinstaller_file = os.path.join(os.path.abspath(base_dir), 'dist', 'webbreaker')
+    distro = sys.platform
+
+    # initialize python
+    try:
+        # Use Mac OS Python Standard
+        python_exe = os.path.abspath(os.path.join('/System', 'Library', 'Frameworks', 'Python.framework', 'Versions', '2.7',
+                                              'bin', 'python2.7'))
+    except (NameError, OSError, AttributeError):
+        # Every other OS use this
+        python_exe = sys.executable
+
     # Declare exe and install deps
-    requirements_install = [PIP, "install", "--user", "-r", REQUIREMENTS_FILE]
-    open_ssl_module = [PIP, "install", "--user", "pyOpenSSL"]
-    wheel_module = [PIP, "install", "--user", "wheel"]
-    # Required for darwin mac
-    hdiutil_dir = os.path.join(os.path.abspath(BASE_DIR), 'dist', 'webbreaker.app')
-    hdiutil_cmd = ['/usr/bin/hdiutil', 'create', PYINSTALLER_FILE, '-srcfolder', hdiutil_dir, '-ov']
+    requirements_install = ['pip', "install", "--user", "-r", requirements_file]
+    # Declare site-packages and user bin for console scripts on modules
+    user_site = [python_exe, '-m', 'site', '--user-site']
+    # Set user bin directory for py modules installed
+    user_bin = [python_exe, '-m', 'site', '--user-base']
+
+    # Create mac commands for building webbreaker dmg
+    hdiutil_dir = os.path.join(os.path.abspath(base_dir), 'dist', 'webbreaker.app')
+    hdiutil_cmd = ['hdiutil', 'create', pyinstaller_file, '-srcfolder', hdiutil_dir, '-ov']
 
     def cmdline(command):
         process = Popen(
@@ -50,48 +47,53 @@ def main():
             raise SystemExit
         return output
 
-    sitepackages_command = [PYTHON, '-m', 'site', '--user-site']
-    pyinstaller_cmd = [PYINSTALLER, "--clean", "-y", "--windowed", "--noconsole", "--onefile",
-                       "--name", "webbreaker", "-p",
-                       cmdline(sitepackages_command), WEBBREAKER_MAIN]
+    try:
+        # Use scripts from user_base
+        pyinstaller_exe = os.path.abspath(os.path.join(cmdline(user_bin), 'bin', 'pyinstaller'))
+    except (NameError, AttributeError, OSError) as e:
+        print("No pyinstaller executable was found under user bin: {}".format(e.message))
+        pyinstaller_exe = os.path.abspath(os.path.join('/usr', 'bin', 'pyinstaller'))
 
     try:
-        if os.path.exists(PYTHON):
-            if cmdline(PIP):
+        if os.path.exists(python_exe):
+            if cmdline('pip'):
                 try:
                     # Install openssl, wheel and pyinstaller
-                    print("Validating and/or installing pip open_ssl and wheel modules...\n")
-                    cmdline(open_ssl_module)
-                    cmdline(wheel_module)
+                    print("Validating and installing pip open_ssl and wheel modules...\n")
+                    cmdline(['pip', 'install', '--user', 'pyOpenSSL'])
+                    cmdline(['pip', 'install', '--user', 'wheel'])
+                    print(cmdline(['pip', 'install', '--user', 'pyinstaller==3.3']))
                     # Run requirements
-                    if os.path.isfile(REQUIREMENTS_FILE):
+                    print("Entering the requirements.txt...\n")
+                    if os.path.isfile(requirements_file):
                         cmdline(requirements_install)
                         # Install and run pyinstaller
-                        print("Starting pyinstaller build...\n")
-                        cmdline(pyinstaller_cmd)
-                        print("Successfully built {}!\n".format(PYINSTALLER_FILE))
+                        print("Starting pyinstaller build...")
+                        cmdline([pyinstaller_exe, "--clean", "-y", "--windowed", "--noconsole", "--onefile",
+                                 "--name", "webbreaker", "-p", str(user_site), str(webbreaker_main)])
+                        print("Successfully built {}!\n".format(pyinstaller_file))
                     else:
-                        sys.stderr.write("{} does not exist\n".format(REQUIREMENTS_FILE))
+                        sys.stderr.write("{} does not exist\n".format(requirements_file))
                         raise SystemExit
                 except (OSError, NameError):
                     print(
                         "There was an issue installing the python requirements and executing pyinstaller, "
-                        "these commands manually --> \npip install --user -r{0}\n{1}{2}{3}".format(
-                            "pyinstaller --clean -y --windowed --onefile --name webbreaker -p ",
-                            REQUIREMENTS_FILE, cmdline(sitepackages_command), WEBBREAKER_MAIN, REQUIREMENTS_FILE))
+                        "these commands manually --> \npip install --user -r {0}\n"
+                        "\npyinstaller --clean -y --windowed --onefile --name webbreaker -p "
+                        "{1}{2}\n".format(requirements_file, cmdline(user_site), webbreaker_main))
                     exit(1)
 
-                if DISTRO == "darwin":
+                if distro == "darwin":
                     try:
                         cmdline(hdiutil_cmd)
-                        print("Successfully built your DMG package {}.dmg!\n".format(PYINSTALLER_FILE))
+                        print("Successfully built your DMG package {}.dmg!\n".format(pyinstaller_file))
                     except OSError:
                         print(
-                            "There was an issue executing --> {0}{1}{2}{3}{4}".format('hdiutil create', PYINSTALLER_FILE,
+                            "There was an issue executing --> {0}{1}{2}{3}{4}".format('hdiutil create', pyinstaller_file,
                                                                                       '-srcfolder', hdiutil_dir, '-ov'))
                 else:
                     sys.stderr.write("Congratulations your build is successful on {0} version {1}!\n"
-                                     .format(DISTRO, os.uname()[2]))
+                                     .format(distro, os.uname()[2]))
             else:
                 sys.stderr.write("Please install pip\n")
                 exit(1)
@@ -101,6 +103,7 @@ def main():
 
     except (IOError, NameError, CalledProcessError):
         sys.stderr.write("Your system does not meet the minimum requirements to compile the WebBreaker static binary!\n")
+
 
 if __name__ == "__main__":
     main()
