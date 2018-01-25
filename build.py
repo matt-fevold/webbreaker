@@ -10,19 +10,22 @@ def main():
     # Set up your files and dirs for the build
     base_dir = os.path.dirname(os.path.abspath(__file__))
     requirements_file = os.path.join(os.path.abspath(base_dir), 'requirements.txt')
-    print("{}".format(requirements_file))
     webbreaker_main = os.path.join(os.path.abspath(base_dir), 'webbreaker', '__main__.py')
     pyinstaller_file = os.path.join(os.path.abspath(base_dir), 'dist', 'webbreaker')
     distro = sys.platform
 
     # initialize python
     try:
-        # Use Mac OS Python Standard
-        python_exe = os.path.abspath(os.path.join('/System', 'Library', 'Frameworks', 'Python.framework', 'Versions', '2.7',
-                                              'bin', 'python2.7'))
-    except (NameError, OSError, AttributeError):
+        if distro == "darwin":
+            # Use Mac OS Python Standard
+            python_exe = os.path.abspath(os.path.join('/System', 'Library', 'Frameworks', 'Python.framework', 'Versions', '2.7',
+                                                  'bin', 'python2.7'))
+        else:
+            python_exe = sys.executable
+
+    except (NameError, OSError, AttributeError) as e:
         # Every other OS use this
-        python_exe = sys.executable
+        print("No python executable was found: {}".format(e.message))
 
     # Declare exe and install deps
     requirements_install = ['pip', "install", "--user", "-r", requirements_file]
@@ -48,30 +51,33 @@ def main():
         return output
 
     try:
-        # Use scripts from user_base
-        pyinstaller_exe = os.path.abspath(os.path.join(cmdline(user_bin), 'bin', 'pyinstaller'))
-    except (NameError, AttributeError, OSError) as e:
-        print("No pyinstaller executable was found under user bin: {}".format(e.message))
-        pyinstaller_exe = os.path.abspath(os.path.join('/usr', 'bin', 'pyinstaller'))
-
-    try:
         if os.path.exists(python_exe):
             if cmdline('pip'):
                 try:
                     # Install openssl, wheel and pyinstaller
-                    print("Validating and installing pip open_ssl and wheel modules...\n")
+                    print("Validating and installing from pip open_ssl, wheel, and pyinstaller modules...")
                     cmdline(['pip', 'install', '--user', 'pyOpenSSL'])
                     cmdline(['pip', 'install', '--user', 'wheel'])
-                    print(cmdline(['pip', 'install', '--user', 'pyinstaller==3.3']))
+                    cmdline(['pip', 'install', '--user', 'pyinstaller==3.3'])
                     # Run requirements
-                    print("Entering the requirements.txt...\n")
+                    print("Installing requirements.txt...")
                     if os.path.isfile(requirements_file):
                         cmdline(requirements_install)
                         # Install and run pyinstaller
                         print("Starting pyinstaller build...")
-                        cmdline([pyinstaller_exe, "--clean", "-y", "--windowed", "--noconsole", "--onefile",
-                                 "--name", "webbreaker", "-p", str(user_site), str(webbreaker_main)])
-                        print("Successfully built {}!\n".format(pyinstaller_file))
+                        try:
+                            # Use scripts from user_base
+                            pyinstaller_exe = os.path.abspath(os.path.join(cmdline(user_bin), 'bin', 'pyinstaller'))
+                            if not os.path.exists(pyinstaller_exe):
+                                pyinstaller_exe = os.path.abspath(os.path.join('/usr', 'bin', 'pyinstaller'))
+
+                            cmdline([pyinstaller_exe, "--clean", "-y", "--windowed", "--noconsole", "--onefile",
+                                     "--name", "webbreaker", "-p", str(user_site), str(webbreaker_main)])
+                            print("Successfully built {}!".format(pyinstaller_file))
+
+                        except (NameError, AttributeError, OSError) as e:
+                            print("No pyinstaller was found: {}".format(e.message))
+
                     else:
                         sys.stderr.write("{} does not exist\n".format(requirements_file))
                         raise SystemExit
@@ -80,13 +86,13 @@ def main():
                         "There was an issue installing the python requirements and executing pyinstaller, "
                         "these commands manually --> \npip install --user -r {0}\n"
                         "\npyinstaller --clean -y --windowed --onefile --name webbreaker -p "
-                        "{1}{2}\n".format(requirements_file, cmdline(user_site), webbreaker_main))
+                        "{1}, {2}\n".format(requirements_file, cmdline(user_site), webbreaker_main))
                     exit(1)
 
                 if distro == "darwin":
                     try:
                         cmdline(hdiutil_cmd)
-                        print("Successfully built your DMG package {}.dmg!\n".format(pyinstaller_file))
+                        print("Successfully built your DMG package {}.dmg!".format(pyinstaller_file))
                     except OSError:
                         print(
                             "There was an issue executing --> {0}{1}{2}{3}{4}".format('hdiutil create', pyinstaller_file,
