@@ -161,7 +161,7 @@ class WebInspectConfig(object):
                     Logger.app.error("The {0} is unable to be assigned! {1}".format(options['upload_settings'], e))
 
         else:
-            if os.path.isfile(options['settings']):
+            if os.path.isfile(options['settings'] + '.xml'):
                 options['settings'] = options['settings'] + '.xml'
             if not os.path.isfile(options['settings']) and options['settings'] != 'Default':
                 options['upload_settings'] = os.path.join(webinspect_dir,
@@ -172,6 +172,7 @@ class WebInspectConfig(object):
                 options['upload_settings'] = None
             else:
                 options['upload_settings'] = options['settings']
+                options['settings'] = re.search('.*/(.*)\.xml', options['settings']).group(1)
 
         # if login macro has been specified, ensure it's uploaded.
         if options['login_macro']:
