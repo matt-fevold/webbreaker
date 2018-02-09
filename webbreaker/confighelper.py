@@ -111,7 +111,7 @@ class Config(object):
         self.conf_get('webinspect', 'default_size', 'size_large')
         self.conf_get('webinspect', 'server_01', 'https://webinspect-server-1.example.com:8083')
         self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(size_large)s')
-        self.conf_get('webinspect', 'git_repo', 'git@github.com:automationdomination/WebInspect.git')
+        self.conf_get('webinspect', 'git_repo', 'git@github.com:webbreaker/webinspect.git')
         self.conf_get('webinspect', 'authenticate', 'false')
         self.conf_get('webinspect', 'username', '')
         self.conf_get('webinspect', 'password', '')

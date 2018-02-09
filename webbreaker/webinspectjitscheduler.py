@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import random
-import sys
-import time
 import webinspectapi.webinspect as webinspectapi
 from webbreaker.webbreakerlogger import Logger
 
@@ -16,6 +14,13 @@ class WebInspectJitScheduler(object):
         self.username = username
         self.password = password
         self.max_scans = self.__convert_size_to_count__()
+
+        Logger.app.debug("endpoints: {}".format(self.endpoints))
+        Logger.app.debug("size_list: {}".format(self.size_list))
+        Logger.app.debug("size_needed: {}".format(self.size_needed))
+        Logger.app.debug("username: {}".format(self.username))
+        Logger.app.debug("password: {}".format(self.password))
+        Logger.app.debug("max_scans: {}".format(self.max_scans))
 
     def get_endpoint(self):
 
@@ -47,10 +52,12 @@ class WebInspectJitScheduler(object):
         # introduce a random/arbitrary length delay before testing. Might help, might not.
         # Need a re-architecture or some kind of inter-process communication?
         possible_endpoints = self.__get_possible_endpoints__(max_concurrent_scans=self.max_scans)
+        Logger.app.debug("possible_endpoints: {}".format(possible_endpoints))
         random.shuffle(possible_endpoints)
         # time.sleep(random.randint(0, 30))
         for endpoint in possible_endpoints:
             if self.__is_endpoint_available__(endpoint=endpoint, max_concurrent_scans=self.max_scans):
+                Logger.app.debug("We have an endpoint: {}".format(endpoint))
                 return endpoint
 
         return None

@@ -145,7 +145,7 @@ class FortifyClient(object):
         """
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
         try:
-            response = api.get_project_versions()  # api should support a search expression here. alas...
+            response = api.get_all_project_versions()  # api should support a search expression here. alas...
             if response.success:
                 for project_version in response.data['data']:
                     if project_version['project']['name'] == self.application_name:
@@ -214,7 +214,8 @@ class FortifyClient(object):
 
     def list_versions(self):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        response = api.get_project_versions()
+        Logger.app.debug("API: {}".format(api))
+        response = api.get_all_project_versions()
         if response.success:
             Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
             Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
@@ -227,7 +228,7 @@ class FortifyClient(object):
 
     def list_application_versions(self, application):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        response = api.get_project_versions()
+        response = api.get_all_project_versions()
         if response.success:
             Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
             Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
@@ -241,7 +242,7 @@ class FortifyClient(object):
 
     def find_version_id(self, version_name):
         api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        response = api.get_project_versions()
+        response = api.get_all_project_versions()
         if response.success:
             for version in response.data['data']:
                 if version['project']['name'] == self.application_name:

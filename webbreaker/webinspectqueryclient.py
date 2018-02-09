@@ -5,6 +5,8 @@ import os
 import json
 import webinspectapi.webinspect as webinspectapi
 from webbreaker.webbreakerlogger import Logger
+import sys
+from exitstatus import ExitStatus
 
 
 class WebinspectQueryClient(object):
@@ -27,7 +29,7 @@ class WebinspectQueryClient(object):
 
         if response.response_code == 401:
             Logger.app.critical("An Authorization Error occured.")
-            exit(1)
+            sys.exit(ExitStatus.failure)
 
         return response.data
 
@@ -38,39 +40,45 @@ class WebinspectQueryClient(object):
         :param scan_name:
         :param extension:
         """
-        scan_name = self.trim_ext(scan_name)
-        Logger.app.debug('Exporting scan: {}'.format(scan_id))
-        detail_type = 'Full' if extension == 'xml' else None
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
-        response = api.export_scan_format(scan_id, extension, detail_type)
+        try:
+            scan_name = self.trim_ext(scan_name)
+            Logger.app.debug('Exporting scan: {}'.format(scan_id))
+            detail_type = 'Full' if extension == 'xml' else None
+            api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
+            response = api.export_scan_format(scan_id, extension, detail_type)
 
-        if response.success:
-            try:
-                with open('{0}.{1}'.format(scan_name, extension), 'wb') as f:
-                    Logger.app.info('Scan results file is available: {0}.{1}'.format(scan_name, extension))
-                    f.write(response.data)
-            except UnboundLocalError as e:
-                Logger.app.error('Error saving file locally {}'.format(e))
-        elif response.response_code == 401:
-            Logger.app.critical("An Authorization Error occured.")
-            exit(1)
-        else:
-            Logger.app.error('Unable to retrieve scan results. {} '.format(response.message))
+            if response.success:
+                try:
+                    with open('{0}.{1}'.format(scan_name, extension), 'wb') as f:
+                        Logger.app.info('Scan results file is available: {0}.{1}'.format(scan_name, extension))
+                        f.write(response.data)
+                except UnboundLocalError as e:
+                    Logger.app.error('Error saving file locally {}'.format(e))
+            elif response.response_code == 401:
+                Logger.app.critical("An Authorization Error occured.")
+                sys.exit(ExitStatus.failure)
+            else:
+                Logger.app.error('Unable to retrieve scan results. {} '.format(response.message))
+        except (ValueError, UnboundLocalError, NameError) as e:
+            Logger.app.error("There was an error exporting scan results: {}".format(e))
 
     def list_scans(self):
         """
         List all scans found on host
         :return: response.data from the Webinspect server
         """
-        api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
-        response = api.list_scans()
-        if response.success:
-            return response.data
-        elif response.response_code == 401:
-            Logger.app.critical("An Authorization Error occured.")
-            exit(1)
-        else:
-            Logger.app.critical("{}".format(response.message))
+        try:
+            api = webinspectapi.WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
+            response = api.list_scans()
+            if response.success:
+                return response.data
+            elif response.response_code == 401:
+                Logger.app.critical("An Authorization Error occured.")
+                sys.exit(ExitStatus.failure)
+            else:
+                Logger.app.critical("{}".format(response.message))
+        except (ValueError, UnboundLocalError, NameError) as e:
+            Logger.app.error("There was an error listing WebInspect scans! {}".format(e))
 
     def get_scan_status(self, scan_guid):
         """
@@ -83,11 +91,11 @@ class WebinspectQueryClient(object):
             response = api.get_current_status(scan_guid)
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
-                exit(1)
+                sys.exit(ExitStatus.failure)
             status = json.loads(response.data_json())['ScanStatus']
             return status
         except (ValueError, TypeError, UnboundLocalError) as e:
-            Logger.app.error("get_scan_status failed: {}".format(e))
+            Logger.app.error("There was an error getting scan status: {}".format(e))
             return None
 
     def trim_ext(self, file):

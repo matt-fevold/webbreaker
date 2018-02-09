@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __author__ = "Brandon Spruth (brandon.spruth2@target.com), Jim Nelson (jim.nelson2@target.com)," \
-             "Matt Dunaj (matthew.dunaj@target.com)"
+             "Matt Dunaj (matthew.dunaj@target.com), Kyler Witting (Kyler.Witting@target.com)"
 __copyright__ = "(C) 2017 Target Brands, Inc."
 __contributors__ = ["Brandon Spruth", "Jim Nelson", "Matthew Dunaj", "Kyler Witting"]
 __status__ = "Production"
@@ -19,7 +19,6 @@ except ImportError:  # Python3
     import urllib.request as urllib
 
 import requests.exceptions
-from git.exc import GitCommandError
 import click
 from webbreaker import __version__ as version
 from webbreaker.webbreakerlogger import Logger
@@ -32,14 +31,21 @@ from webbreaker.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspectscanhelpers import scan_running
 from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
-from webbreaker.gitclient import AgentVerifier
 from webbreaker.secretclient import SecretClient
 from webbreaker.threadfixclient import ThreadFixClient
 from webbreaker.threadfixconfig import ThreadFixConfig
 from webbreaker.webinspectproxyclient import WebinspectProxyClient
 import re
 import sys
+from exitstatus import ExitStatus
 import subprocess
+
+try:
+    from git.exc import GitCommandError
+except ImportError as e:  # module will fail if git is not installed
+    Logger.app.error("Please install the git client or add it to your PATH variable ->"
+                     " https://git-scm.com/download.  See log {}!!!".format
+                     (Logger.app_logfile, e.message))
 
 handle_scan_event = None
 reporter = None
@@ -154,144 +160,117 @@ def webinspect(config):
               required=False,
               multiple=True,
               help="Assign workflow macro(s)")
+
 @pass_config
 def scan(config, **kwargs):
-    # Setup our configuration...
-    webinspect_config = WebInspectConfig()
-
-    ops = kwargs.copy()
-
-    username = ops['username']
-    password = ops['password']
-
-    auth_config = WebInspectAuthConfig()
-    if auth_config.authenticate:
-        if username is not None and password is not None:
-            pass
-        elif auth_config.username and auth_config.password:
-            username = auth_config.username
-            password = auth_config.password
-        else:
-            username, password = webinspect_prompt()
-    else:
-        username = None
-        password = None
-
-    # Convert multiple args from tuples to lists
-    ops['allowed_hosts'] = list(kwargs['allowed_hosts'])
-    ops['start_urls'] = list(kwargs['start_urls'])
-    ops['workflow_macros'] = list(kwargs['workflow_macros'])
-
-    # ...as well as pulling down webinspect server config files from github...
     try:
+        # Setup our configuration...
+        webinspect_config = WebInspectConfig()
+
+        ops = kwargs.copy()
+
+        username = ops['username']
+        password = ops['password']
+
+        auth_config = WebInspectAuthConfig()
+        if auth_config.authenticate:
+            if username is not None and password is not None:
+                pass
+            elif auth_config.username and auth_config.password:
+                username = auth_config.username
+                password = auth_config.password
+            else:
+                username, password = webinspect_prompt()
+        else:
+            username = None
+            password = None
+
+        # Convert multiple args from tuples to lists
+        ops['allowed_hosts'] = list(kwargs['allowed_hosts'])
+        ops['start_urls'] = list(kwargs['start_urls'])
+        ops['workflow_macros'] = list(kwargs['workflow_macros'])
+
+        # ...as well as pulling down webinspect server config files from github...
         webinspect_config.fetch_webinspect_configs(ops)
-    except GitCommandError as e:
-        Logger.app.critical("{} does not have permission to access the git repo: {}".format(
-            webinspect_config.webinspect_git, e))
-        sys.exit(1)
 
-    # ...and settings...
-    try:
+        # ...and settings...
         webinspect_settings = webinspect_config.parse_webinspect_options(ops)
-    except (AttributeError, UnboundLocalError, IndexError):
-        Logger.app.error("Your configuration or settings are incorrect see log {}: ERROR: {}!!!".format(Logger.app_logfile))
-        exit(1)
-    # OK, we're ready to actually do something now
 
-    # The webinspect client is our point of interaction with the webinspect server farm
-    try:
+        # OK, we're ready to actually do something now
+
+        # The webinspect client is our point of interaction with the webinspect server farm
         webinspect_client = WebinspectClient(webinspect_settings, username=username, password=password)
-    except (UnboundLocalError, EnvironmentError, NameError, TypeError) as e:
-        Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(str(e)))
-        exit(1)
 
-    # if a scan policy has been specified, we need to make sure we can find/use it
+        # if a scan policy has been specified, we need to make sure we can find/use it
+        webinspect_client.verify_scan_policy(webinspect_config)
 
-    if webinspect_client.scan_policy:
-        # two happy paths: either the provided policy refers to an existing builtin policy, or it refers to
-        # a local policy we need to first upload and then use.
+        # Upload whatever configurations have been provided...
+        # All skipped unless explicitly declared in CLI
+        if webinspect_client.webinspect_upload_settings:
+            webinspect_client.upload_settings()
 
-        if str(webinspect_client.scan_policy).lower() in [str(x[0]).lower() for x in webinspect_config.mapped_policies]:
-            idx = [x for x, y in enumerate(webinspect_config.mapped_policies) if
-                   y[0] == str(webinspect_client.scan_policy).lower()]
-            policy_guid = webinspect_config.mapped_policies[idx[0]][1]
-            Logger.app.info(
-                "scan_policy {} with policyID {} has been selected.".format(webinspect_client.scan_policy,
-                                                                               policy_guid))
-            Logger.app.info("Checking to make sure a policy with that ID exists in WebInspect.")
-            if not webinspect_client.policy_exists(policy_guid):
-                Logger.app.error(
-                    "Scan policy {} cannot be located on the WebInspect server. Stopping".format(
-                        webinspect_client.scan_policy))
-                exit(1)
-            else:
-                Logger.app.info("Found policy {} in WebInspect.".format(policy_guid))
-        else:
-            # Not a builtin. Assume that caller wants the provided policy to be uploaded
-            Logger.app.info("Provided scan policy is not built-in, so will assume it needs to be uploaded.")
+        if webinspect_client.webinspect_upload_webmacros:
+            webinspect_client.upload_webmacros()
+
+        # if there was a provided scan policy, we've already uploaded so don't bother doing it again. hack.
+        if webinspect_client.webinspect_upload_policy and not webinspect_client.scan_policy:
             webinspect_client.upload_policy()
-            policy = webinspect_client.get_policy_by_name(webinspect_client.scan_policy)
-            if policy:
-                policy_guid = policy['uniqueId']
-            else:
-                Logger.app.error("The policy name is either incorrect or not available in {}."
-                                 .format('.webbreaker/etc/webinspect/policies'))
-                exit(1)
 
-        # Change the provided policy name into the corresponding policy id for scan creation.
-        policy_id = webinspect_client.get_policy_by_guid(policy_guid)['id']
-        webinspect_client.scan_policy = policy_id
-        Logger.app.debug("New scan policy has been set")
+        Logger.app.info("Launching a scan")
+        # ... And launch a scan.
+
+        try:
+            scan_id = webinspect_client.create_scan()
+            if scan_id:
+                global handle_scan_event
+                handle_scan_event = create_scan_event_handler(webinspect_client, scan_id, webinspect_settings)
+                handle_scan_event('scan_start')
+                Logger.app.debug("Starting scan handling")
+                Logger.app.info("Execution is waiting on scan status change")
+                with scan_running():
+                    webinspect_client.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
+                status = webinspect_client.get_scan_status(scan_id)
+                Logger.app.info("Scan status has changed to {0}.".format(status))
+
+                if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
+                    Logger.app.error(
+                        "See the WebInspect server scan log --> {}, typically the application to be scanned is"
+                        "unavailable.".format(WebInspectConfig().endpoints))
+                    # Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
+                    handle_scan_event('scan_end')
+                    sys.exit(ExitStatus.failure)
+
+            webinspect_client.export_scan_results(scan_id, 'fpr')
+            webinspect_client.export_scan_results(scan_id, 'xml')
+            # TODO add json export
+
+        except (
+        requests.exceptions.ConnectionError, requests.exceptions.HTTPError, NameError, KeyError, IndexError) as e:
+            Logger.app.error(
+                # "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
+                "WebInspect scan was not properly configured, unable to launch!! see also: {}".format(e))
+            raise
+
+        # If we've made it this far, our new credentials are valid and should be saved
+        if username is not None and password is not None and not auth_config.has_auth_creds():
+            auth_config.write_username(username)
+            auth_config.write_password(password)
+
+        try:
+            handle_scan_event('scan_end')
+            Logger.app.info("Webbreaker WebInspect has completed.")
+
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
+                IndexError) as e:
+            Logger.app.error(
+                # "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
+                "Webbreaker WebInspect scan was unable to complete! See also: {}".format(e))
+            raise
+
+    except:
+        Logger.app.error("WebBreaker exited due to an exception")
 
 
-    # Upload whatever configurations have been provided...
-    # All skipped unless explicitly declared in CLI
-    if webinspect_client.webinspect_upload_settings:
-        webinspect_client.upload_settings()
-
-    if webinspect_client.webinspect_upload_webmacros:
-        webinspect_client.upload_webmacros()
-
-    # if there was a provided scan policy, we've already uploaded so don't bother doing it again. hack.
-    if webinspect_client.webinspect_upload_policy and not webinspect_client.scan_policy:
-        webinspect_client.upload_policy()
-
-    Logger.app.info("Launching a scan")
-    # ... And launch a scan.
-    try:
-        scan_id = webinspect_client.create_scan()
-        if scan_id:
-            global handle_scan_event
-            handle_scan_event = create_scan_event_handler(webinspect_client, scan_id, webinspect_settings)
-            handle_scan_event('scan_start')
-            Logger.app.debug("Starting scan handling")
-            Logger.app.info("Execution is waiting on scan status change")
-            with scan_running():
-                webinspect_client.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
-            status = webinspect_client.get_scan_status(scan_id)
-            Logger.app.info("Scan status has changed to {0}.".format(status))
-
-            if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
-                Logger.app.error("See the WebInspect server scan log --> {}, typically the application to be scanned is"
-                     "unavailable.".format(WebInspectConfig().endpoints))
-                #Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
-                handle_scan_event('scan_end')
-                exit(1)
-        else:
-            exit(1)
-        webinspect_client.export_scan_results(scan_id, 'fpr')
-        webinspect_client.export_scan_results(scan_id, 'xml')
-
-    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, NameError) as e:
-        Logger.app.error(
-            "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-    # If we've made it this far, our new credentials are valid and should be saved
-    if username is not None and password is not None and not auth_config.has_auth_creds():
-        auth_config.write_username(username)
-        auth_config.write_password(password)
-    
-    handle_scan_event('scan_end')
-    Logger.app.info("Webbreaker WebInspect has completed.")
 
 @webinspect.command(name='list',
                     short_help="List WebInspect scans",
@@ -497,117 +476,109 @@ def download(config, server, scan_name, scan_id, x, protocol, username, password
               required=False,
               help="Specify WebInspect password")
 def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username, password):
-    if server:
-        servers = []
-        servers.append(format_webinspect_server(server))
-    else:
-        servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
-
-    auth_config = WebInspectAuthConfig()
-    if auth_config.authenticate:
-        if username is not None and password is not None:
-            pass
-        if auth_config.username and auth_config.password:
-            username = auth_config.username
-            password = auth_config.password
+    try:
+        if server:
+            servers = []
+            servers.append(format_webinspect_server(server))
         else:
-            username, password = webinspect_prompt()
-    else:
-        username = None
-        password = None
+            servers = [format_webinspect_server(e[0]) for e in WebInspectConfig().endpoints]
 
-    if list:
-        for server in servers:
-            server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-            results = proxy_client.list_proxy()
-            if results and len(results):
-                print("Proxies found on {}".format(proxy_client.host))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for match in results:
-                    print("{0:80} {1:40} {2:10}".format(match['instanceId'], match['address'], match['port']))
-                Logger.app.info("Succesfully listed proxies from: '{}'".format(server))
+        auth_config = WebInspectAuthConfig()
+        if auth_config.authenticate:
+            if username is not None and password is not None:
+                pass
+            if auth_config.username and auth_config.password:
+                username = auth_config.username
+                password = auth_config.password
             else:
-                Logger.app.error("No proxies found on '{}'".format(server))
+                username, password = webinspect_prompt()
+        else:
+            username = None
+            password = None
 
-    elif start:
-        server = 'https://' + servers[0]
-        proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-        try:
+        if list:
+            for server in servers:
+                server = 'https://' + server
+                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
+                results = proxy_client.list_proxy()
+                if results and len(results):
+                    print("Proxies found on {}".format(proxy_client.host))
+                    print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
+                    print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
+                    for match in results:
+                        print("{0:80} {1:40} {2:10}".format(match['instanceId'], match['address'], match['port']))
+                    Logger.app.info("Succesfully listed proxies from: '{}'".format(server))
+                else:
+                    Logger.app.error("No proxies found on '{}'".format(server))
+
+        elif start:
+            server = 'https://' + servers[0]
+            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
             proxy_client.get_cert_proxy()
             result = proxy_client.start_proxy()
-        except (UnboundLocalError, EnvironmentError) as e:
-            Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
-            exit(1)
 
-        if result and len(result):
-            Logger.app.info("Proxy successfully started")
-            print("Server\t\t:\t'{}'".format(server))
-            print("Instance ID\t:\t{}".format(result['instanceId']))
-            print("Address\t\t:\t{}".format(result['address']))
-            print("Port\t\t:\t{}".format(result['port']))
-        else:
-            Logger.app.error("Unable to start proxy on '{}'".format(server))
-            exit(1)
-    elif not proxy_name:
-        Logger.app.error("Please enter a proxy name.")
-        exit(1)
+            if result and len(result):
+                Logger.app.info("Proxy successfully started")
+                print("Server\t\t:\t'{}'".format(server))
+                print("Instance ID\t:\t{}".format(result['instanceId']))
+                print("Address\t\t:\t{}".format(result['address']))
+                print("Port\t\t:\t{}".format(result['port']))
+            else:
+                Logger.app.error("Unable to start proxy on '{}'".format(server))
+                sys.exit(ExitStatus.failure)
+        elif not proxy_name:
+            Logger.app.error("Please enter a proxy name.")
+            sys.exit(ExitStatus.failure)
 
-    elif stop:
-        for server in servers:
-            server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-            try:
+        elif stop:
+            for server in servers:
+                server = 'https://' + server
+                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
                 result = proxy_client.get_proxy()
                 if result:
                     proxy_client.download_proxy(webmacro=False, setting=True)
                     proxy_client.download_proxy(webmacro=True, setting=False)
                     proxy_client.delete_proxy()
-                    exit(0)
-            except (UnboundLocalError, EnvironmentError) as e:
-                Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
-                exit(1)
-        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-        exit(1)
+                    sys.exit(ExitStatus.success)
+                else:
+                    Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+                    sys.exit(ExitStatus.failure)
 
-    elif download:
-        for server in servers:
-            server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-            try:
+        elif download:
+            for server in servers:
+                server = 'https://' + server
+                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
                 result = proxy_client.get_proxy()
                 if result:
                     proxy_client.download_proxy(webmacro, setting)
-                    exit(0)
-            except (UnboundLocalError, EnvironmentError) as e:
-                Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
-                exit(1)
-        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-        exit(1)
+                    sys.exit(ExitStatus.success)
+                else:
+                    Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+                    sys.exit(ExitStatus.failure)
 
-    elif upload:
-        for server in servers:
-            server = 'https://' + server
-            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-            try:
+        elif upload:
+            for server in servers:
+                server = 'https://' + server
+                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
                 result = proxy_client.get_proxy()
                 if result:
                     proxy_client.upload_proxy(upload)
-                    exit(0)
-            except (UnboundLocalError, EnvironmentError) as e:
-                Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
-                exit(1)
-        Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-        exit(1)
-    else:
-        Logger.app.error("Error: No proxy command was given.")
-        exit(1)
+                    sys.exit(ExitStatus.success)
+                else:
+                    Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
+                    sys.exit(ExitStatus.failure)
+        else:
+            Logger.app.error("Error: No proxy command was given.")
+            sys.exit(ExitStatus.failure)
 
-    # If we've made it this far, our new credentials are valid and should be saved
-    if username is not None and password is not None and not auth_config.has_auth_creds():
-        auth_config.write_username(username)
-        auth_config.write_password(password)
+        # If we've made it this far, our new credentials are valid and should be saved
+        if username is not None and password is not None and not auth_config.has_auth_creds():
+            auth_config.write_username(username)
+            auth_config.write_password(password)
+
+    except (UnboundLocalError, EnvironmentError) as e:
+        Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
+        sys.exit(ExitStatus.failure)
 
 
 @cli.group(short_help="Interaction with Fortify API",
@@ -666,8 +637,10 @@ def fortify_list(config, fortify_user, fortify_password, application):
         Logger.app.info("Fortify list has successfully completed")
     except ValueError:
         Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
-    except (AttributeError, UnboundLocalError) as e:
+        sys.exit(ExitStatus.failure)
+    except (AttributeError, UnboundLocalError, TypeError) as e:
         Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
+        sys.exit(ExitStatus.failure)
 
 
 @fortify.command(name='download',

@@ -59,7 +59,7 @@ def test_fortify_list_client_init_exeception(client_mock, test_mock, runner, cap
     )
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
 
 @mock.patch('webbreaker.__main__.FortifyConfig')
@@ -79,7 +79,7 @@ def test_fortify_list_list_list_exeception(client_mock, test_mock, runner, caplo
     )
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
 
 @mock.patch('webbreaker.__main__.FortifyConfig')
@@ -124,7 +124,7 @@ def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runn
     )
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
 
 @mock.patch('webbreaker.__main__.FortifyConfig')
@@ -147,7 +147,7 @@ def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runn
     )
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
 
 @mock.patch('webbreaker.__main__.FortifyConfig')
@@ -234,7 +234,7 @@ def test_fortify_list_application_exception(client_mock, test_mock, runner, capl
     )
     caplog.uninstall()
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
 
 @mock.patch('webbreaker.__main__.FortifyConfig')
 @mock.patch('webbreaker.__main__.FortifyClient')

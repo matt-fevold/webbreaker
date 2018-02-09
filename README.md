@@ -6,10 +6,10 @@
 
 ## Introduction
 
-WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams to create Continuous Delivery (CD) pipelines, as well as triaging security vulnerabilities from WebInspect, Fortify SSC, and ThreadFix.
+WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams to create pipelines for security testing and automation of functional security tests, with WebInspect, Fortify SSC, and ThreadFix.
 
 ## Download & Install
-[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.15/link)
+[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.18/link)
 
 :arrow_down: [Mac OS](https://github.com/target/webbreaker/releases), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
@@ -33,17 +33,24 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 :white_check_mark: Each supported product Webinspect, Fortify SSC, and ThreadFix has a section. Modify the ones you need.
 
 ```
-# Your Fortify SSC URL without /ssc
+# Your Fortify SSC URL without /ssc and execute `webbreaker admin credentials --fortify` 
 [fortify]
 ssc_url = https://ssc.example.com
+username = 
+password = 
 
-# Your Threadfix URL
+# Your ThreadFix URL and ThreadFix API Key
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
 api_key = ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX
 
-# Your Webinspect installation, default port is 8083/tcp. Feel free to add more servers here
+# WebInspect API authentication requires `true`, and running `webbreaker admin credentials --webinspect`
 [webinspect]
+authenticate = false
+username = 
+password = 
+
+# Your Webinspect installation, default port is 8083/tcp. Feel free to add more servers here
 server_01 = https://webinspect-1.example.com:8083
 server_02 = https://webinspect-2.example.com:8083
 endpoint_01 = %(server_01)s|%(size_large)s
@@ -62,7 +69,7 @@ WebBreaker is a command-line interface (CLI) client.  See our complete [_WebBrea
 
 The CLI supports upper-level and lower-level commands with respective options to enable interaction with Dynamic Application Security Test (DAST) products.  Current supported products are WebInspect, Fortfiy, and ThreadFix (more to come in the future!!). 
 
-Illustrated below is a fully automated WebBreaker workflow of a WebInspect Scan.  Please see the [WebBreaker Cheatsheet](docs/cheatsheet.md) for further examples.
+Illustrated below is an example of a typical WebBreaker WebInspect scanning workflow from creation to triage.  Please see the [WebBreaker Cheatsheet](docs/cheatsheet.md) for further examples.
 
 1. Starting WebInspect Proxy
 `webbreaker webinspect proxy --start --port=9001 --proxy_name=$WEBINSPECT_SCAN_NAME`

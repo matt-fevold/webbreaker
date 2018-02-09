@@ -4,7 +4,8 @@ coverage
 cryptography>=1.8.0
 detox
 dpath>=1.4.0
-fortifyapi>=1.0.11
+exitstatus
+fortifyapi>=1.0.12
 GitPython
 httplib2
 mock
