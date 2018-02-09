@@ -33,6 +33,11 @@ if sys.argv[-1] == 'pyinstaller':
     os.system('python build.py')
     sys.exit(0)
 
+# run pyinstaller on windows
+if sys.argv[-1] == 'windows':
+    os.system('python build.ps1')
+    sys.exit(0)
+    
 if sys.argv[-1] == 'build':
     os.system('python setup.py sdist --formats=zip bdist_wheel')
     sys.exit(0)
