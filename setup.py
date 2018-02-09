@@ -35,7 +35,7 @@ if sys.argv[-1] == 'pyinstaller':
 
 # run pyinstaller on windows
 if sys.argv[-1] == 'windows':
-    os.system('python build.ps1')
+    os.system('powershell -command ./build.ps1')
     sys.exit(0)
     
 if sys.argv[-1] == 'build':
