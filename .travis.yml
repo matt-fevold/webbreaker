@@ -13,7 +13,6 @@ notifications:
   email:
     recipients:
     - brandon.spruth2@target.com
-    - matthew.dunaj@target.com
     - Kyler.Witting@target.com
     on_success: change
     on_failure: always
