@@ -8,8 +8,10 @@
 
 WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams to create pipelines for security testing and automation of functional security tests, with WebInspect, Fortify SSC, and ThreadFix.
 
+The commands are organized by product followed by actions you want to take on the product accompanied with options.  For example `webbreaker webinspect scan --settings=zerobank`
+
 ## Download & Install
-[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.18/link)
+[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.19/link)
 
 :arrow_down: [Mac OS](https://github.com/target/webbreaker/releases), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
@@ -23,6 +25,15 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 
 `choco install webbreaker`
 
+:arrow_down: [Build and install](https://github.com/target/webbreaker.git) from source and follow the steps below.
+
+1. ```git clone https://github.com/target/webbreaker```
+1. ```export PATH=$PATH:$PYTHONPATH```
+1. ```cd webbreaker;pip install -r requirements.txt```
+1. ```python setup.py build```
+1. ```python setup.py install```
+
+
 ## Configuration
 :white_check_mark: Add your webbreaker executable to your $PATH or %PATH%
 
@@ -33,7 +44,7 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 :white_check_mark: Each supported product Webinspect, Fortify SSC, and ThreadFix has a section. Modify the ones you need.
 
 ```
-# Your Fortify SSC URL without /ssc and execute `webbreaker admin credentials --fortify` 
+# Your Fortify SSC URL exclude /ssc and run `webbreaker admin credentials --fortify` 
 [fortify]
 ssc_url = https://ssc.example.com
 username = 
@@ -44,20 +55,20 @@ password =
 host = https://threadfix.example.com:8443/threadfix
 api_key = ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX
 
-# WebInspect API authentication requires `true`, and running `webbreaker admin credentials --webinspect`
+# API authentication set to `true` and run `webbreaker admin credentials --webinspect`
 [webinspect]
 authenticate = false
 username = 
 password = 
 
-# Your Webinspect installation, default port is 8083/tcp. Feel free to add more servers here
+# Webinspect default port is 8083/tcp. Feel free to add more servers here
 server_01 = https://webinspect-1.example.com:8083
 server_02 = https://webinspect-2.example.com:8083
 endpoint_01 = %(server_01)s|%(size_large)s
 endpoint_02 = %(server_01)s|%(size_medium)s
 ```
 **NOTES:**
-* If you are using WebInspect turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).  Go to your Swagger doc for validation https://webinspecct.example.com:8083/webinspect/api
+* If you are using WebInspect turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).  
 
 ## Release Notes
 
@@ -67,41 +78,22 @@ New Features, bugs and enhancements for this release are documented in our [WebB
 
 WebBreaker is a command-line interface (CLI) client.  See our complete [_WebBreaker Documentation_](https://target.github.io/webbreaker/) for further configuration, usage, and installation.
 
-The CLI supports upper-level and lower-level commands with respective options to enable interaction with Dynamic Application Security Test (DAST) products.  Current supported products are WebInspect, Fortfiy, and ThreadFix (more to come in the future!!). 
-
 Illustrated below is an example of a typical WebBreaker WebInspect scanning workflow from creation to triage.  Please see the [WebBreaker Cheatsheet](docs/cheatsheet.md) for further examples.
 
-1. Starting WebInspect Proxy
+1. Starting WebInspect Proxy  
 `webbreaker webinspect proxy --start --port=9001 --proxy_name=$WEBINSPECT_SCAN_NAME`
 
-1. Stopping WebInspect Proxy
+1. Stopping WebInspect Proxy  
 `webbreaker webinspect proxy --stop --proxy_name=$WEBINSPECT_SCAN_NAME`
 
-1. WebInspect Scanning from Proxy Results
+1. WebInspect Scanning from Proxy Results  
 `webbreaker webinspect scan --settings=$WEBINSPECT_SCAN_NAME.xml --scan_name=$WEBINSPECT_SCAN_NAME`
 
-1. Uploading Scan Results to Threadfix
+1. Uploading Scan Results to Threadfix  
 `webbreaker threadfix upload --application DAST-Test --scan_file $WEBINSPECT_SCAN_NAME.xml`
 
-1. Uploading Scan Results to Fortify SSC
+1. Uploading Scan Results to Fortify SSC  
 `webbreaker fortify upload --fortify_user $FORTIFY_SSC_USER --fortify_password $FORTIFY_SSC_PASSWORD --version $WEBINSPECT_SCAN_NAME --scan_name $WEBINSPECT_SCAN_NAME`
-
-## Testing
-Our automated testing is performed with tox and detox on Python 3.6 and 2.7. See the [full testing documentation](https://target.github.io/webbreaker/#testing).
-
-## Docker 
-Run WebBreaker in Docker from the repo's root directory, the pre-configured virtualenv environments are `venv27` for Python 2.7 or `venv36` for Python 3.6.  Examples are illustrated below.
-
-```
-docker build -t test_env:centos . \
-&& docker create -it --name test_env test_env:centos  \
-&& docker start test_env \
-&& docker exec -it test_env bash
-```
-To remove the environment gracefully, perform the following command:
-```
-docker stop test_env && docker rm test_env
-```
 
 ## Bugs and Feature Requests
 
@@ -111,4 +103,4 @@ Found something that doesn't seem right or have a feature request? [Please open 
 
 [![license](https://img.shields.io/github/license/target/webbreaker.svg?style=flat-square)](https://github.com/target/webbreaker/blob/master/LICENSE.txt)
 
-Copyright 2017 Target Brands, Inc.
+Copyright 2018 Target Brands, Inc.

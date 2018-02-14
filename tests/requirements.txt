@@ -1,0 +1,6 @@
+coverage
+detox
+mock
+pytest-runner
+testfixtures
+tox

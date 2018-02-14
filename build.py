@@ -34,10 +34,6 @@ def main():
     # Set user bin directory for py modules installed
     user_bin = [python_exe, '-m', 'site', '--user-base']
 
-    # Create mac commands for building webbreaker dmg
-    hdiutil_dir = os.path.join(os.path.abspath(base_dir), 'dist', 'webbreaker.app')
-    hdiutil_cmd = ['hdiutil', 'create', pyinstaller_file, '-srcfolder', hdiutil_dir, '-ov']
-
     def cmdline(command):
         process = Popen(
             args=command,
@@ -68,15 +64,28 @@ def main():
                         try:
                             # Use scripts from user_base
                             pyinstaller_exe = os.path.abspath(os.path.join(cmdline(user_bin), 'bin', 'pyinstaller'))
+
                             if not os.path.exists(pyinstaller_exe):
                                 pyinstaller_exe = os.path.abspath(os.path.join('/usr', 'bin', 'pyinstaller'))
 
-                            cmdline([pyinstaller_exe, "--clean", "-y", "--windowed", "--noconsole", "--onefile",
-                                     "--name", "webbreaker", "-p", str(user_site), str(webbreaker_main)])
-                            print("Successfully built {}!".format(pyinstaller_file))
+                            if distro == "darwin":
+                                cmdline([pyinstaller_exe, "--clean", "-y", "--nowindowed", "--console", "--onefile",
+                                             "--name", "webbreaker", "--osx-bundle-identifier", "com.target.ps.webbreaker", "-p",
+                                             str(user_site), str(webbreaker_main)])
+
+                                print("Successfully built an osx distro {}!".format(pyinstaller_file))
+
+                            elif distro == "linux2":
+                                cmdline([pyinstaller_exe, "--clean", "-y", "--nowindowed", "--console", "--onefile",
+                                 "--name", "webbreaker", "-p", str(user_site), str(webbreaker_main)])
+                                print("Successfully built {}!".format(pyinstaller_file))
+
+                            else:
+                                print("We cannot build on your OS!")
 
                         except (NameError, AttributeError, OSError) as e:
-                            print("No pyinstaller was found: {}".format(e.message))
+                            print("No pyinstaller was found: {0} or an error occured with your pyinstaller -> {1}!!"
+                                  .format(e.message, pyinstaller_exe))
 
                     else:
                         sys.stderr.write("{} does not exist\n".format(requirements_file))
@@ -85,18 +94,10 @@ def main():
                     print(
                         "There was an issue installing the python requirements and executing pyinstaller, "
                         "these commands manually --> \npip install --user -r {0}\n"
-                        "\npyinstaller --clean -y --windowed --onefile --name webbreaker -p "
+                        "\npyinstaller --clean -y --onefile --name webbreaker -p "
                         "{1}, {2}\n".format(requirements_file, cmdline(user_site), webbreaker_main))
                     exit(1)
 
-                if distro == "darwin":
-                    try:
-                        cmdline(hdiutil_cmd)
-                        print("Successfully built your DMG package {}.dmg!".format(pyinstaller_file))
-                    except OSError:
-                        print(
-                            "There was an issue executing --> {0}{1}{2}{3}{4}".format('hdiutil create', pyinstaller_file,
-                                                                                      '-srcfolder', hdiutil_dir, '-ov'))
                 else:
                     sys.stderr.write("Congratulations your build is successful on {0} version {1}!\n"
                                      .format(distro, os.uname()[2]))

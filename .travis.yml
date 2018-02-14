@@ -4,7 +4,7 @@ python:
   - "2.7"
   - "3.6"
 install:
-  - pip install tox-travis -rrequirements.txt
+  - pip install tox-travis -rrequirements.txt -rtests/requirements.txt
   - python setup.py build
   - python setup.py pyinstaller
 script:
@@ -13,6 +13,7 @@ notifications:
   email:
     recipients:
     - brandon.spruth2@target.com
+    - Matthew.Fevold@target.com
     - Kyler.Witting@target.com
     on_success: change
     on_failure: always

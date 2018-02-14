@@ -6,12 +6,10 @@ import shutil
 
 try:
     import ConfigParser as configparser
-
-    config = configparser.SafeConfigParser()
+    config = configparser.SafeConfigParser(allow_no_value=True)
 except ImportError:  # Python3
     import configparser
-
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(allow_no_value=True)
 
 
 class Config(object):
@@ -95,27 +93,39 @@ class Config(object):
             return value
 
     def set_config(self):
-        self.conf_get('git', 'token', '43eb3ddb7152bbecXXabcee04859ee73eaa1XXXX')
-
+        self.conf_get('fortify', '; SSC URL exclude the /ssc context')
         self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
+
+        self.conf_get('fortify', '; Default Fortify SSC Project Template per Application Version')
         self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
+
+        self.conf_get('fortify', '; Default Fortify SSC Application')
         self.conf_get('fortify', 'application_name', 'WEBINSPECT')
+
+        self.conf_get('fortify', '; Fortify SSC authentication execute, webbreaker admin credentials --fortify')
         self.conf_get('fortify', 'username', '')
         self.conf_get('fortify', 'password', '')
 
+        self.conf_get('threadfix', '; ThreadFix URL and ThreadFix API Key')
         self.conf_get('threadfix', 'host', 'https://threadfix.example.com:8443/threadfix')
         self.conf_get('threadfix', 'api_key', 'ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX')
 
+        self.conf_get('webinspect', '; WebInspect load balancing, size of server is bound to CPU & memory available')
         self.conf_get('webinspect', 'size_large', '2')
         self.conf_get('webinspect', 'size_medium', '1')
         self.conf_get('webinspect', 'default_size', 'size_large')
+
+        self.conf_get('webinspect', '; WebInspect server(s) RESTFul API endpoints')
         self.conf_get('webinspect', 'server_01', 'https://webinspect-server-1.example.com:8083')
         self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(size_large)s')
-        self.conf_get('webinspect', 'git_repo', 'git@github.com:webbreaker/webinspect.git')
+        self.conf_get('webinspect', 'git_repo', 'https://github.com/webbreaker/webinspect.git')
+
+        self.conf_get('webinspect', '; API authentication set to true execute, webbreaker admin credentials --webinspect')
         self.conf_get('webinspect', 'authenticate', 'false')
         self.conf_get('webinspect', 'username', '')
         self.conf_get('webinspect', 'password', '')
 
+        self.conf_get('webinspect_policy', '; Built-in WebInspect policies, other policies may be appended')
         self.conf_get('webinspect_policy', 'aggressivesqlinjection', '032b1266-294d-42e9-b5f0-2a4239b23941')
         self.conf_get('webinspect_policy', 'allchecks', '08cd4862-6334-4b0e-abf5-cb7685d0cde7')
         self.conf_get('webinspect_policy', 'apachestruts', '786eebac-f962-444c-8c59-7bf08a6640fd')
@@ -145,7 +155,10 @@ class Config(object):
         self.conf_get('webinspect_policy', 'standard', 'cb72a7c2-9207-4ee7-94d0-edd14a47c15c')
         self.conf_get('webinspect_policy', 'transportlayersecurity', '0fa627de-3f1c-4640-a7d3-154e96cda93c')
 
+        self.conf_get('git', '; GIT personal access token for webbreaker agent')
+        self.conf_get('git', 'token', '43eb3ddb7152bbecXXabcee04859ee73eaa1XXXX')
 
+        self.conf_get('emailer', '; smnp email host, port and email addresses required for email functionality.')
         self.conf_get('emailer', 'smtp_host', 'smtp.example.com')
         self.conf_get('emailer', 'smtp_port', '25')
         self.conf_get('emailer', 'from_address', 'webbreaker-no-reply@example.com')
