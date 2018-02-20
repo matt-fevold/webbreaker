@@ -9,6 +9,7 @@ from webbreaker.webbreakerlogger import Logger
 class WebInspectJitScheduler(object):
     def __init__(self, endpoints, size_list, size_needed='size_large', username=None, password=None):
         self.endpoints = endpoints
+        # TODO need to change size_list to make more sense, change to priority high/low to increase readability.
         self.size_list = size_list
         self.size_needed = size_needed
         self.username = username
@@ -36,6 +37,8 @@ class WebInspectJitScheduler(object):
             Logger.app.error("Error has occured with identifying an appropriate WebInspect scan engine. {}".format(e))
             return None
 
+    # TODO refactor to remove size_needed from the config file and change so that this doesn't use 1 or 2 high/medium
+    # TODO     but instead uses priority_low or priority_high since that is more readable.
     def __convert_size_to_count__(self):
         max_scans = None
         for size in self.size_list:

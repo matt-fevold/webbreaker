@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
-import sys
 import json
 import ntpath
 import requests
 import urllib3
-import webinspectapi.webinspect as webinspectapi
+from webinspectapi.webinspect import WebInspectApi
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.webinspectconfig import WebInspectConfig
@@ -80,7 +79,7 @@ class WebinspectClient(object):
 
     def __settings_exists__(self):
         try:
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.list_settings()
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
@@ -109,10 +108,9 @@ class WebinspectClient(object):
                                                                              self.start_urls, self.workflow_macros,
                                                                              self.allowed_hosts))
 
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.create_scan(overrides)
 
-            response = api.create_scan(overrides)
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
                 sys.exit(ExitStatus.failure)
@@ -141,7 +139,7 @@ class WebinspectClient(object):
         # Export scan as a xml for Threadfix or other Vuln Management System
         Logger.app.info('Exporting scan: {} as {}'.format(scan_id, extension))
         detail_type = 'Full' if extension == 'xml' else None
-        api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+        api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
         response = api.export_scan_format(scan_id, extension, detail_type)
         if response.response_code == 401:
             Logger.app.critical("An authentication error occurred, exporting scan results!")
@@ -158,7 +156,7 @@ class WebinspectClient(object):
             Logger.app.error('Unable to retrieve scan results! {} '.format(response.message))
 
     def get_policy_by_guid(self, policy_guid):
-        api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+        api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
         response = api.get_policy_by_guid(policy_guid)
         if response.response_code == 401:
             Logger.app.critical("An authentication error occurred, retriving policy identifier!")
@@ -169,7 +167,7 @@ class WebinspectClient(object):
             return None
 
     def get_policy_by_name(self, policy_name):
-        api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+        api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
         response = api.get_policy_by_name(policy_name)
         if response.response_code == 401:
             Logger.app.critical("An authentication error occured, retrieving the policy name!")
@@ -183,7 +181,7 @@ class WebinspectClient(object):
         try:
 
             if scan_name:
-                api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+                api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
                 response = api.get_scan_by_name(scan_name)
                 if response.response_code == 401:
                     Logger.app.critical("An authentication error occurred, retrieving scan issues!")
@@ -194,7 +192,7 @@ class WebinspectClient(object):
                     Logger.app.error(response.message)
                     return None
 
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.get_scan_issues(scan_guid)
             if response.response_code == 401:
                 Logger.app.critical("An authentication error occurred!")
@@ -210,7 +208,7 @@ class WebinspectClient(object):
         try:
 
             if scan_name:
-                api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+                api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
                 response = api.get_scan_by_name(scan_name)
                 if response.response_code == 401:
                     Logger.app.critical("An an authentication error occurred while retrieving scan name!")
@@ -221,7 +219,7 @@ class WebinspectClient(object):
                     Logger.app.error(response.message)
                     return None
 
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.get_scan_log(scan_guid)
             if response.response_code == 401:
                 Logger.app.critical("An authentication error occurred while reading the scan log!")
@@ -234,7 +232,7 @@ class WebinspectClient(object):
             Logger.app.error("get_scan_log failed: {}".format(e))
 
     def get_scan_status(self, scan_guid):
-        api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+        api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
         try:
             response = api.get_current_status(scan_guid)
             if response.response_code == 401:
@@ -248,7 +246,7 @@ class WebinspectClient(object):
 
     def list_policies(self):
         try:
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.list_policies()
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
@@ -265,7 +263,7 @@ class WebinspectClient(object):
     def list_scans(self):
 
         try:
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.list_scans()
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
@@ -281,7 +279,7 @@ class WebinspectClient(object):
 
     def list_webmacros(self):
         try:
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.list_webmacros()
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
@@ -297,7 +295,7 @@ class WebinspectClient(object):
 
     def policy_exists(self, policy_guid):
         # true if policy exists
-        api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+        api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
         response = api.get_policy_by_guid(policy_guid)
         if response.response_code == 401:
             Logger.app.critical("An Authorization Error occured.")
@@ -305,7 +303,7 @@ class WebinspectClient(object):
         return response.success
 
     def stop_scan(self, scan_guid):
-        api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+        api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
         response = api.stop_scan(scan_guid)
         if response.response_code == 401:
             Logger.app.critical("An Authorization Error occured.")
@@ -315,7 +313,7 @@ class WebinspectClient(object):
     def upload_policy(self):
         # if a policy of the same name already exists, delete it prior to upload
         try:
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             # bit of ugliness here. I'd like to just have the policy name at this point but I don't
             # so find it in the full path
             # TODO: Verify split here
@@ -333,7 +331,7 @@ class WebinspectClient(object):
             Logger.app.error("Verify if deletion of existing policy failed: {}".format(e))
 
         try:
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.upload_policy(self.webinspect_upload_policy)
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
@@ -351,7 +349,7 @@ class WebinspectClient(object):
     def upload_settings(self):
 
         try:
-            api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+            api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
             response = api.upload_settings(self.webinspect_upload_settings)
             if response.response_code == 401:
                 Logger.app.critical("An Authorization Error occured.")
@@ -371,7 +369,7 @@ class WebinspectClient(object):
     def upload_webmacros(self):
         try:
             for webmacro in self.webinspect_upload_webmacros:
-                api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+                api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
                 response = api.upload_webmacro(webmacro)
                 if response.response_code == 401:
                     Logger.app.critical("An Authorization Error occured.")
@@ -392,7 +390,7 @@ class WebinspectClient(object):
         :return:
         """
         # WebInspect Scan has started, wait here until it's done
-        api = webinspectapi.WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
+        api = WebInspectApi(self.url, verify_ssl=False, username=self.username, password=self.password)
         response = api.wait_for_status_change(scan_id)  # this line is the blocker
         if response.response_code == 401:
             Logger.app.critical("An Authorization Error occured.")

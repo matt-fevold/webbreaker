@@ -166,6 +166,7 @@ def scan(config, **kwargs):
     try:
         # Setup our configuration...
         webinspect_config = WebInspectConfig()
+        Logger.app.debug("Webinspect Config: {}".format(webinspect_config))
 
         ops = kwargs.copy()
 
@@ -221,8 +222,13 @@ def scan(config, **kwargs):
 
         try:
             scan_id = webinspect_client.create_scan()
+            Logger.app.debug("Scan ID: {}".format(scan_id))
+
             if scan_id:
+                # Initialize handle_scan_event first then go to webinspectscanhelpers
+
                 global handle_scan_event
+                Logger.app.debug("handle_scan_event: {}".format(handle_scan_event))
                 handle_scan_event = create_scan_event_handler(webinspect_client, scan_id, webinspect_settings)
                 handle_scan_event('scan_start')
                 Logger.app.debug("Starting scan handling")
@@ -236,7 +242,7 @@ def scan(config, **kwargs):
                     Logger.app.error(
                         "See the WebInspect server scan log --> {}, typically the application to be scanned is"
                         "unavailable.".format(WebInspectConfig().endpoints))
-                    # Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
+                    Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
                     handle_scan_event('scan_end')
                     sys.exit(ExitStatus.failure)
 

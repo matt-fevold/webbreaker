@@ -81,8 +81,10 @@ class WebInspectConfig(object):
 
             webinspect_dict['git'] = wb_config.conf_get('webinspect', 'git_repo')
             webinspect_dict['default_size'] = wb_config.conf_get('webinspect', 'default_size')
+
             webinspect_dict['endpoints'] = [[endpoint[1].split('|')[0], endpoint[1].split('|')[1]] for endpoint in
                                             endpoints]
+
             webinspect_dict['size_list'] = sizes
 
             webinspect_dict['mapped_policies'] = [[option, config.get('webinspect_policy', option)] for option in

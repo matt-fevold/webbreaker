@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
-import logging.config
 import logging
 import datetime
 import sys
@@ -64,7 +63,6 @@ def get_app_logger(name=None):
         formatter = logging.Formatter('%(asctime)s: %(name)s %(levelname)s(%(message)s')
         fh = logging.FileHandler(logger_map[name], mode='a')
         fh.setFormatter(formatter)
-        fh.setLevel(logging.DEBUG)
         fh.setLevel(logging.INFO)
         app_logger.addHandler(fh)
     except TypeError as e:
