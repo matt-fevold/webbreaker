@@ -97,7 +97,13 @@ class Config(object):
         # SSC URL exclude the /ssc context
         self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
 
-        # Default Fortify SSC Project Template per Application Version
+        # Default & a custom Fortify SSC Application Version attribute values and
+        # Project or Application Template associated to the Application Version
+        self.conf_get('fortify', 'business_risk_ranking', 'High')
+        self.conf_get('fortify', 'development_phase', 'Active')
+        self.conf_get('fortify', 'development_strategy', 'Internal')
+        self.conf_get('fortify', 'accessibility', 'externalpublicnetwork')
+        self.conf_get('fortify', 'custom_attribute', '')
         self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
 
         # Default Fortify SSC Application
@@ -155,9 +161,6 @@ class Config(object):
         self.conf_get('webinspect_policy', 'sqlinjection', '6df62f30-4d47-40ec-b3a7-dad80d33f613')
         self.conf_get('webinspect_policy', 'standard', 'cb72a7c2-9207-4ee7-94d0-edd14a47c15c')
         self.conf_get('webinspect_policy', 'transportlayersecurity', '0fa627de-3f1c-4640-a7d3-154e96cda93c')
-
-        # GIT personal access token for webbreaker agent
-        self.conf_get('git', 'token', '43eb3ddb7152bbecXXabcee04859ee73eaa1XXXX')
 
         # smnp email host, port and email addresses required for email functionality.
         self.conf_get('emailer', 'smtp_host', 'smtp.example.com')

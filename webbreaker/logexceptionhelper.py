@@ -45,3 +45,6 @@ class LogExceptionHelper(object):
 
     def LogErrorUploading(self, args, e):
         Logger.app.error("Error uploading {} {}".format(args, e))
+
+    def LogErrorWebInspectDownload(self, e):
+        Logger.app.error("Please refer to the --help on the option value you provided.".format(e))

@@ -34,6 +34,7 @@ except ImportError:  # Python3
 runenv = WebBreakerHelper.check_run_env()
 logexceptionhelper = LogExceptionHelper()
 
+
 class WebInspectEndpoint(object):
     def __init__(self, uri, size):
         self.uri = uri

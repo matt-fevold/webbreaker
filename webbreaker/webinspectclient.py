@@ -365,7 +365,6 @@ class WebinspectClient(object):
             logexceptionhelper.LogErrorUploading("settings", e)
             logexceptionhelper.LogNoWebInspectServerFound(e)
 
-
     def upload_webmacros(self):
         try:
             for webmacro in self.webinspect_upload_webmacros:

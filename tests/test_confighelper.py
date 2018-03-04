@@ -192,7 +192,7 @@ def test_set_config_basic(set_vars_mock, conf_get_mock):
 
     Config()
 
-    assert conf_get_mock.call_count == 49
+    assert conf_get_mock.call_count == 53
 
 
 @mock.patch('webbreaker.confighelper.Config.set_vars')

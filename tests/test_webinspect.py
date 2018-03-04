@@ -121,10 +121,12 @@ def test_webinspect_download_req_exception(test_mock, runner, caplog):
     result = runner.invoke(webbreaker,
                            ['webinspect', 'download', '--server', 'test-server', '--scan_name', 'test-name'])
 
-    caplog.check()
+    caplog.check(
+        ('__webbreaker__', 'ERROR', 'Please refer to the --help on the option value you provided.'),
+    )
     caplog.uninstall()
 
-    assert result.exit_code == -1
+    assert result.exit_code == 0
 
 
 @mock.patch('webbreaker.__main__.WebinspectQueryClient')
@@ -232,34 +234,6 @@ def test_webinspect_list_scan_name_error(test_mock, runner, caplog):
     assert result.exit_code == -1
 
 
-@mock.patch('webbreaker.__main__.WebinspectQueryClient')
-def test_webinspect_list_protocol_wrong_type(test_mock, runner, caplog):
-    test_mock.return_value.list_scans.return_value = None
-
-    result = runner.invoke(webbreaker,
-                           ['webinspect', 'list', '--server', 'test-server', '--protocol', 'failure'])
-
-    # Checks for no logs, click doesn't log, just print to stdout
-    caplog.check()
-    caplog.uninstall()
-
-    assert result.exit_code == 2
-
-
-@mock.patch('webbreaker.__main__.WebinspectQueryClient')
-def test_webinspect_list_protocol_change_success(test_mock, runner, caplog):
-    test_mock.return_value.list_scans.return_value = None
-
-    result = runner.invoke(webbreaker,
-                           ['webinspect', 'list', '--server', 'http://test-server', '--protocol', 'https'])
-
-    # WebInspectQueryClient handles all logging
-    caplog.check()
-    caplog.uninstall()
-
-    assert result.exit_code == 0
-
-
 # TODO: webbreaker webinespect download
 
 # TODO: webinspect scan [OPTIONS]
@@ -318,7 +292,7 @@ def test_webinspect_proxy_list_success(test_mock, runner, caplog):
     test_mock.return_value.list_proxy.return_value = [{'instanceId': 'test-id', 'address': 'localhost', 'port': '80'}]
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--list', '--server', 'test-server'])
+                           ['webinspect', 'proxy', '--list', '--server', 'https://test-server'])
 
     caplog.check(
         ('__webbreaker__', 'INFO', "Succesfully listed proxies from: 'https://test-server'"),
@@ -336,7 +310,7 @@ def test_webinspect_proxy_list_no_result(test_mock, runner, caplog):
     test_mock.return_value.list_proxy.return_value = None
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--list', '--server', 'test-server'])
+                           ['webinspect', 'proxy', '--list', '--server', 'https://test-server'])
 
     caplog.check(
         ('__webbreaker__', 'ERROR', "No proxies found on 'https://test-server'"),
@@ -368,7 +342,7 @@ def test_webinspect_proxy_start_success(test_mock, runner, caplog):
                                                        'port': '80'}
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+                           ['webinspect', 'proxy', '--start', '--server', 'https://test-server'])
 
     caplog.check(
         ('__webbreaker__', 'INFO', "Proxy successfully started"),
@@ -391,7 +365,7 @@ def test_webinspect_proxy_start_exception_unbound(test_mock, runner, caplog):
                                                        'port': '80'}
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+                           ['webinspect', 'proxy', '--start', '--server', 'https://test-server'])
 
     caplog.check(
         ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
@@ -409,7 +383,7 @@ def test_webinspect_proxy_start_exception_env(test_mock, runner, caplog):
                                                        'port': '80'}
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+                           ['webinspect', 'proxy', '--start', '--server', 'https://test-server'])
 
     caplog.check(
         ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
@@ -425,7 +399,7 @@ def test_webinspect_proxy_start_no_results(test_mock, runner, caplog):
     test_mock.return_value.start_proxy.return_value = None
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--start', '--server', 'test-server'])
+                           ['webinspect', 'proxy', '--start', '--server', 'https://test-server'])
 
     print(result.output)
     caplog.check(
@@ -443,7 +417,7 @@ def test_webinspect_proxy_stop_success(test_mock, runner):
     test_mock.return_value.delete_proxy.return_value = True
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--server', 'test-server', '--stop', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--server', 'https://test-server', '--stop', '--proxy_name', 'test-id'])
 
     # Logging and printing handled in webinespctproxyclient
     assert result.exit_code == 0
@@ -454,7 +428,7 @@ def test_webinspect_proxy_stop_exception_unbound(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.side_effect = unbound_local_error_exception
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--stop', '--server', 'test-server', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--stop', '--server', 'https://test-server', '--proxy_name', 'test-id'])
 
     caplog.check(
         ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
@@ -469,7 +443,7 @@ def test_webinspect_proxy_stop_exception_env(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.side_effect = environment_error_exception
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--stop', '--server', 'test-server', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--stop', '--server', 'https://test-server', '--proxy_name', 'test-id'])
 
     caplog.check(
         ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
@@ -484,7 +458,7 @@ def test_webinspect_proxy_stop_no_results(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.return_value = None
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--stop', '--server', 'test-server', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--stop', '--server', 'https://test-server', '--proxy_name', 'test-id'])
 
     caplog.check(
         ('__webbreaker__', 'ERROR', "Proxy: 'test-id' not found on any server."),
@@ -516,7 +490,7 @@ def test_webinspect_proxy_download_success(test_mock, runner):
     test_mock.return_value.download_proxy.return_value = True
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--server', 'test-server', '--download', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--server', 'https://test-server', '--download', '--proxy_name', 'test-id'])
 
     # Logging and printing handled in webinespctproxyclient
     assert result.exit_code == 0
@@ -527,7 +501,7 @@ def test_webinspect_proxy_download_exception_unbound(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.side_effect = unbound_local_error_exception
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--download', '--server', 'test-server', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--download', '--server', 'https://test-server', '--proxy_name', 'test-id'])
 
     caplog.check(
         ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
@@ -542,7 +516,7 @@ def test_webinspect_proxy_download_exception_env(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.side_effect = environment_error_exception
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--download', '--server', 'test-server', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--download', '--server', 'https://test-server', '--proxy_name', 'test-id'])
 
     caplog.check(
         ('__webbreaker__', 'CRITICAL', "Incorrect WebInspect configurations found!! Test Failure"),
@@ -557,7 +531,7 @@ def test_webinspect_proxy_download_no_results(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.return_value = None
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--download', '--server', 'test-server', '--proxy_name', 'test-id'])
+                           ['webinspect', 'proxy', '--download', '--server', 'https://test-server', '--proxy_name', 'test-id'])
 
     caplog.check(
         ('__webbreaker__', 'ERROR', "Proxy: 'test-id' not found on any server."),
@@ -593,7 +567,7 @@ def test_webinspect_proxy_upload_success(test_mock, runner):
     test_mock.return_value.upload_proxy.return_value = True
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'https://test-server', '--proxy_name',
                             'test-id'])
 
     # Logging and printing handled in webinespctproxyclient
@@ -605,7 +579,7 @@ def test_webinspect_proxy_upload_exception_unbound(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.side_effect = unbound_local_error_exception
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'https://test-server', '--proxy_name',
                             'test-id'])
     print(result.output)
 
@@ -621,7 +595,7 @@ def test_webinspect_proxy_upload_exception_env(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.side_effect = environment_error_exception
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'https://test-server', '--proxy_name',
                             'test-id'])
 
     caplog.check(
@@ -636,7 +610,7 @@ def test_webinspect_proxy_upload_no_results(test_mock, runner, caplog):
     test_mock.return_value.get_proxy.return_value = None
 
     result = runner.invoke(webbreaker,
-                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'test-server', '--proxy_name',
+                           ['webinspect', 'proxy', '--upload', 'test-file', '--server', 'https://test-server', '--proxy_name',
                             'test-id'])
 
     caplog.check(

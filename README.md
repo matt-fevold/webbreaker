@@ -11,7 +11,7 @@ WebBreaker is an open source Dynamic Application Security Test Orchestration (DA
 The commands are organized by product followed by actions you want to take on the product accompanied with options.  For example `webbreaker webinspect scan --settings=zerobank`
 
 ## Download & Install
-[![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg)](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/2.0.19/link)
+ [ ![Download](https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg) ](https://bintray.com/webbreaker/webbreaker-cli/webbreaker/_latestVersion)
 
 :arrow_down: [Mac OS](https://github.com/target/webbreaker/releases), Mac installation is available on tap @ [homebrew](https://brew.sh) - COMING SOON
 
@@ -37,11 +37,11 @@ The commands are organized by product followed by actions you want to take on th
 ## Configuration
 :white_check_mark: Add your webbreaker executable to your $PATH or %PATH%
 
-:white_check_mark: For first time installs, run `webbreaker` to create `$HOME/.webbreaker/config.ini`
+:white_check_mark: First time installs, run the `webbreaker` command in your terminal to create the default configurations `$HOME/.webbreaker/config.ini`
 
-:white_check_mark: Configure `$HOME/.webbreaker/config.ini` or `%USERPROFILE%\.webbreaker\config.ini`
+:white_check_mark: Configure the `$HOME/.webbreaker/config.ini` or `%USERPROFILE%\.webbreaker\config.ini`
 
-:white_check_mark: Each supported product Webinspect, Fortify SSC, and ThreadFix has a section. Modify the ones you need.
+:white_check_mark: Each supported product Webinspect, Fortify SSC, WebInspect and ThreadFix has a section. Modify the ones you need.
 
 ```
 # Your Fortify SSC URL exclude /ssc and run `webbreaker admin credentials --fortify` 
@@ -81,16 +81,16 @@ WebBreaker is a command-line interface (CLI) client.  See our complete [_WebBrea
 Illustrated below is an example of a typical WebBreaker WebInspect scanning workflow from creation to triage.  Please see the [WebBreaker Cheatsheet](docs/cheatsheet.md) for further examples.
 
 1. Starting WebInspect Proxy  
-`webbreaker webinspect proxy --start --port=9001 --proxy_name=$WEBINSPECT_SCAN_NAME`
+`webbreaker webinspect proxy --start --port=9001 --proxy_name=WEBINSPECT_SCAN_NAME`
 
 1. Stopping WebInspect Proxy  
-`webbreaker webinspect proxy --stop --proxy_name=$WEBINSPECT_SCAN_NAME`
+`webbreaker webinspect proxy --stop --proxy_name=WEBINSPECT_SCAN_NAME`
 
 1. WebInspect Scanning from Proxy Results  
-`webbreaker webinspect scan --settings=$WEBINSPECT_SCAN_NAME.xml --scan_name=$WEBINSPECT_SCAN_NAME`
+`webbreaker webinspect scan --settings=$WEBINSPECT_SCAN_NAME.xml --scan_name=WEBINSPECT_SCAN_NAME`
 
 1. Uploading Scan Results to Threadfix  
-`webbreaker threadfix upload --application DAST-Test --scan_file $WEBINSPECT_SCAN_NAME.xml`
+`webbreaker threadfix upload --application WEBINSPECT --scan_file WEBINSPECT_SCAN_NAME.xml`
 
 1. Uploading Scan Results to Fortify SSC  
 `webbreaker fortify upload --fortify_user $FORTIFY_SSC_USER --fortify_password $FORTIFY_SSC_PASSWORD --version $WEBINSPECT_SCAN_NAME --scan_name $WEBINSPECT_SCAN_NAME`

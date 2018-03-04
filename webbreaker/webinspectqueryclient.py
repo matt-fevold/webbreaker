@@ -5,13 +5,16 @@ import os
 import json
 import webinspectapi.webinspect as webinspectapi
 from webbreaker.webbreakerlogger import Logger
+from webbreaker.logexceptionhelper import LogExceptionHelper
 import sys
 from exitstatus import ExitStatus
 
+logexceptionhelper = LogExceptionHelper()
+
 
 class WebinspectQueryClient(object):
-    def __init__(self, host, protocol, username=None, password=None):
-        self.host = protocol + '://' + host
+    def __init__(self, host, username=None, password=None):
+        self.host = host
         self.username = username
         self.password = password
         Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
@@ -60,7 +63,7 @@ class WebinspectQueryClient(object):
             else:
                 Logger.app.error('Unable to retrieve scan results. {} '.format(response.message))
         except (ValueError, UnboundLocalError, NameError) as e:
-            Logger.app.error("There was an error exporting scan results: {}".format(e))
+            logexceptionhelper.LogErrorWebInspectDownload(e)
 
     def list_scans(self):
         """
