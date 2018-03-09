@@ -37,13 +37,12 @@ def main():
     def cmdline(command):
         process = Popen(
             args=command,
-            stdout=PIPE
+            stdout=PIPE,
+            stderr=STDOUT
         )
         output = str(process.communicate()[0].decode('utf-8')).rstrip()
         if process.returncode != 0:
-            sys.stderr.write("An error occurred while executing {0} command.\n"
-                             "\nTry executing {1} --clean -y --onefile {2} {3}".format(command, pyinstaller_exe,
-                                                                                       str(user_site), str(webbreaker_main)))
+            sys.stderr.write("An error occurred while executing {0} command.".format(command))
             raise SystemExit
         return output
 
@@ -89,7 +88,7 @@ def main():
                         except (NameError, AttributeError, OSError) as e:
                             print("No pyinstaller was found: {0} or an error occured with your pyinstaller command"
                                   " -> {1}!!"
-                                  .format(e.message, pyinstaller_exe))
+                                  .format(e.message, 'pyinstaller'))
 
                     else:
                         sys.stderr.write("{} does not exist\n".format(requirements_file))
@@ -105,8 +104,10 @@ def main():
                 else:
                     sys.stderr.write("Congratulations your build is successful on {0} version {1}!\n"
                                      .format(distro, os.uname()[2]))
+
             else:
-                sys.stderr.write("Please install pip\n")
+                sys.stderr.write("Please install pip: \n"
+                                 "curl -fsSL https://bootstrap.pypa.io/get-pip.py | sudo python")
                 exit(1)
         else:
             sys.stderr.write("PyInstaller bindings prefer the original OSX Python 2.7\n")
@@ -115,8 +116,8 @@ def main():
     except (IOError, NameError, CalledProcessError):
         sys.stderr.write("Your system does not meet the minimum requirements to compile the WebBreaker static binary!\n")
     except OSError as e:
-        sys.stderr.write("Your pyinstaller does not have the appropriate ownership or permissions of a file or dir: {}"
-                         .format(e.message))
+        sys.stderr.write("Please install pip with...\n{0}\nor perhaps pyinstaller does not have the appropriate ownership or"
+                         " permissions: {1}\n".format('sudo easy_install pip', e))
 
 
 if __name__ == "__main__":

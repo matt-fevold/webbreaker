@@ -11,6 +11,7 @@
 - [Supported Features `supported_features`](#supported-features)
 - [Usage `usage`](#usage)
 - [Logging `logging`](#logging)
+- [Docker `docker`](#docker)
 - [Testing `testing`](#testing)
 - [Notifications `notifications`](#notifications)
 
@@ -62,11 +63,23 @@ Build functional security testing, into your software development and release cy
 ### Installation: `installation`
 
 #### Quick Local Installation 
-Install WebBreaker from github.com.
+Install WebBreaker from source.
 * ```git clone https://github.com/target/webbreaker```
-* ```export PATH=$PATH:$PYTHONPATH```
+* ```cd webbreaker```
 * ```pip install -r requirements.txt```
 * ```python setup.py install```
+
+Install WebBreaker with Linux/MacOS pyinstaller.
+* ```git clone https://github.com/target/webbreaker```
+* ```cd webbreaker```
+* ```python setup.py pyinstaller```
+
+Install WebBreaker with Windows pyinstaller.
+* ```git clone https://github.com/target/webbreaker```
+* ```cd webbreaker```
+* ```Set-ExecutionPolicy Unrestricted```
+* ```Powershell.exe -executionpolicy unrestricted -command build.ps1```
+* ```python setup.py windows```
 
 #### Package Install
 WebBreaker releases are packaged on github.com and can be installed locally.
@@ -80,11 +93,10 @@ WebBreaker releases are packaged on github.com and can be installed locally.
 * Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software.
 * Centrally administer all configurations required to launch WebInspect scans.
 * Remotely query arbitrary policies, settings, webmacros, from any WebInspect deployment.
-* Configurable property .ini files to support your [Foritfy](webbreaker/etc/fortify.ini) and [WebInspect](webbreaker/etc/webinspect.ini) deployments.
+* Configurable property .ini files to support your [Foritfy](.webbreaker/config.ini) and [WebInspect](.webbreaker/config.ini) deployments.
 * Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater sensors.
-* ChatOps extensibility and [email notifications](webbreaker/etc/email.ini) on scan start and completion.
-* Local [logging](webbreaker/etc/logging.ini) of WebInspect scan state.
-* [Superset data visualization dashboard](https://github.com/airbnb/superset) support for scan status and performance.
+* ChatOps extensibility and [email notifications](.webbreaker/config.ini) on scan start and completion.
+* Local [logging](.webbreaker/log) of WebInspect scan state.
 
 ### Usage `usage`
 Webbreaker utilizes a structure of upper-level and lower-level commands to enable interaction with multiple 3rd party platforms. The two platforms currently supported are WebInspect and Fortfiy and they can be accessed using their respective upper-level commands. Webbreaker supports multiple functions for each platform which are accessed via lower-level commands. The current command structure is listed below.
@@ -123,7 +135,23 @@ implementation details are [here](https://qbox.io/blog/welcome-to-the-elk-stack-
 A recommended approach is to tag log events and queries with ```WebInspect``` and ```webbreaker```, but remember 
 queries are case sensitive.
 
+### Docker `docker`
+Run WebBreaker in Docker from the repository's root directory, the pre-configured virtualenv environments are `venv27` for Python 2.7 or `venv36` for Python 3.6.  Examples are illustrated below.
+
+```
+docker build -t test_env:centos . \
+&& docker create -it --name test_env test_env:centos  \
+&& docker start test_env \
+&& docker exec -it test_env bash
+```
+To remove the environment gracefully, perform the following command:
+```
+docker stop test_env && docker rm test_env
+```
+
 ### Testing `testing`
+Our automated testing is performed with tox and detox on Python 3.6 and 2.7.
+
 #### Requirements
 1. Be in your project root to run tests. 
     * ```pip install -rrequirements.txt```
@@ -158,50 +186,43 @@ of Notifiers, each of which implements a Notify function responsible for creatin
 Currently, two notification types are implemented email and database.
 
 The email notifier merges the provided event data into an HTML email message and sends the message. All SMTP-related 
-settings are stored in [webbreaker/etc/email.ini](https://github.com/target/webbreaker/blob/master/webbreaker/etc/email.ini)
-, and read during the webbreaker execution.
+settings are managed under your user's home directory within the .webbreaker/config.ini, and read during the webbreaker execution.
 
 If an error occurs on behalf of the notifiers at any point during the process of creating or sending 
 notifications, the event will be logged, without any interruption of WebBreaker execution or the WebInspect scan.
 
 ## Configurations
 
-This is a compelte example of what will be generated under ~/.webbreaker/config.ini on the first WebBreaker run
+This is a compelte example of what will be generated under ~/.webbreaker/config.ini on the first WebBreaker execution
 
-To import your own config file just put 'config.ini' into ~/.webbreaker/config.ini
+To import your own config file just replace your own 'config.ini' under ~/.webbreaker/config.ini
 ### Example 
 ````
 [fortify]
 ssc_url = https://fortify.example.com
+business_risk_ranking = High
+development_phase = Active
+development_strategy = Internal
+accessibility = externalpublicnetwork
+custom_attribute =
 project_template = Prioritized High Risk Issue Template
 application_name = WEBINSPECT
-username = 
-password = 
+username =
+password =
 
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
-api_key = this_is_my_super_secret_api_key
+api_key =
 
-[git]
-token = this_is_my_super_secret_token
+[webinspect]
+server_01 = https://webinspect-server-1.example.com:8083
+endpoint_01 = %(server_01)s|%(size_large)s
+git_repo = https://github.com/webbreaker/webinspect.git
+authenticate = false
+username =
+password =
 
-[webinspect_endpoints]
-large = 2
-medium = 1
-server01 = https://webinspect-server.example.com:8083
-e01 = %(server01)s|%(large)s
-
-[webinspect_size]
-large = 2
-medium = 1
-
-[webinspect_default_size]
-default = large
-
-[webinspect_repo]
-git = git@github.com:automationdomination/webinspect.git
-
-[webinspect_policies]
+[webinspect_policy]
 aggressivesqlinjection = 032b1266-294d-42e9-b5f0-2a4239b23941
 allchecks = 08cd4862-6334-4b0e-abf5-cb7685d0cde7
 apachestruts = 786eebac-f962-444c-8c59-7bf08a6640fd
@@ -228,44 +249,39 @@ sqlinjection = 6df62f30-4d47-40ec-b3a7-dad80d33f613
 standard = cb72a7c2-9207-4ee7-94d0-edd14a47c15c
 transportlayersecurity = 0fa627de-3f1c-4640-a7d3-154e96cda93c
 
-[webinspect]
-authenticate = false
-username =
-password =
-
-
 [emailer]
-# smnp email host, port and email addresses required for email functionality.
-smtp_host=smtp.example.com
-smtp_port=25
-from_address=webbreaker-no-reply@example.com
-to_address=webbreaker-no-reply@example.com
+smtp_host = smtp.example.com
+smtp_port = 25
+from_address = webbreaker-no-reply@example.com
+to_address = webbreaker-activity@example.com
 default_to_address =
 chatroom =
 email_template =
         <html>
         <head></head>
         <body>
-        <p>Hello,<br /><br />
-        The following scan has logged new activity:
+        <p>Hello,<br/><br/>
+            The following scan has logged new activity:
         <ul>
-        <li>Attack traffic source: {0}</li>
-        <li>Attack traffic target(s):</li>
-        <ul>
-        {4}
-        </ul>
-        <li>Scan name: {1}</li>
-        <li>Scan ID: {2}</li>
-        <li><b>Action: {3}</b></li>
+            <li>Attack traffic source: {0}</li>
+            <li>Attack traffic target(s):</li>
+            <ul>
+                {4}
+            </ul>
+            <li>Scan name: {1}</li>
+            <li>Scan ID: {2}</li>
+            <li><b>Action: {3}</b></li>
         </ul>
         </p>
         <p>
-        Questions? Concerns? Please contact us in our Slack channel, &quot;WebBreaker Activity&quot;,
-        or <a href="mailto:webbreaker-no-reply@example.com">email us</a>.
+            Questions? Concerns? Please contact us in our Hipchat room, &quot;WebBreaker Activity&quot;,
+            or <a href="mailto:webbreaker-team@example.com">email us</a>.
         </p>
+
         <p>
-        Want to manage your subscription to these emails? Use <a href="http://wiki.example.com/tgtwiki/index.php/GroupID">GroupID</a>, and
-        add/remove yourself from WebBreaker Activity.
+            Want to manage your subscription to these emails? Use <a
+                href="http://wiki.example.com/index.php/GroupID">GroupID</a>, and
+            add/remove yourself from webbreaker-activity.
         </p>
         </body>
         </html>
@@ -341,7 +357,7 @@ A unique GIT repo is defined by the user and is mutually exclusive from the WebB
 assumption is each WebBreaker installation will have a unique GIT URL defined.  Upon each execution, 
 the repo refreshes *all* settings file(s), assuming that there may be newly created, deletions, or modifications 
 of settings files.  All settings files used in execution must reside in this respective repo 
-under `etc/webinspect/settings`.
+under `.webbreaker/etc/webinspect/settings`.
 
 *Note:* dir will be deprecated
 

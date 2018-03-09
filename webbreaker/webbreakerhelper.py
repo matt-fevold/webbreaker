@@ -152,7 +152,7 @@ class WebBreakerHelper(object):
         Upload a WebInspect .fpr scan to an explicit Fortify SSC Application/Project Version with '--version'
         For example:\n
         \033[91m
-        webbreaker fortify upload --application WEBINSPECT --version important_site --scan_name example_com-abc
+        webbreaker fortify upload --scan_name example_com-abc --application WEBINSPECT --version important_site
         \033[0m
         WARNING :: Do not specify fortify username and & password using options unless you are willing to have
         your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
@@ -183,7 +183,7 @@ class WebBreakerHelper(object):
         return """
         Interactive prompt to encrypt and store Fortify SSC credentials.  For example:\n
         \033[91m
-        webbreaker admin credentials --fortify
+        webbreaker admin credentials --fortify or --webinspect
         \033[0m
         WARNING :: Do not specify username and & password using options unless you are willing to have
         your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
@@ -207,7 +207,7 @@ class WebBreakerHelper(object):
         return """
         List all applications for a given ThreadFix team. Either team name OR team_id is required. For example:\n
         \033[91m
-        webbreaker threadfix list --team Marketing
+        webbreaker threadfix list --team MARKETING
         \033[0m
         """
     
