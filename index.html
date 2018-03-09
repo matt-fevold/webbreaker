@@ -45,6 +45,7 @@
 <li><a href="#supported-features">Supported Features <code>supported_features</code></a></li>
 <li><a href="#usage">Usage <code>usage</code></a></li>
 <li><a href="#logging">Logging <code>logging</code></a></li>
+<li><a href="#docker">Docker <code>docker</code></a></li>
 <li><a href="#testing">Testing <code>testing</code></a></li>
 <li><a href="#notifications">Notifications <code>notifications</code></a></li>
 </ul>
@@ -112,11 +113,10 @@
 <li>Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software.</li>
 <li>Centrally administer all configurations required to launch WebInspect scans.</li>
 <li>Remotely query arbitrary policies, settings, webmacros, from any WebInspect deployment.</li>
-<li>Configurable property .ini files to support your <a href="webbreaker/etc/fortify.ini">Foritfy</a> and <a href="webbreaker/etc/webinspect.ini">WebInspect</a> deployments.</li>
+<li>Configurable property .ini files to support your <a href=".webbreaker/config.ini">Foritfy</a> and <a href=".webbreaker/config.ini">WebInspect</a> deployments.</li>
 <li>Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater sensors.</li>
-<li>ChatOps extensibility and <a href="webbreaker/etc/email.ini">email notifications</a> on scan start and completion.</li>
-<li>Local <a href="webbreaker/etc/logging.ini">logging</a> of WebInspect scan state.</li>
-<li><a href="https://github.com/airbnb/superset">Superset data visualization dashboard</a> support for scan status and performance.</li>
+<li>ChatOps extensibility and <a href=".webbreaker/config.ini">email notifications</a> on scan start and completion.</li>
+<li>Local <a href=".webbreaker/log">logging</a> of WebInspect scan state.</li>
 </ul>
 <h3 id="usage">Usage <code>usage</code></h3>
 <p>Webbreaker utilizes a structure of upper-level and lower-level commands to enable interaction with multiple 3rd party platforms. The two platforms currently supported are WebInspect and Fortfiy and they can be accessed using their respective upper-level commands. Webbreaker supports multiple functions for each platform which are accessed via lower-level commands. The current command structure is listed below.</p>
@@ -129,6 +129,7 @@
 <li>servers</li>
 <li>list</li>
 <li>download</li>
+<li>proxy</li>
 </ul></li>
 <li>fortify
 <ul>
@@ -162,7 +163,16 @@ Filebeat agents installed on all WebInspect servers, forwarding to Logstash, and
 implementation details are <a href="https://qbox.io/blog/welcome-to-the-elk-stack-elasticsearch-logstash-kibana/">here</a>.<br />
 A recommended approach is to tag log events and queries with <code>WebInspect</code> and <code>webbreaker</code>, but remember
 queries are case sensitive.</p>
+<h3 id="docker">Docker <code>docker</code></h3>
+<p>Run WebBreaker in Docker from the repo's root directory, the pre-configured virtualenv environments are <code>venv27</code> for Python 2.7 or <code>venv36</code> for Python 3.6.  Examples are illustrated below.</p>
+<pre><code>docker build -t test_env:centos . \
+&amp;&amp; docker create -it --name test_env test_env:centos  \
+&amp;&amp; docker start test_env \
+&amp;&amp; docker exec -it test_env bash</code></pre>
+<p>To remove the environment gracefully, perform the following command:</p>
+<pre><code>docker stop test_env &amp;&amp; docker rm test_env</code></pre>
 <h3 id="testing">Testing <code>testing</code></h3>
+<p>Our automated testing is performed with tox and detox on Python 3.6 and 2.7. See the <a href="https://target.github.io/webbreaker/#testing">full testing documentation</a>.</p>
 <h4 id="requirements">Requirements</h4>
 <ol>
 <li>Be in your project root to run tests. 
@@ -198,49 +208,38 @@ pattern is implemented under the <code>webbreaker/notifiers</code>.  A Reporter 
 of Notifiers, each of which implements a Notify function responsible for creating the desired notification.
 Currently, two notification types are implemented email and database.</p>
 <p>The email notifier merges the provided event data into an HTML email message and sends the message. All SMTP-related
-settings are stored in <a href="https://github.com/target/webbreaker/blob/master/webbreaker/etc/email.ini">webbreaker/etc/email.ini</a>
-, and read during the webbreaker execution.</p>
+settings are managed under your user's home directory within the .webbreaker/config.ini, and read during the webbreaker execution.</p>
 <p>If an error occurs on behalf of the notifiers at any point during the process of creating or sending
 notifications, the event will be logged, without any interruption of WebBreaker execution or the WebInspect scan.</p>
 <h2 id="configurations">Configurations</h2>
-<p>This is a compelte example of what will be generated under ~/.webbreaker/config.ini on the first WebBreaker run</p>
-<p>To import your own config file just put 'config.ini' into ~/.webbreaker/config.ini</p>
+<p>This is a compelte example of what will be generated under ~/.webbreaker/config.ini on the first WebBreaker execution</p>
+<p>To import your own config file just replace your own 'config.ini' under ~/.webbreaker/config.ini</p>
 <h3 id="example">Example</h3>
-<pre><code class="language-ini">[webbreaker_install]
-dir = .
-
-[fortify]
-ssc_url = https://stage-ssc.target.com
+<pre><code>[fortify]
+ssc_url = https://fortify.example.com
+business_risk_ranking = High
+development_phase = Active
+development_strategy = Internal
+accessibility = externalpublicnetwork
+custom_attribute =
 project_template = Prioritized High Risk Issue Template
 application_name = WEBINSPECT
-fortify_username = 
-fortify_password = 
+username =
+password =
 
 [threadfix]
-host = https://stage-threadfix.target.com/threadfix
-api_key = this_is_my_super_secret_api_key
+host = https://threadfix.example.com:8443/threadfix
+api_key =
 
-[git]
-token = this_is_my_super_secret_token
+[webinspect]
+server_01 = https://webinspect-server-1.example.com:8083
+endpoint_01 = %(server_01)s|%(size_large)s
+git_repo = https://github.com/webbreaker/webinspect.git
+authenticate = false
+username =
+password =
 
-[webinspect_endpoints]
-large = 2
-medium = 1
-server01 = https://tcttswie001p.hq.target.com:8083
-e01 = %(server01)s|%(large)s
-
-[webinspect_size]
-large = 2
-medium = 1
-
-[webinspect_default_size]
-default = large
-
-[webinspect_repo]
-git = git@git.target.com:tts-pse/webinspect.git
-dir = /opt/webbreaker/etc
-
-[webinspect_policies]
+[webinspect_policy]
 aggressivesqlinjection = 032b1266-294d-42e9-b5f0-2a4239b23941
 allchecks = 08cd4862-6334-4b0e-abf5-cb7685d0cde7
 apachestruts = 786eebac-f962-444c-8c59-7bf08a6640fd
@@ -268,25 +267,41 @@ standard = cb72a7c2-9207-4ee7-94d0-edd14a47c15c
 transportlayersecurity = 0fa627de-3f1c-4640-a7d3-154e96cda93c
 
 [emailer]
-smtp_host=smtp.target.com
-smtp_port=25
-from_address=webbreaker-no-reply@target.com
-to_address=TTS-WebInspect-Activity@target.com
-email_template = &lt;html&gt;
-    &lt;head&gt;&lt;/head&gt;
-    &lt;body&gt;&lt;/body&gt;
-    &lt;/html&gt;
+smtp_host = smtp.example.com
+smtp_port = 25
+from_address = webbreaker-no-reply@example.com
+to_address = webbreaker-activity@example.com
+default_to_address =
+chatroom =
+email_template =
+        &lt;html&gt;
+        &lt;head&gt;&lt;/head&gt;
+        &lt;body&gt;
+        &lt;p&gt;Hello,&lt;br/&gt;&lt;br/&gt;
+            The following scan has logged new activity:
+        &lt;ul&gt;
+            &lt;li&gt;Attack traffic source: {0}&lt;/li&gt;
+            &lt;li&gt;Attack traffic target(s):&lt;/li&gt;
+            &lt;ul&gt;
+                {4}
+            &lt;/ul&gt;
+            &lt;li&gt;Scan name: {1}&lt;/li&gt;
+            &lt;li&gt;Scan ID: {2}&lt;/li&gt;
+            &lt;li&gt;&lt;b&gt;Action: {3}&lt;/b&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+        &lt;/p&gt;
+        &lt;p&gt;
+            Questions? Concerns? Please contact us in our Hipchat room, &amp;quot;WebBreaker Activity&amp;quot;,
+            or &lt;a href="mailto:webbreaker-team@example.com"&gt;email us&lt;/a&gt;.
+        &lt;/p&gt;
 
-[agent_emailer]
-smtp_host=smtp.target.com
-smtp_port=25
-from_address=webbreaker-no-reply@target.com
-default_to_address = 
-chatroom = 
-email_template = &lt;html&gt;
-    &lt;head&gt;&lt;/head&gt;
-    &lt;body&gt;&lt;/body&gt;
-    &lt;/html&gt;</code></pre>
+        &lt;p&gt;
+            Want to manage your subscription to these emails? Use &lt;a
+                href="http://wiki.example.com/index.php/GroupID"&gt;GroupID&lt;/a&gt;, and
+            add/remove yourself from webbreaker-activity.
+        &lt;/p&gt;
+        &lt;/body&gt;
+        &lt;/html&gt;</code></pre>
 <h3 id="webbreaker">WebBreaker <code>webbreaker_config</code></h3>
 <p>Global settings for webbreaker.</p>
 <h4 id="webbreaker_install">[webbreaker_install]</h4>
@@ -337,7 +352,7 @@ macro, scan depth, and allowed hosts.</p>
 assumption is each WebBreaker installation will have a unique GIT URL defined.  Upon each execution,
 the repo refreshes <em>all</em> settings file(s), assuming that there may be newly created, deletions, or modifications
 of settings files.  All settings files used in execution must reside in this respective repo
-under <code>etc/webinspect/settings</code>.</p>
+under <code>.webbreaker/etc/webinspect/settings</code>.</p>
 <p><em>Note:</em> dir will be deprecated</p>
 <h4 id="webinspect_policies">[webinspect_policies]</h4>
 <p>Grouping of proprietary WebInspect tests to perform.  Tests or rules are represented in an <code>xml</code> element with
@@ -345,6 +360,10 @@ a <code>.policy</code> file extension.  Custom tests or Checks are mapped to a u
 policies shipped with WebInspect are mapped with their respective GUID within the <code>[webinspect_policies]</code> section.</p>
 <p><em>Note:</em> All custom polices are automatically uploaded to the targeted WebInspect server and must be referenced
 as a GUID.  </p>
+<h4 id="webinspect-1">[webinspect]</h4>
+<p>If authentication is set to true, all WebInspect requests will use basic auth. A user will be prompted for
+credentials which, if valid, will be encrypted and saved. Credentials can also be set via the
+'webbreaker admin credentials --webinspect' command.</p>
 <h3 id="email">Email <code>email_config</code></h3>
 <p>Notifications for start-scan and end-scan events. A simple publisher/subscriber pattern is implemented under
 the &quot;notifiers&quot; folder.</p>

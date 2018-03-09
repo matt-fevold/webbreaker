@@ -34,7 +34,7 @@
                 
                 <section id="content" class="col-sm-12">
                     <h1 id="cheatsheet-of-webbreaker-commands">Cheatsheet of WebBreaker Commands:</h1>
-<pre><code>List all WebInspect servers found in config.ini - webinspect_endpoints:
+<pre><code>List all WebInspect servers found in .config - webinspect_endpoints:
 webbreaker webinspect servers
 
 List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com:
@@ -52,8 +52,14 @@ webbreaker webinspect list --scan_name important_site
 List with http:
 webbreaker webinspect list --server webinspect-1.example.com:8083 --protocol http
 
+List all WebInspect scans on all servers using command line auth credentials (only needed if authentication is enable in config.ini):
+webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
+
 Download WebInspect scan from server or sensor:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth
+
+Download WebInspect scan from server or sensor using command line auth credentials (only needed if authentication is enable in config.ini):
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
 Download WebInspect scan as XML:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth -x xml
@@ -66,6 +72,9 @@ webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_nam
 
 Basic WebInspect scan:
 webbreaker webinspect scan --settings important_site_auth
+
+Basic WebInspect scan using command line auth credentials (only needed if authentication is enable in config.ini):
+webbreaker webinspect scan --settings important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
 Advanced WebInspect Scan with Scan overrides:
 webbreaker webinspect scan --settings important_site_auth --allowed_hosts example.com --allowed_hosts m.example.com
@@ -85,7 +94,7 @@ webbreaker fortify list --application WEBINSPECT
 Upload to Fortify SSC with command-line authentication:
 webbreaker fortify upload --fortify_user $FORT_USER --fortify_password $FORT_PASS --version important_site_auth
 
-Upload to Fortify SSC with interactive authentication &amp; application version configured with config.ini file:
+Upload to Fortify SSC with interactive authentication &amp; application version configured with .config file:
 webbreaker fortify upload --version important_site_auth --scan_name auth_scan
 
 Upload to Fortify SSC with application/project &amp; version name:
@@ -94,7 +103,7 @@ webbreaker fortify upload --application my_other_app --version important_site_au
 Download lastest .fpr scan from Fortify SSC with application/project &amp; version name:
 webbreaker fortify download --application my_other_app --version important_site_auth
 
-Download lastest .fpr scan from Fortify SSC with application/project from config.ini file &amp; version name:
+Download lastest .fpr scan from Fortify SSC with application/project from .config file &amp; version name:
 webbreaker fortify download --version important_site_auth
 
 Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication:
