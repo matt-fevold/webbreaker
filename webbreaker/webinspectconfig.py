@@ -12,12 +12,12 @@ from subprocess import CalledProcessError, check_output
 from webbreaker.webbreakerlogger import Logger
 from webbreaker.webbreakerhelper import WebBreakerHelper
 from webbreaker.confighelper import Config
-from webbreaker.secretclient import SecretClient
+
 from webbreaker.logexceptionhelper import LogExceptionHelper
 
 try:
     from git.exc import GitCommandError
-except ImportError as e:  # module will fail if git is not installed
+except (ImportError, AttributeError) as e:  # module will fail if git is not installed
     Logger.app.error("Please install the git client or add it to your PATH variable ->"
                      " https://git-scm.com/download.  See log {}!!!".format
                      (Logger.app_logfile, e.message))
@@ -339,42 +339,3 @@ class WebInspectConfig(object):
             return os.path.splitext(os.path.basename(file))[0]
 
 
-class WebInspectAuthConfig(object):
-    def __init__(self):
-        config_file = Config().config
-        try:
-            config.read(config_file)
-            self.authenticate = config.get("webinspect", "authenticate")
-            if self.authenticate.lower() == 'true':
-                self.authenticate = True
-            else:
-                self.authenticate = False
-
-            secret_client = SecretClient()
-            self.username = secret_client.get('webinspect', 'username')
-            self.password = secret_client.get('webinspect', 'password')
-
-        except (configparser.NoOptionError, CalledProcessError) as noe:
-            Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
-        except configparser.Error as e:
-            Logger.app.error("Error reading {} {}".format(config_file, e))
-
-    def clear_credentials(self):
-        secret_client = SecretClient()
-        secret_client.clear_credentials('webinspect', 'username', 'password')
-
-    def write_username(self, username):
-        self.username = username
-        secret_client = SecretClient()
-        secret_client.set('webinspect', 'username', username)
-
-    def write_password(self, password):
-        self.password = password
-        secret_client = SecretClient()
-        secret_client.set('webinspect', 'password', password)
-
-    def has_auth_creds(self):
-        if self.username and self.password:
-            return True
-        else:
-            return False

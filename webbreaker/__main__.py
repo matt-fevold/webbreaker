@@ -4,7 +4,7 @@
 __author__ = "Brandon Spruth (brandon.spruth2@target.com), Jim Nelson (jim.nelson2@target.com)," \
              "Matt Dunaj (matthew.dunaj@target.com), Kyler Witting (Kyler.Witting@target.com)"
 __copyright__ = "(C) 2018 Target Brands, Inc."
-__contributors__ = ["Brandon Spruth", "Jim Nelson", "Matthew Dunaj", "Kyler Witting"]
+__contributors__ = ["Brandon Spruth", "Jim Nelson", "Matthew Dunaj", "Kyler Witting", "Matthew Fevold"]
 __status__ = "Production"
 __license__ = "MIT"
 
@@ -22,7 +22,8 @@ import requests.exceptions
 import click
 from webbreaker import __version__ as version
 from webbreaker.webbreakerlogger import Logger
-from webbreaker.webinspectconfig import WebInspectConfig, WebInspectAuthConfig
+from webbreaker.webinspectconfig import WebInspectConfig
+from webbreaker.webinspectauth import WebInspectAuth, auth_prompt
 from webbreaker.webinspectclient import WebinspectClient
 from webbreaker.webinspectqueryclient import WebinspectQueryClient
 from webbreaker.fortifyclient import FortifyClient
@@ -67,10 +68,6 @@ def fortify_prompt():
     fortify_password = click.prompt('Fortify password', hide_input=True)
     return fortify_user, fortify_password
 
-def webinspect_prompt():
-    webinspect_user = click.prompt('WebInspect user')
-    webinspect_password = click.prompt('WebInspect password', hide_input=True)
-    return webinspect_user, webinspect_password
 
 
 @click.group(help=WebBreakerHelper().webbreaker_desc())
@@ -170,18 +167,8 @@ def scan(config, **kwargs):
         username = ops['username']
         password = ops['password']
 
-        auth_config = WebInspectAuthConfig()
-        if auth_config.authenticate:
-            if username is not None and password is not None:
-                pass
-            elif auth_config.username and auth_config.password:
-                username = auth_config.username
-                password = auth_config.password
-            else:
-                username, password = webinspect_prompt()
-        else:
-            username = None
-            password = None
+        auth_config = WebInspectAuth()
+        username, password = auth_config.authenticate(username, password)
 
         # Convert multiple args from tuples to lists
         ops['allowed_hosts'] = list(kwargs['allowed_hosts'])
@@ -237,7 +224,7 @@ def scan(config, **kwargs):
 
                 if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
                     Logger.app.error(
-                        "See the WebInspect server scan log --> {}, typically the application to be scanned is"
+                        "See the WebInspect server scan log --> {}, typically the application to be scanned is "
                         "unavailable.".format(WebInspectConfig().endpoints))
                     Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
                     handle_scan_event('scan_end')
@@ -256,8 +243,7 @@ def scan(config, **kwargs):
 
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
-            auth_config.write_username(username)
-            auth_config.write_password(password)
+            auth_config.write_credentials(username, password)
 
         try:
             handle_scan_event('scan_end')
@@ -300,18 +286,9 @@ def webinspect_list(config, server, scan_name, username, password):
     else:
         servers = [(e[0]) for e in WebInspectConfig().endpoints]
 
-    auth_config = WebInspectAuthConfig()
-    if auth_config.authenticate:
-        if username is not None and password is not None:
-            pass
-        elif auth_config.username and auth_config.password:
-            username = auth_config.username
-            password = auth_config.password
-        else:
-            username, password = webinspect_prompt()
-    else:
-        username = None
-        password = None
+    auth_config = WebInspectAuth()
+    username, password = auth_config.authenticate(username, password)
+
     for server in servers:
         query_client = WebinspectQueryClient(host=server, username=username,
                                              password=password)
@@ -339,8 +316,7 @@ def webinspect_list(config, server, scan_name, username, password):
         print('\n\n\n')
     # If we've made it this far, our new credentials are valid and should be saved
     if username is not None and password is not None and not auth_config.has_auth_creds():
-        auth_config.write_username(username)
-        auth_config.write_password(password)
+        auth_config.write_credentials(username, password)
 
 
 @webinspect.command(name='servers',
@@ -382,18 +358,8 @@ def servers_list(config):
 def download(config, server, scan_name, scan_id, x, username, password):
 
     try:
-        auth_config = WebInspectAuthConfig()
-        if auth_config.authenticate:
-            if username is not None and password is not None:
-                pass
-            if auth_config.username and auth_config.password:
-                username = auth_config.username
-                password = auth_config.password
-            else:
-                username, password = webinspect_prompt()
-        else:
-            username = None
-            password = None
+        auth_config = WebInspectAuth()
+        username, password = auth_config.authenticate(username, password)
 
         query_client = WebinspectQueryClient(host=server, username=username, password=password)
 
@@ -415,8 +381,12 @@ def download(config, server, scan_name, scan_id, x, username, password):
         else:
             if query_client.get_scan_status(scan_id):
                 query_client.export_scan_results(scan_id, scan_name, x)
+
             else:
-                Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
+                if query_client.get_scan_status(scan_id):
+                    query_client.export_scan_results(scan_id, scan_name, x)
+                else:
+                    Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
 
     except (UnboundLocalError, TypeError, UnboundLocalError) as e:
         # except (ValueError, UnboundLocalError, TypeError, NameError) as e:
@@ -424,8 +394,8 @@ def download(config, server, scan_name, scan_id, x, username, password):
 
     # If we've made it this far, our new credentials are valid and should be saved
     if username is not None and password is not None and not auth_config.has_auth_creds():
-        auth_config.write_username(username)
-        auth_config.write_password(password)
+        auth_config.write_credentials(username, password)
+
 
 
 @webinspect.command(name='proxy',
@@ -480,18 +450,8 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
         else:
             servers = [(e[0]) for e in WebInspectConfig().endpoints]
 
-        auth_config = WebInspectAuthConfig()
-        if auth_config.authenticate:
-            if username is not None and password is not None:
-                pass
-            if auth_config.username and auth_config.password:
-                username = auth_config.username
-                password = auth_config.password
-            else:
-                username, password = webinspect_prompt()
-        else:
-            username = None
-            password = None
+        auth_config = WebInspectAuth()
+        username, password = auth_config.authenticate(username, password)
 
         if list:
             for server in servers:
@@ -569,8 +529,7 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
 
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
-            auth_config.write_username(username)
-            auth_config.write_password(password)
+            auth_config.write_credentials(username, password)
 
     except (UnboundLocalError, EnvironmentError) as e:
         Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
@@ -982,24 +941,22 @@ def credentials(config, fortify, webinspect, clear, username, password):
                 except ValueError:
                     Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
     elif webinspect:
-        webinspect_config = WebInspectAuthConfig()
+        webinspect_config = WebInspectAuth()
         if clear:
             webinspect_config.clear_credentials()
             Logger.app.info("Successfully cleared WebInspect credentials from config.ini")
         else:
             if username and password:
                 try:
-                    webinspect_config.write_username(username)
-                    webinspect_config.write_password(password)
+                    webinspect_config.write_credentials(username, password)
                     Logger.app.info("Credentials stored successfully")
                 except ValueError:
                     Logger.app.error("Unable to validate WebInspect credentials. Credentials were not stored")
 
             else:
-                username, password = webinspect_prompt()
+                username, password = auth_prompt("webinspect")
                 try:
-                    webinspect_config.write_username(username)
-                    webinspect_config.write_password(password)
+                    webinspect_config.write_credentials(username, password)
                     Logger.app.info("Credentials stored successfully")
                 except ValueError:
                     Logger.app.error("Unable to validate WebInspect credentials. Credentials were not stored")
