@@ -4,24 +4,27 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title></title>
+        <title>Webbreaker</title>
 
-        <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/css/font-awesome.min.css">
-        <link rel="stylesheet" href="/css/highlight.dark.css">
-        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/highlight.dark.css">
+        <link rel="stylesheet" href="https://target.github.io/webbreaker/css/main.css">
     </head>
     <body>
 
         <header class="navbar navbar-default navbar-fixed-top">
 
-            <a class="navbar-brand" href="/">
-                The title
+            <a class="navbar-brand" href="https://target.github.io/webbreaker/">
+                Webbreaker
                 <small class="hidden-xs hidden-sm">
-                    This is the default subtitle!
+                    Centrally administer Dynamic Application Security Testing (DAST), as part of your DevOps pipeline
                 </small>
             </a>
 
+                            <a href="https://github.com/target/webbreaker">
+                    <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png">
+                </a>
             
         </header>
 
@@ -30,95 +33,560 @@
 
                 
                 <section id="content" class="col-sm-12">
-                    <p><a href="https://travis-ci.org/target/webbreaker/builds"><img src="https://travis-ci.org/target/webbreaker.svg?branch=master" alt="Build Status" /></a>
-<a href="https://github.com/target/webbreaker/releases/latest"><img src="http://img.shields.io/github/release/target/webbreaker.svg" alt="Release" /></a>
-<a href="https://img.shields.io/pypi/pyversions/webinspectapi.svg"><img src="https://img.shields.io/pypi/pyversions/webinspectapi.svg" alt="Versions" /></a>
-<a href="https://www.openhub.net/p/webbreaker"><img src="https://www.openhub.net/p/webbreaker/widgets/project_thin_badge.gif" alt="Open Hub statistics" /></a>
-<a href="https://coveralls.io/github/target/webbreaker?branch=master"><img src="https://coveralls.io/repos/github/target/webbreaker/badge.svg?branch=master" alt="Coverage Status" /></a></p>
-<h2 id="introduction">Introduction</h2>
-<p>WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams to create pipelines for security testing and automation of functional security tests, with WebInspect, Fortify SSC, and ThreadFix.</p>
-<p>The commands are organized by product followed by actions you want to take on the product accompanied with options.  For example <code>webbreaker webinspect scan --settings=zerobank</code></p>
-<h2 id="download-amp-install">Download &amp; Install</h2>
-<dl>
-<dt><a href="https://bintray.com/webbreaker/webbreaker-cli/webbreaker/_latestVersion"> <img src="https://api.bintray.com/packages/webbreaker/webbreaker-cli/webbreaker/images/download.svg" alt="Download" /> </a></dt>
-<dd><p>arrow_down: <a href="https://github.com/target/webbreaker/releases">Mac OS</a>, Mac installation is available on tap @ <a href="https://brew.sh">homebrew</a> - COMING SOON</p></dd>
-<dt><code>brew install webbreaker</code></dt>
-<dd><p>arrow_down: <a href="https://github.com/target/webbreaker/releases">CentOS/RedHat/Fedora</a>, Linux installation is available @ <a href="https://bintray.com/webbreaker/webbreaker-cli/webbreaker/">artifactory</a></p></dd>
-<dt><code>yum install webbreaker</code></dt>
-<dd><p>arrow_down: <a href="https://github.com/target/webbreaker/releases">Windows 7</a>, Windows installation is available @ <a href="https://chocolatey.org">Chocolatey</a> - COMING SOON</p></dd>
-<dt><code>choco install webbreaker</code></dt>
-<dd><p>arrow_down: <a href="https://github.com/target/webbreaker.git">Build and install</a> from source and follow the steps below.</p></dd>
-</dl>
-<ol>
+                    <h1 id="webbreaker-documentation">WebBreaker Documentation</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<p><a href="#introduction">Introduction</a></p>
+<ul>
+<li><a href="#description">Description: <code>description</code></a></li>
+</ul>
+<p><a href="#user-guide">User Guide</a></p>
+<ul>
+<li><a href="#installation">Installation <code>installation</code></a></li>
+<li><a href="#supported-features">Supported Features <code>supported_features</code></a></li>
+<li><a href="#usage">Usage <code>usage</code></a></li>
+<li><a href="#logging">Logging <code>logging</code></a></li>
+<li><a href="#docker">Docker <code>docker</code></a></li>
+<li><a href="#testing">Testing <code>testing</code></a></li>
+<li><a href="#notifications">Notifications <code>notifications</code></a></li>
+</ul>
+<p><a href="#configurations">Configurations</a></p>
+<ul>
+<li><a href="#webbreaker-config">WebBreaker <code>webbreaker_config</code></a></li>
+<li><a href="#fortify-config">Fortify <code>fortify_config</code></a></li>
+<li><a href="#threadfix-config">ThreadFix <code>threadfix_config</code></a></li>
+<li><a href="#webinspect-config">WebInspect <code>webinspect_config</code></a></li>
+<li><a href="#email-config">Email <code>email_config</code></a></li>
+</ul>
+<p><a href="#verbose-cheatsheet-webinspect">Verbose Cheatsheet: Webinspect <code>webinspect_cheatsheet</code></a></p>
+<ul>
+<li><a href="#webinspect-scan">Scan: <code>webinspect_scan</code></a></li>
+<li><a href="#webinspect-servers">Servers: <code>webinspect_servers</code></a></li>
+<li><a href="#webinspect-list">List: <code>webinspect_list</code></a></li>
+<li><a href="#webinspect-download">Download: <code>webinspect_download</code></a></li>
+</ul>
+<p><a href="#verbose-cheatsheet-fortify">Verbose Cheatsheet: Fortify <code>fortify_cheatsheet</code></a></p>
+<ul>
+<li><a href="#fortify-list">List: <code>fortify_list</code></a></li>
+<li><a href="#fortify_download">Download: <code>fortify_download</code></a></li>
+<li><a href="#fortify-upload">Upload: <code>fortify_upload</code></a></li>
+<li><a href="#fortify-scan">Scan: <code>fortify_scan</code></a></li>
+</ul>
+<p><a href="#verbose-cheatsheet-threadfix">Verbose Cheatsheet: ThreadFix <code>threadfix_cheatsheet</code></a></p>
+<ul>
+<li><a href="#threadfix_list">List: <code>threadfix_list</code></a></li>
+<li><a href="#threadfix_teams">Teams: <code>threadfix_teams</code></a></li>
+<li><a href="#threadfix_applications">Applications: <code>threadfix_applications</code></a></li>
+<li><a href="#threadfix_scans">Scans: <code>threadfix_scans</code></a></li>
+<li><a href="#threadfix_upload">Upload: <code>threadfix_upload</code></a></li>
+<li><a href="#threadfix_create_app">Create App: <code>threadfix_create_app</code></a></li>
+</ul>
+<p><a href="#verbose-cheatsheet-admin">Verbose Cheatsheet: Admin <code>admin_cheatsheet</code></a></p>
+<ul>
+<li><a href="#admin-notifier">Notifier: <code>admin_notifier</code></a></li>
+<li><a href="#admin-agent">agent: <code>admin_agent</code></a></li>
+<li><a href="#admin-credentials">Credentials: <code>admin_credentials</code></a></li>
+<li><a href="#admin-secret">Secret: <code>admin_secret</code></a></li>
+</ul>
+<h2 id="introduction">Introduction <code>introduction</code></h2>
+<h3 id="description">Description <code>description</code></h3>
+<p>Build functional security testing, into your software development and release cycles! WebBreaker provides the capabilities to automate and centrally manage Dynamic Application Security Testing (DAST) as part of your DevOps pipeline.</p>
+<h2 id="user-guide">User Guide <code>user-guide</code></h2>
+<h3 id="installation">Installation: <code>installation</code></h3>
+<h4 id="quick-local-installation">Quick Local Installation</h4>
+<p>Install WebBreaker from source.</p>
+<ul>
 <li><code>git clone https://github.com/target/webbreaker</code></li>
-<li><code>export PATH=$PATH:$PYTHONPATH</code></li>
-<li><code>cd webbreaker;pip install -r requirements.txt</code></li>
-<li><code>python setup.py build</code></li>
+<li><code>cd webbreaker</code></li>
+<li><code>pip install -r requirements.txt</code></li>
 <li><code>python setup.py install</code></li>
+</ul>
+<p>Install WebBreaker with Linux/MacOS pyinstaller.</p>
+<ul>
+<li><code>git clone https://github.com/target/webbreaker</code></li>
+<li><code>cd webbreaker</code></li>
+<li><code>python setup.py pyinstaller</code></li>
+</ul>
+<p>Install WebBreaker with Windows pyinstaller.</p>
+<ul>
+<li><code>git clone https://github.com/target/webbreaker</code></li>
+<li><code>cd webbreaker</code></li>
+<li><code>Set-ExecutionPolicy Unrestricted</code></li>
+<li><code>Powershell.exe -executionpolicy unrestricted -command build.ps1</code></li>
+<li><code>python setup.py windows</code></li>
+</ul>
+<h4 id="package-install">Package Install</h4>
+<p>WebBreaker releases are packaged on github.com and can be installed locally.</p>
+<ul>
+<li><code>pip install -e git+https://github.com/target/webbreaker.git#egg=webbreaker</code></li>
+</ul>
+<h3 id="supported-features">Supported Features: <code>supported_features</code></h3>
+<ul>
+<li>Jenkins global environmental variable inheritance with scan options.</li>
+<li>WebInspect REST API support for v9.30 and above. </li>
+<li>Export both XML and FPR WebInspect formats to Fortify Software Security Center (SSC) or other compatible vulnerability management web applications for vulnerability analysis/triage.</li>
+<li>Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software.</li>
+<li>Centrally administer all configurations required to launch WebInspect scans.</li>
+<li>Remotely query arbitrary policies, settings, webmacros, from any WebInspect deployment.</li>
+<li>Configurable property .ini files to support your <a href=".webbreaker/config.ini">Foritfy</a> and <a href=".webbreaker/config.ini">WebInspect</a> deployments.</li>
+<li>Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater sensors.</li>
+<li>ChatOps extensibility and <a href=".webbreaker/config.ini">email notifications</a> on scan start and completion.</li>
+<li>Local <a href=".webbreaker/log">logging</a> of WebInspect scan state.</li>
+</ul>
+<h3 id="usage">Usage <code>usage</code></h3>
+<p>Webbreaker utilizes a structure of upper-level and lower-level commands to enable interaction with multiple 3rd party platforms. The two platforms currently supported are WebInspect and Fortfiy and they can be accessed using their respective upper-level commands. Webbreaker supports multiple functions for each platform which are accessed via lower-level commands. The current command structure is listed below.</p>
+<ul>
+<li>webbreaker
+<ul>
+<li>webinspect
+<ul>
+<li>scan</li>
+<li>servers</li>
+<li>list</li>
+<li>download</li>
+<li>proxy</li>
+</ul></li>
+<li>fortify
+<ul>
+<li>list</li>
+<li>upload</li>
+<li>scan</li>
+<li>download</li>
+</ul></li>
+<li>admin
+<ul>
+<li>notifier</li>
+<li>agent</li>
+<li>credentials</li>
+<li>secret</li>
+</ul></li>
+<li>threadfix
+<ul>
+<li>list</li>
+<li>teams</li>
+<li>applications</li>
+<li>scans</li>
+<li>upload</li>
+<li>create_app</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|admin] [lower-level command] [OPTIONS]'</p>
+<h3 id="logging">Logging <code>logging</code></h3>
+<p>WebBreaker may be implemented with Elastic Stack for log aggregation. Recommended compenents include
+Filebeat agents installed on all WebInspect servers, forwarding to Logstash, and visualized in Kibana. General
+implementation details are <a href="https://qbox.io/blog/welcome-to-the-elk-stack-elasticsearch-logstash-kibana/">here</a>.<br />
+A recommended approach is to tag log events and queries with <code>WebInspect</code> and <code>webbreaker</code>, but remember
+queries are case sensitive.</p>
+<h3 id="docker">Docker <code>docker</code></h3>
+<p>Run WebBreaker in Docker from the repository's root directory, the pre-configured virtualenv environments are <code>venv27</code> for Python 2.7 or <code>venv36</code> for Python 3.6.  Examples are illustrated below.</p>
+<pre><code>docker build -t test_env:centos . \
+&amp;&amp; docker create -it --name test_env test_env:centos  \
+&amp;&amp; docker start test_env \
+&amp;&amp; docker exec -it test_env bash</code></pre>
+<p>To remove the environment gracefully, perform the following command:</p>
+<pre><code>docker stop test_env &amp;&amp; docker rm test_env</code></pre>
+<h3 id="testing">Testing <code>testing</code></h3>
+<p>Our automated testing is performed with tox and detox on Python 3.6 and 2.7.</p>
+<h4 id="requirements">Requirements</h4>
+<ol>
+<li>Be in your project root to run tests. 
+<ul>
+<li><code>pip install -rrequirements.txt</code></li>
+</ul></li>
+<li>Python2.7 and Python3.6 are currently tested in our tox.ini file
+<ul>
+<li>If you want to test it against your current version python, you can the other ways to test. Tox is
+suggested though. </li>
+</ul></li>
 </ol>
-<h2 id="configuration">Configuration</h2>
-<dl>
-<dt>:white_check_mark: Add your webbreaker executable to your $PATH or %PATH%</dt>
-<dd><p>white_check_mark: First time installs, run the <code>webbreaker</code> command in your terminal to create the default configurations <code>$HOME/.webbreaker/config.ini</code></p></dd>
-<dd><p>white_check_mark: Configure the <code>$HOME/.webbreaker/config.ini</code> or <code>%USERPROFILE%\.webbreaker\config.ini</code></p></dd>
-<dd><p>white_check_mark: Each supported product Webinspect, Fortify SSC, WebInspect and ThreadFix has a section. Modify the ones you need.</p></dd>
-</dl>
-<pre><code># Your Fortify SSC URL exclude /ssc and run `webbreaker admin credentials --fortify` 
-[fortify]
-ssc_url = https://ssc.example.com
-username = 
-password = 
+<h4 id="tox">Tox</h4>
+<p>We use detox instead of tox for the speed of concurrent testing. With the speed of testing, comes a lack of
+coverage output</p>
+<ul>
+<li><code>detox</code></li>
+</ul>
+<p>Tox will allow you to see the coverage.py results.</p>
+<ul>
+<li><code>tox</code></li>
+</ul>
+<h4 id="other-ways-to-test">Other ways to test</h4>
+<p>These can test against your version of python without creating seperate virtualenv. For isolation of issues
+and ease of use it is suggested that you use tox. </p>
+<pre><code>python setup.py install
+pytest</code></pre>
+<pre><code>python setup.py install
+python setup.py test</code></pre>
+<h3 id="notifications">Notifications</h3>
+<p>WebBreaker provides notifications for start-scan and end-scan events. A simple publisher/subscriber
+pattern is implemented under the <code>webbreaker/notifiers</code>.  A Reporter object will hold a collection
+of Notifiers, each of which implements a Notify function responsible for creating the desired notification.
+Currently, two notification types are implemented email and database.</p>
+<p>The email notifier merges the provided event data into an HTML email message and sends the message. All SMTP-related
+settings are managed under your user's home directory within the .webbreaker/config.ini, and read during the webbreaker execution.</p>
+<p>If an error occurs on behalf of the notifiers at any point during the process of creating or sending
+notifications, the event will be logged, without any interruption of WebBreaker execution or the WebInspect scan.</p>
+<h2 id="configurations">Configurations</h2>
+<p>This is a compelte example of what will be generated under ~/.webbreaker/config.ini on the first WebBreaker execution</p>
+<p>To import your own config file just replace your own 'config.ini' under ~/.webbreaker/config.ini</p>
+<h3 id="example">Example</h3>
+<pre><code>[fortify]
+ssc_url = https://fortify.example.com
+business_risk_ranking = High
+development_phase = Active
+development_strategy = Internal
+accessibility = externalpublicnetwork
+custom_attribute =
+project_template = Prioritized High Risk Issue Template
+application_name = WEBINSPECT
+username =
+password =
 
-# Your ThreadFix URL and ThreadFix API Key
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
-api_key = ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX
+api_key =
 
-# API authentication set to `true` and run `webbreaker admin credentials --webinspect`
 [webinspect]
-authenticate = false
-username = 
-password = 
-
-# Webinspect default port is 8083/tcp. Feel free to add more servers here
-server_01 = https://webinspect-1.example.com:8083
-server_02 = https://webinspect-2.example.com:8083
+server_01 = https://webinspect-server-1.example.com:8083
 endpoint_01 = %(server_01)s|%(size_large)s
-endpoint_02 = %(server_01)s|%(size_medium)s</code></pre>
-<p><strong>NOTES:</strong></p>
-<ul>
-<li>If you are using WebInspect turn-on your <a href="https://software.microfocus.com/en-us/software/webinspect">WebInspect API Service</a>.  </li>
-</ul>
-<h2 id="release-notes">Release Notes</h2>
-<p>New Features, bugs and enhancements for this release are documented in our <a href="docs/release.html">WebBreaker Release Notes</a></p>
-<h2 id="usage">Usage</h2>
-<p>WebBreaker is a command-line interface (CLI) client.  See our complete <a href="https://target.github.io/webbreaker/"><em>WebBreaker Documentation</em></a> for further configuration, usage, and installation.</p>
-<p>Illustrated below is an example of a typical WebBreaker WebInspect scanning workflow from creation to triage.  Please see the <a href="docs/cheatsheet.html">WebBreaker Cheatsheet</a> for further examples.</p>
-<ol>
-<li>
-<p>Starting WebInspect Proxy<br />
-<code>webbreaker webinspect proxy --start --port=9001 --proxy_name=WEBINSPECT_SCAN_NAME</code></p>
-</li>
-<li>
-<p>Stopping WebInspect Proxy<br />
-<code>webbreaker webinspect proxy --stop --proxy_name=WEBINSPECT_SCAN_NAME</code></p>
-</li>
-<li>
-<p>WebInspect Scanning from Proxy Results<br />
-<code>webbreaker webinspect scan --settings=$WEBINSPECT_SCAN_NAME.xml --scan_name=WEBINSPECT_SCAN_NAME</code></p>
-</li>
-<li>
-<p>Uploading Scan Results to Threadfix<br />
-<code>webbreaker threadfix upload --application WEBINSPECT --scan_file WEBINSPECT_SCAN_NAME.xml</code></p>
-</li>
-<li>Uploading Scan Results to Fortify SSC<br />
-<code>webbreaker fortify upload --fortify_user $FORTIFY_SSC_USER --fortify_password $FORTIFY_SSC_PASSWORD --version $WEBINSPECT_SCAN_NAME --scan_name $WEBINSPECT_SCAN_NAME</code></li>
-</ol>
-<h2 id="bugs-and-feature-requests">Bugs and Feature Requests</h2>
-<p>Found something that doesn't seem right or have a feature request? <a href="https://github.com/target/webbreaker/issues/new/">Please open a new issue</a>.</p>
-<h2 id="copyright-and-license">Copyright and License</h2>
-<p><a href="https://github.com/target/webbreaker/blob/master/LICENSE.txt"><img src="https://img.shields.io/github/license/target/webbreaker.svg?style=flat-square" alt="license" /></a></p>
-<p>Copyright 2018 Target Brands, Inc.</p>
+git_repo = https://github.com/webbreaker/webinspect.git
+authenticate = false
+username =
+password =
+
+[webinspect_policy]
+aggressivesqlinjection = 032b1266-294d-42e9-b5f0-2a4239b23941
+allchecks = 08cd4862-6334-4b0e-abf5-cb7685d0cde7
+apachestruts = 786eebac-f962-444c-8c59-7bf08a6640fd
+application = 8761116c-ad40-438a-934c-677cd6d03afb
+assault = 0a614b23-31fa-49a6-a16c-8117932345d8
+blank = adb11ba6-b4b5-45a6-aac7-1f7d4852a2f6
+criticalsandhighs = 7235cf62-ee1a-4045-88f8-898c1735856f
+crosssitescripting = 49cb3995-b3bc-4c44-8aee-2e77c9285038
+development = 9378c6fa-63ec-4332-8539-c4670317e0a6
+mobile = be20c7a7-8fdd-4bed-beb7-cd035464bfd0
+nosqlandnode.js = a2c788cc-a3a9-4007-93cf-e371339b2aa9
+opensslheartbleed = 5078b547-8623-499d-bdb4-c668ced7693c
+owasptop10applicationsecurityrisks2013 = 48cab8a0-669e-438a-9f91-d26bc9a24435
+owasptop10applicationsecurityrisks2007 = ece17001-da82-459a-a163-901549c37b6d
+owasptop10applicationsecurityrisks2010 = 8a7152d5-2637-41e0-8b14-1330828bb3b1
+passivescan = 40bf42fb-86d5-4355-8177-4b679ef87518
+platform = f9ae1fc1-3aba-4559-b243-79e1a98fd456
+privilegeescalation = bab6348e-2a23-4a56-9427-2febb44a7ac4
+qa = 5b4d7223-a30f-43a1-af30-0cf0e5cfd8ed
+quick = e30efb2a-24b0-4a7b-b256-440ab57fe751
+safe = def6a5b3-d785-40bc-b63b-6b441b315bf0
+soap = a7eb86b8-c3fb-4e88-bc59-5253887ea5b1
+sqlinjection = 6df62f30-4d47-40ec-b3a7-dad80d33f613
+standard = cb72a7c2-9207-4ee7-94d0-edd14a47c15c
+transportlayersecurity = 0fa627de-3f1c-4640-a7d3-154e96cda93c
+
+[emailer]
+smtp_host = smtp.example.com
+smtp_port = 25
+from_address = webbreaker-no-reply@example.com
+to_address = webbreaker-activity@example.com
+default_to_address =
+chatroom =
+email_template =
+        &lt;html&gt;
+        &lt;head&gt;&lt;/head&gt;
+        &lt;body&gt;
+        &lt;p&gt;Hello,&lt;br/&gt;&lt;br/&gt;
+            The following scan has logged new activity:
+        &lt;ul&gt;
+            &lt;li&gt;Attack traffic source: {0}&lt;/li&gt;
+            &lt;li&gt;Attack traffic target(s):&lt;/li&gt;
+            &lt;ul&gt;
+                {4}
+            &lt;/ul&gt;
+            &lt;li&gt;Scan name: {1}&lt;/li&gt;
+            &lt;li&gt;Scan ID: {2}&lt;/li&gt;
+            &lt;li&gt;&lt;b&gt;Action: {3}&lt;/b&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+        &lt;/p&gt;
+        &lt;p&gt;
+            Questions? Concerns? Please contact us in our Hipchat room, &amp;quot;WebBreaker Activity&amp;quot;,
+            or &lt;a href="mailto:webbreaker-team@example.com"&gt;email us&lt;/a&gt;.
+        &lt;/p&gt;
+
+        &lt;p&gt;
+            Want to manage your subscription to these emails? Use &lt;a
+                href="http://wiki.example.com/index.php/GroupID"&gt;GroupID&lt;/a&gt;, and
+            add/remove yourself from webbreaker-activity.
+        &lt;/p&gt;
+        &lt;/body&gt;
+        &lt;/html&gt;</code></pre>
+<h3 id="webbreaker">WebBreaker <code>webbreaker_config</code></h3>
+<p>Global settings for webbreaker.</p>
+<h4 id="webbreaker_install">[webbreaker_install]</h4>
+<p>Directory where webbreaker is installed. The default is set to <code>.</code> to signify the current directory of webbreaker. </p>
+<p><em>Note:</em> This will be moved to [webbreaker] <code>install</code></p>
+<h4 id="git">[git]</h4>
+<p>Stores Git API auth token and url of a default WebBreaker Agent.</p>
+<p><em>Note:</em> This will be moved to under [webbreaker]</p>
+<h3 id="threadfix">ThreadFix <code>threadfix_config</code></h3>
+<h4 id="configuration">Configuration <code>threadfix_config</code></h4>
+<h5 id="host">host</h5>
+<p>Threadfix host that will be used.</p>
+<h5 id="api_key">api_key</h5>
+<p>This api_key to authenticate ThreadFix actions</p>
+<h3 id="fortify">Fortify <code>fortify_config</code></h3>
+<h4 id="configuration-1">Configuration <code>fortify_config</code></h4>
+<p>Fortify SSC settings can be found under [fortify]</p>
+<h5 id="ssc_url">ssc_url</h5>
+<p>URL of the fortify server to contact</p>
+<h5 id="project_template">project_template</h5>
+<p>Static value</p>
+<h5 id="application_name">application_name</h5>
+<p>Static Value</p>
+<h5 id="fortify_username">fortify_username</h5>
+<p>Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use
+<code>webbreaker admin credentials --fortify</code> to set your username &amp; password.</p>
+<h5 id="fortify_password">fortify_password</h5>
+<p>Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use
+<code>webbreaker admin credentials --fortify</code> to set your username &amp; password.</p>
+<h3 id="webinspect">WebInspect <code>webinspect_config</code></h3>
+<h4 id="configuration-2">Configuration <code>webinspect_config</code></h4>
+<p>WebInspect scan configuration files for <code>policies</code> are versioned and hosted from a GIT repository determined
+in <code>webbreaker/etc/webinspect.ini</code>.  Additionally, all WebInspect policies and servers are managed from this
+configuration file.  The section </p>
+<p>All WebInspect distributions are packaged with a <code>Default.xml</code> file that may be overridden and uploaded
+to the WebInspect deployment with the webbreaker option <code>--settings</code>.  The setting xml file contains
+all possible options for your scan including, a WebInspect scan including policy, workflow and/or login
+macro, scan depth, and allowed hosts.</p>
+<h4 id="webinspect_endpoints">[webinspect_endpoints]</h4>
+<p>Provides a <em>Just-In-Time</em> (JIT) scheduler or the ability to load balance scans amongst a WebInspect cluster.</p>
+<p>Will be moving 'large' &amp; 'medium' under [webinspect_size] in the future.</p>
+<h4 id="webinspect_size">[webinspect_size]</h4>
+<p>Sets the number for large and small WebInspect scan servers. This helps with <em>Just-In-Time</em> (JIT) scheduling</p>
+<h4 id="webinspect_default_size">[webinspect_default_size]</h4>
+<p>Will be moved under [webinspect_size] in the future. </p>
+<h4 id="webinspect_repo">[webinspect_repo]</h4>
+<p>A unique GIT repo is defined by the user and is mutually exclusive from the WebBreaker source.  The
+assumption is each WebBreaker installation will have a unique GIT URL defined.  Upon each execution,
+the repo refreshes <em>all</em> settings file(s), assuming that there may be newly created, deletions, or modifications
+of settings files.  All settings files used in execution must reside in this respective repo
+under <code>.webbreaker/etc/webinspect/settings</code>.</p>
+<p><em>Note:</em> dir will be deprecated</p>
+<h4 id="webinspect_policies">[webinspect_policies]</h4>
+<p>Grouping of proprietary WebInspect tests to perform.  Tests or rules are represented in an <code>xml</code> element with
+a <code>.policy</code> file extension.  Custom tests or Checks are mapped to a unique WebInspect ID.  The mapping for all
+policies shipped with WebInspect are mapped with their respective GUID within the <code>[webinspect_policies]</code> section.</p>
+<p><em>Note:</em> All custom polices are automatically uploaded to the targeted WebInspect server and must be referenced
+as a GUID.  </p>
+<h4 id="webinspect-1">[webinspect]</h4>
+<p>If authentication is set to true, all WebInspect requests will use basic auth. A user will be prompted for
+credentials which, if valid, will be encrypted and saved. Credentials can also be set via the
+'webbreaker admin credentials --webinspect' command.</p>
+<h3 id="email">Email <code>email_config</code></h3>
+<p>Notifications for start-scan and end-scan events. A simple publisher/subscriber pattern is implemented under
+the &quot;notifiers&quot; folder.</p>
+<p>A Reporter object holds a collection of Notifier objects, each of which implements a Notify function responsible
+for creating the desired notification. Currently, two notification types are implemented email and database.</p>
+<p>The email notifier merges the provided event data into an HTML email message and sends the message. All
+SMTP-related settings are stored in .emailrc, and read during program startup.</p>
+<h2 id="verbose-cheatsheet-webinspect">Verbose Cheatsheet: Webinspect <code>webinspect_cheatsheet</code></h2>
+<h3 id="webinspect-scan">WebInspect Scan <code>webinspect_scan</code></h3>
+<h5 id="options">Options</h5>
+<h5 id="commands">Commands</h5>
+<p>Launch a scan using the settings file important_site_auth.xml (WebBreaker assumes the .xml extension)</p>
+<pre><code>webbreaker webinspect scan --settings important_site_auth</code></pre>
+<p>Launch a scan using the settings file important_site_auth.xml (WebBreaker assumes the .xml extension) with the allowed hosts important-site.com and m.important-site.com
+<strong>Note: The start_urls, allowed_hosts, and workflow_macros options can all be used multiple times in this format</strong></p>
+<pre><code>webbreaker webinspect scan --settings important_site_auth --allowed_hosts important-site.com --allowed_hosts m.important-site.com</code></pre>
+<p>Launch a scan using a settings file found by absolute path instead of one downloaded from the webinspect.ini repo</p>
+<pre><code>webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth</code></pre>
+<h4 id="webinspect-scan-options">WebInspect Scan Options</h4>
+<h5 id="options-1">Options</h5>
+<h5 id="commands-1">Commands</h5>
+<p>Specify name of scan --scan_name ${BUILD_TAG}
+<code>--scan_name</code></p>
+<p>Specify name of settings file, without the .xml extension. WebBreaker will  by default try to locate this file in in the repo found in .config. If your file is not in the repo, you may instead pass an absolute path to the file
+<code>--settings</code></p>
+<p>Size of scanner required. Valid values if provided are 'medium' or 'large'
+<code>--size</code></p>
+<p>Overrides the setting scan mode value.  Acceptable values are crawl, scan, or all.
+<code>--scan_mode</code></p>
+<p>Overrides the scope value.  Acceptable values are all, strict, children, and ancestors.
+<code>--scan_scope</code></p>
+<p>Overrides existing or adds a recorded login sequence to authenticate to the targeted application
+<code>--login_macro</code></p>
+<p>Assign either custom or built-in WebInspect policies, for example AggressiveSQLInjection, AllChecks, ApacheStruts, Application, Assault, CriticalsAndHighs, CrossSiteScripting, Development, Mobile, NoSQLAndNode.js OpenSSLHeartbleed, OWASPTop10ApplicationSecurityRisks2013, OWASPTop10ApplicationSecurityRisks2007 OWASPTop10ApplicationSecurityRisks2010, PassiveScan, Platform, PrivilegeEscalation, QA, Quick, Safe, SOAP, SQLInjection, Standard and TransportLayerSecurity
+<code>--scan_policy</code></p>
+<p>Type of scan to be performed list-driven or workflow-driven scan. Acceptable values are <code>url</code> or <code>macro</code>
+<code>--scan_start</code></p>
+<p>Enter a single url or multiple each with it's own --start_urls. For example --start_urls <a href="http://test.example.com">http://test.example.com</a> --start_urls <a href="http://test2.example.com">http://test2.example.com</a>
+<code>--start_urls</code></p>
+<p>--upload_settings, upload setting file to the webinspect host, settings are hosted under webbreaker/etc/webinspect/settings, all settings files end with an .xml extension, the xml extension is not needed and shouldn't be included.
+<code>--upload_settings</code></p>
+<p>--upload_policy xss, upload policy file to the webinspect scanner policies are hosted under webbreaker/etc/webinspect/policies, all policy files end with a .policy extension, the policy extension is not needed and shouldn't be included.
+<code>--upload_policy</code></p>
+<p>--upload_webmacro to the webinspect scanner macros are hosted under webbreaker/etc/webinspect/webmacros, all webmacro files end with the .webmacro extension, the extension should NOT be included.
+<code>--upload_webmacros</code></p>
+<p>--fortify_user authenticates the Fortify SSC user for uploading WebInspect <code>.fpr</code> formatted scan
+<code>--fortify_user</code></p>
+<p>Include the hosts to scan without the protocol or scheme http:// or https://, either a single host or multiple hosts each with it's own --allowed_hosts. If --allowed_hosts is not provided, all hosts explicitly stated within the option, --start_urls will be used.  Keep in mind, if this option is used you must re-enter your host as provided in --start_urls
+<code>--allowed_hosts</code></p>
+<p>--workflow_macros are located under webbreaker/etc/webinspect/webmacros. Overrides the login macro. Acceptable values are login .webmacros files available on the WebInspect scanner to be used.
+<code>--workflow_macros</code></p>
+<h3 id="webinspect-servers">WebInspect Servers <code>webinspect_servers</code></h3>
+<h5 id="options-2">Options</h5>
+<h5 id="commands-2">Commands</h5>
+<p>List all servers found in webbreaker/etc/webinspect.ini</p>
+<pre><code>webbreaker webinspect servers</code></pre>
+<h4 id="webinspect-list">WebInspect List <code>webinspect_list</code></h4>
+<h5 id="options-3">Options</h5>
+<h5 id="commands-3">Commands</h5>
+<p>List all scans (scan name, scan id, and scan status) found on the server webinspect-server-1.example.com:8083</p>
+<pre><code>webbreaker webinspect list --server webinspect-server-1.example.com:8083</code></pre>
+<p>List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 whose scan name matches the query 'important_site'</p>
+<pre><code>webbreaker webinspect list --server webinspect-server-1.example.com:8083 --scan_name important_site</code></pre>
+<p>List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 and webinspect-server-2.example.com:8083</p>
+<pre><code>webbreaker webinspect list --server webinspect-server-1.example.com:8083 --server webinspect-server-2.example.com:8083</code></pre>
+<p>List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 and webinspect-server-2.example.com:8083 whose scan name matches the query 'important_site'</p>
+<pre><code>webbreaker webinspect list --server webinspect-server-1.example.com:8083 --server webinspect-server-2.example.com:8083 --scan_name important_site</code></pre>
+<p>List all scans (scan name, scan id, and scan status) found on all servers listed in webbreaker/etc/webinspect.ini</p>
+<pre><code>webbreaker webinspect list</code></pre>
+<p>List all scans (scan name, scan id, and scan status) containing the query 'important_site' found on all servers listed in webbreaker/etc/webinspect.ini</p>
+<pre><code>webbreaker webinspect list --scan_name important_site</code></pre>
+<p>List all scans (scan name, scan id, and scan status) found on the server webinspect-server-1.example.com:8083. Interaction with server will use http instead of https.</p>
+<pre><code>webbreaker webinspect list --server webinspect-server-1.example.com:8083 --protocol http</code></pre>
+<h4 id="webinspect-downlaod">WebInspect Downlaod <code>webinspect_download</code></h4>
+<h5 id="options-4">Options</h5>
+<h5 id="commands-4">Commands</h5>
+<p>For these examples, assume the server has scans with names important_site_auth, important_site_api, important_site_internal</p>
+<p>Download the results from the important_site_auth scan found on webinspect-server-2.example.com:8083 as an fpr file</p>
+<pre><code>webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site_auth</code></pre>
+<p>Because multiple scan names on webinspect-server-2.example.com:8083 match 'important_site', this command will list them in output and no files will be downloaded</p>
+<pre><code>webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site</code></pre>
+<p>Download the results of scan 'important_site_auth' from webinspect-server-2.example.com:8083 in xml format</p>
+<pre><code>webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site_auth -x xml</code></pre>
+<p>Download WebInspect scan by ID. Scan will be downloaded as important_site_auth.fpr (This is helpful when multiple scans have the same_name):</p>
+<pre><code>webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --scan_id my_important_scans_id</code></pre>
+<p>Download the results from the important_site_auth scan found on webinspect-server-2.example.com:8083 as an fpr file. All interaction with webinspect-server-2.example.com:8083 will use http instead of https</p>
+<pre><code>webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site_auth --protocol http</code></pre>
+<h2 id="verbose-cheatsheet-fortify">Verbose Cheatsheet: Fortify <code>fortify_cheatsheet</code></h2>
+<h4 id="fortify-list">Fortify List <code>fortify_list</code></h4>
+<h5 id="options-5">Options</h5>
+<h5 id="commands-5">Commands</h5>
+<p>List all versions found on Fortify (using the url listed in fortify.ini). Authentication to Fortify will use the username and password I have stored as environment variables.</p>
+<pre><code>webbreaker fortify list --fortify_user $FORT_USER --fortify_password $FORT_PASS</code></pre>
+<p>List all versions found on Fortify (using the url listed in fortify.ini). User will be prompted for their username and password to authenticate to Fortify.
+<strong>Note: When username/password authentication is successful, Fortify will provide a token that is valid for 24 hours. WebBreaker encryptes this token and stores it in fortify.ini. As long as you have a valid token, you will not be prompted for your username and password.</strong></p>
+<pre><code>webbreaker fortify list</code></pre>
+<p>List all versions found on Fortify (using the url listed in fortify.ini) that belong to the application 'webinspect'
+<strong>Note: Fortify applications are also sometimes refered to as projects</strong></p>
+<pre><code>webbreaker fortify list --application webinspect</code></pre>
+<h4 id="fortify-download">Fortify Download <code>fortify_download</code></h4>
+<h5 id="options-6">Options</h5>
+<h5 id="commands-6">Commands</h5>
+<p>Download lastest .fpr scan from Fortify SSC with application/project &amp; version name</p>
+<pre><code>webbreaker fortify download --application my_other_app --version important_site_auth</code></pre>
+<p>Download lastest .fpr scan from Fortify SSC with application/project from fortify.ini &amp; version name</p>
+<pre><code>webbreaker fortify download --version important_site_auth</code></pre>
+<p>Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication</p>
+<pre><code>webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version important_site_auth</code></pre>
+<h4 id="fortify-upload">Fortify Upload <code>fortify_upload</code></h4>
+<h5 id="options-7">Options</h5>
+<h5 id="commands-7">Commands</h5>
+<p>Upload the file important_site_auth.fpr to the important_site_auth version on Fortify (using the url listed in fortify.ini). User will be prompted for their username and password to authenticate to Fortify.
+<strong>Note: When username/password authentication is successful, Fortify will provide a token that is valid for 24 hours. WebBreaker encryptes this token and stores it in fortify.ini. As long as you have a valid token, you will not be prompted for your username and password.</strong></p>
+<pre><code>webbreaker fortify upload --version important_site_auth</code></pre>
+<p>Upload the file important_site_auth.fpr to the important_site_auth version on Fortify (using the url listed in fortify.ini). Authentication to Fortify will use the username and password I have stored as environment variables.</p>
+<pre><code>webbreaker fortify upload --fortify_user $FORT_USER --fortify_password $FORT_PASS --version important_site_auth</code></pre>
+<p>Upload the file important_site_auth.fpr to the important_site_auth version under the application my_other_app on Fortify. If --application is not provided, WebBreaker will use the application name found in fortify.ini</p>
+<pre><code>webbreaker fortify upload --application my_other_app --version important_site_auth</code></pre>
+<p>Upload the file auth_scan.fpr to the important_site_auth version on Fortify</p>
+<pre><code>webbreaker fortify upload --version important_site_auth --scan_name auth_scan</code></pre>
+<h4 id="fortify-scan">Fortify Scan <code>fortify_scan</code></h4>
+<h5 id="options-8">Options</h5>
+<h5 id="commands-8">Commands</h5>
+<p>Retrieve and store Fortify Version url and Jenkins BuildID in agent.json. If application is not provided, WebBreaker will use the application in fortify.ini. User will be prompted for their username and password to authenticate to Fortify</p>
+<pre><code>webbreaker fortify scan --version important_site_auth --build_id my_latest_build</code></pre>
+<p>Retrieve and store Fortify Version url and Jenkins BuildID in agent.json with Fortify Application override. User will be prompted for their username and password to authenticate to Fortify</p>
+<pre><code>webbreaker fortify scan --application my_other_app --version important_site_auth --build_id my_latest_build</code></pre>
+<p>Retrieve and store Fortify Version url and Jenkins BuildID with command-line authentication. Authentication to Fortify will use the username and password I have stored as environment variables</p>
+<pre><code>webbreaker fortify scan --version important_site_auth --build_id my_latest_build --fortify_user $FORT_USER --fortify_password $FORT_PASS</code></pre>
+<h2 id="verbose-cheatsheet-threadfix">Verbose Cheatsheet: ThreadFix <code>threadfix_cheatsheet</code></h2>
+<h4 id="threadfix-list">ThreadFix List <code>threadfix_list</code></h4>
+<h5 id="options-9">Options</h5>
+<h5 id="commands-9">Commands</h5>
+<p>List all applications (ID, Team Name, Application Name) across all teams found in ThreadFix</p>
+<pre><code>webbreaker threadfix list</code></pre>
+<p>List all applications (ID, Team Name, Application Name) with names containing 'secret' across all teams with names containing 'Marketing'. Queries are not case sensitive.</p>
+<pre><code>webbreaker threadfix list --team Marketing --application secret</code></pre>
+<h4 id="threadfix-teams">ThreadFix Teams <code>threadfix_teams</code></h4>
+<h5 id="options-10">Options</h5>
+<h5 id="commands-10">Commands</h5>
+<p>List all teams (ID and Name) found in ThreadFix</p>
+<pre><code>webbreaker threadfix teams</code></pre>
+<h4 id="threadfix-applications">ThreadFix Applications <code>threadfix_applications</code></h4>
+<h5 id="options-11">Options</h5>
+<h5 id="commands-11">Commands</h5>
+<p>List all applications (ID and Name) found in ThreadFix that belong to the team with ID=123</p>
+<pre><code>webbreaker threadfix applications --team_id 123</code></pre>
+<p>List all applications (ID and Name) found in ThreadFix that belong to the Marketing team</p>
+<pre><code>webbreaker threadfix applications --team_name Marketing</code></pre>
+<h4 id="threadfix-scans">ThreadFix Scans <code>threadfix_scans</code></h4>
+<h5 id="options-12">Options</h5>
+<h5 id="commands-12">Commands</h5>
+<p>List all scans (ID Scanner, and Filename) found in ThreadFix that belong to the application with ID=345</p>
+<pre><code>webbreaker threadfix scans --app_id 345</code></pre>
+<h4 id="threadfix-upload">ThreadFix Upload <code>threadfix_upload</code></h4>
+<h5 id="options-13">Options</h5>
+<h5 id="commands-13">Commands</h5>
+<p>Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345</p>
+<pre><code>webbreaker threadfix upload --app_id 345 --scan_file my_app_scan.xml</code></pre>
+<p>Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App</p>
+<pre><code>webbreaker threadfix upload --app_name Marketing_App --scan_file my_app_scan.xml</code></pre>
+<h4 id="threadfix-create-app">ThreadFix Create App <code>threadfix_create_app</code></h4>
+<h5 id="options-14">Options</h5>
+<p><code>--start  Flag that instructs WebBreaker to create an agent</code></p>
+<p><code>--help   Show this message and exit.</code></p>
+<h5 id="commands-14">Commands</h5>
+<p>Create a new application, with a given name and url, in ThreadFix under the team with ID=123</p>
+<pre><code>webbreaker threadfix create_app --team_id 123 --name new_marketing_app --url http://marketing.ourapp.com</code></pre>
+<p>Create a new application, with a given name and url, in ThreadFix under the Marketing team</p>
+<pre><code>webbreaker threadfix create_app --team_name Marketing --name new_marketing_app --url http://marketing.ourapp.com</code></pre>
+<h2 id="verbose-cheatsheet-admin">Verbose Cheatsheet: Admin <code>admin_cheatsheet</code></h2>
+<h4 id="admin-notifier">Admin Notifier <code>admin_notifier</code></h4>
+<h5 id="options-15">Options</h5>
+<p><code>--email         Flag to specify email notifications</code></p>
+<p><code>--git_url TEXT  Specify Git URL  [required]</code></p>
+<p><code>--help          Show this message and exit.</code></p>
+<h5 id="commands-15">Commands</h5>
+<p>Retrieve and store public emails of contributors to the webbreaker repo. Communication with the Git API requires a token stored in webbreaker.ini</p>
+<pre><code>webbreaker admin notifier --email --git_url https://github.com/target/webbreaker</code></pre>
+<h4 id="admin-agent">Admin Agent <code>admin_agent</code></h4>
+<h5 id="options-16">Options</h5>
+<h5 id="commands-16">Commands</h5>
+<p>View the current stored information for WebBreaker Agent based on most recent use of 'admin notifier' and 'fortify scan'</p>
+<pre><code>webbreaker admin agent</code></pre>
+<p>Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify scan'. On scan completion the agent will notify contributors found via 'admin notifiers':</p>
+<pre><code>webbreaker admin agent --start</code></pre>
+<h4 id="admin-credentials">Admin Credentials <code>admin_credentials</code></h4>
+<h5 id="options-17">Options</h5>
+<p><code>--fortify        Flag used to designate options as Fortify credentials</code></p>
+<p><code>--webinspect     Flag used to designate options as WebInspect credentials</code></p>
+<p><code>--clear          Flag to clear credentials of Fortify OR WebInspect</code></p>
+<p><code>--username TEXT  Specify username</code></p>
+<p><code>--password TEXT  Specify username</code></p>
+<p><code>--help           Show this message and exit.</code></p>
+<h5 id="commands-17">Commands</h5>
+<p>Encrypt and store new Fortify credentials. User will be prompted for username and password. Credentials are validated before being stored.</p>
+<pre><code>webbreaker admin credentials --fortify</code></pre>
+<p>Encrypt and store new Fortify credentials passed as environment variables. Credentials are validated before being stored.</p>
+<pre><code>webbreaker admin credentials --fortify --username $FORT --password $FORT_PASS</code></pre>
+<p>Clear cuurent stored Fortify credentials.</p>
+<pre><code>webbreaker admin credentials --fortify --clear</code></pre>
+<h4 id="admin-secret">Admin Secret <code>admin_secret</code></h4>
+<h5 id="options-18">Options</h5>
+<p><code>-f, --force  Flag prevents confirmation prompt</code></p>
+<h5 id="commands-18">Commands</h5>
+<p>A new encryption key is created and all stored credentials are cleared. Through regular use you should not need to use this command. However, if WebBreaker is having troubles with encrypting credentials, this command will help it reset.</p>
+<pre><code>webbreaker admin secret</code></pre>
+<p>A new encryption key is created and all stored credentials are cleared. You will not be prompted to confirm this command.</p>
+<pre><code>webbreaker admin secret [-f / --force]</code></pre>
                 </section>
 
             </div>
