@@ -22,10 +22,10 @@ var/
 .installed.cfg
 *.egg
 MANIFEST
+.gitssh
 
 # env 
 .webbreaker
-webbreaker/etc/
 env/
 etc/
 venv27/

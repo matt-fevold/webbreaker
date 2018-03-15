@@ -9,11 +9,11 @@ import string
 import re
 import xml.etree.ElementTree as ElementTree
 from subprocess import CalledProcessError, check_output
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.confighelper import Config
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webbreaker.common.confighelper import Config
 
-from webbreaker.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 
 try:
     from git.exc import GitCommandError

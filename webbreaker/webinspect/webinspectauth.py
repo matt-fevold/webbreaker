@@ -3,13 +3,13 @@
 # -*- coding: utf-8 -*-
 
 from subprocess import CalledProcessError
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.confighelper import Config
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webbreaker.common.confighelper import Config
 
-from webbreaker.secretclient import SecretClient
+from webbreaker.common.secretclient import SecretClient
 
-from webbreaker.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from click import prompt
 
 try:

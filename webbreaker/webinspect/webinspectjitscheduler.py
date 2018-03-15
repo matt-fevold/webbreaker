@@ -3,7 +3,7 @@
 
 import random
 import webinspectapi.webinspect as webinspectapi
-from webbreaker.webbreakerlogger import Logger
+from webbreaker.common.webbreakerlogger import Logger
 
 
 class WebInspectJitScheduler(object):

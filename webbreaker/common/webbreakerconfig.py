@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from webbreaker.notifiers import emailer
-from webbreaker.webbreakerlogger import Logger
+from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.notifiers import reporter
-from webbreaker.confighelper import Config
+from webbreaker.common.confighelper import Config
 
 try:
     import ConfigParser as configparser

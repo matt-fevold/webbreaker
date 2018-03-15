@@ -1,7 +1,7 @@
 import mock
 from mock import mock_open
 
-from webbreaker.confighelper import Config
+from webbreaker.common.confighelper import Config
 import os
 
 try:
@@ -14,8 +14,8 @@ except ImportError:  # Python3
     config = configparser.ConfigParser()
 
 
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
 def test_config_init_variables(set_vars_mock, set_config_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -32,8 +32,8 @@ def test_config_init_variables(set_vars_mock, set_config_mock):
     assert set_config_mock.call_count == 1
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
 def test_set_path_no_install_success(set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -44,8 +44,8 @@ def test_set_path_no_install_success(set_config_mock, set_vars_mock):
     assert result == 1
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
 def test_set_path_install_success(set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -56,10 +56,10 @@ def test_set_path_install_success(set_config_mock, set_vars_mock):
     assert result == 1
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.makedirs')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_set_path_dir_file_success(open_mock, makedirs_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -71,10 +71,10 @@ def test_set_path_dir_file_success(open_mock, makedirs_mock, set_config_mock, se
     assert result == '/test/install/test_dir/test.file'
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.makedirs')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_set_path_dir_file_exception(open_mock, makedirs_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -88,11 +88,11 @@ def test_set_path_dir_file_exception(open_mock, makedirs_mock, set_config_mock, 
     assert result == 1
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.path.exists')
-@mock.patch('webbreaker.confighelper.os.makedirs')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.path.exists')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_set_path_dir_file_exists_dir(open_mock, makedirs_mock, exist_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -105,10 +105,10 @@ def test_set_path_dir_file_exists_dir(open_mock, makedirs_mock, exist_mock, set_
     assert result == '/test/install/test_dir/test.file'
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.makedirs')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_set_path_file_success(open_mock, makedirs_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -120,10 +120,10 @@ def test_set_path_file_success(open_mock, makedirs_mock, set_config_mock, set_va
     assert result == '/test/install/test.file'
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.makedirs')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_set_path_file_exception(open_mock, makedirs_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -137,11 +137,11 @@ def test_set_path_file_exception(open_mock, makedirs_mock, set_config_mock, set_
     assert result == 1
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.path.exists')
-@mock.patch('webbreaker.confighelper.os.makedirs')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.path.exists')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_set_path_file_exists_dir(open_mock, makedirs_mock, exist_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -154,9 +154,9 @@ def test_set_path_file_exists_dir(open_mock, makedirs_mock, exist_mock, set_conf
     assert result == '/test/install/test.file'
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
 def test_set_path_dir_success(makedirs_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -167,11 +167,11 @@ def test_set_path_dir_success(makedirs_mock, set_config_mock, set_vars_mock):
     assert result == '/test/install/test_dir'
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.os.path.exists')
-@mock.patch('webbreaker.confighelper.os.makedirs')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.os.path.exists')
+@mock.patch('webbreaker.common.confighelper.os.makedirs')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_set_path_exists(open_mock, makedirs_mock, exist_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -184,8 +184,8 @@ def test_set_path_exists(open_mock, makedirs_mock, exist_mock, set_config_mock, 
     assert result == '/test/install/test_dir'
 
 
-@mock.patch('webbreaker.confighelper.Config.conf_get')
-@mock.patch('webbreaker.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.conf_get')
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
 def test_set_config_basic(set_vars_mock, conf_get_mock):
     set_vars_mock.return_value = None
     conf_get_mock.return_value = None
@@ -195,10 +195,10 @@ def test_set_config_basic(set_vars_mock, conf_get_mock):
     assert conf_get_mock.call_count == 53
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.config.read')
-@mock.patch('webbreaker.confighelper.config.get')
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.config.read')
+@mock.patch('webbreaker.common.confighelper.config.get')
 def test_conf_get_success(get_mock, read_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -212,13 +212,13 @@ def test_conf_get_success(get_mock, read_mock, set_config_mock, set_vars_mock):
     assert result == 'new_test_value'
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.config.read')
-@mock.patch('webbreaker.confighelper.config.add_section')
-@mock.patch('webbreaker.confighelper.config.set')
-@mock.patch('webbreaker.confighelper.config.write')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.config.read')
+@mock.patch('webbreaker.common.confighelper.config.add_section')
+@mock.patch('webbreaker.common.confighelper.config.set')
+@mock.patch('webbreaker.common.confighelper.config.write')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_conf_get_section_exec(open_mock, write_mock, set_mock, add_mock, read_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None
@@ -235,12 +235,12 @@ def test_conf_get_section_exec(open_mock, write_mock, set_mock, add_mock, read_m
     assert result == 'test_value'
 
 
-@mock.patch('webbreaker.confighelper.Config.set_vars')
-@mock.patch('webbreaker.confighelper.Config.set_config')
-@mock.patch('webbreaker.confighelper.config.read')
-@mock.patch('webbreaker.confighelper.config.set')
-@mock.patch('webbreaker.confighelper.config.write')
-@mock.patch('webbreaker.confighelper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.common.confighelper.Config.set_vars')
+@mock.patch('webbreaker.common.confighelper.Config.set_config')
+@mock.patch('webbreaker.common.confighelper.config.read')
+@mock.patch('webbreaker.common.confighelper.config.set')
+@mock.patch('webbreaker.common.confighelper.config.write')
+@mock.patch('webbreaker.common.confighelper.open', new_callable=mock_open, read_data="data")
 def test_conf_get_option_exec(open_mock, write_mock, set_mock, read_mock, set_config_mock, set_vars_mock):
     set_vars_mock.return_value = None
     set_config_mock.return_value = None

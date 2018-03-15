@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+from colorama import Fore
+from colorama import Style
 
 class WebBreakerHelper(object):
     @classmethod
@@ -14,15 +15,15 @@ class WebBreakerHelper(object):
 
     @classmethod
     def ascii_motd(cls):
-        return """
-\33[92m
+
+        return ("""{0}
  _       __     __    ____                  __
 | |     / /__  / /_  / __ )________  ____ _/ /_____  _____
 | | /| / / _ \/ __ \/ __  / ___/ _ \/ __ `/ //_/ _ \/ ___/
 | |/ |/ /  __/ /_/ / /_/ / /  /  __/ /_/ / ,< /  __/ /
 |__/|__/\___/_.___/_____/_/   \___/\__,_/_/|_|\___/_/
-\033[0m
-"""
+
+{1}""".format(Fore.GREEN,Style.RESET_ALL))
 
     @classmethod
     def banner(cls, text, ch=' ', length=78):

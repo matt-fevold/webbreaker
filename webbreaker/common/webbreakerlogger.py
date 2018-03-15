@@ -5,7 +5,7 @@ import logging
 import datetime
 import sys
 import os
-from webbreaker.confighelper import Config
+from webbreaker.common.confighelper import Config
 
 LOG_PATH = Config().log
 FORMATTER = logging.Formatter('%(message)s')

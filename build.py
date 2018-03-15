@@ -69,11 +69,9 @@ def main():
                                 pyinstaller_exe = os.path.abspath(os.path.join('/usr', 'bin', 'pyinstaller'))
 
                             if distro == "darwin":
-                                # cmdline([pyinstaller_exe, "--clean", "-y", "--nowindowed", "--console", "--onefile",
-                                #              "--name", "webbreaker", "--osx-bundle-identifier", "com.target.ps.webbreaker", "-p",
-                                #              str(user_site), str(webbreaker_main)])
                                 cmdline([pyinstaller_exe, "--clean", "-y", "--nowindowed", "--console", "--onefile",
-                                         "--name", "webbreaker", "-p", str(user_site), str(webbreaker_main)])
+                                         "--name", "webbreaker", "--osx-bundle-identifier", "com.target.ps.webbreaker",
+                                         "-p", str(user_site), str(webbreaker_main)])
 
                                 print("Successfully built an osx distro {}!".format(pyinstaller_file))
 

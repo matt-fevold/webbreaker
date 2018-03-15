@@ -19,24 +19,26 @@ except ImportError:  # Python3
     import urllib.request as urllib
 
 import requests.exceptions
+from colorama import Fore
+from colorama import Style
 import click
 from webbreaker import __version__ as version
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.webinspectconfig import WebInspectConfig
-from webbreaker.webinspectauth import WebInspectAuth, auth_prompt
-from webbreaker.webinspectclient import WebinspectClient
-from webbreaker.webinspectqueryclient import WebinspectQueryClient
-from webbreaker.fortifyclient import FortifyClient
-from webbreaker.fortifyconfig import FortifyConfig
-from webbreaker.webinspectscanhelpers import create_scan_event_handler
-from webbreaker.webinspectscanhelpers import scan_running
-from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
-from webbreaker.secretclient import SecretClient
-from webbreaker.threadfixclient import ThreadFixClient
-from webbreaker.threadfixconfig import ThreadFixConfig
-from webbreaker.webinspectproxyclient import WebinspectProxyClient
-from webbreaker.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.webinspect.webinspectconfig import WebInspectConfig
+from webbreaker.webinspect.webinspectauth import WebInspectAuth, auth_prompt
+from webbreaker.webinspect.webinspectclient import WebinspectClient
+from webbreaker.webinspect.webinspectqueryclient import WebinspectQueryClient
+from webbreaker.fortify.fortifyclient import FortifyClient
+from webbreaker.fortify.fortifyconfig import FortifyConfig
+from webbreaker.webinspect.webinspectscanhelpers import create_scan_event_handler
+from webbreaker.webinspect.webinspectscanhelpers import scan_running
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webbreaker.common.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
+from webbreaker.common.secretclient import SecretClient
+from webbreaker.threadfix.threadfixclient import ThreadFixClient
+from webbreaker.threadfix.threadfixconfig import ThreadFixConfig
+from webbreaker.webinspect.webinspectproxyclient import WebinspectProxyClient
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 import re
 import sys
 from exitstatus import ExitStatus
@@ -75,7 +77,7 @@ def fortify_prompt():
 def cli(config):
     # Show something pretty to start
     webbreaker_ascii = WebBreakerHelper.ascii_motd()
-    b = WebBreakerHelper.banner(text=webbreaker_ascii)
+    b = WebBreakerHelper.banner(text=(webbreaker_ascii))
 
     sys.stdout.write(str("{0}\nVersion {1}\n".format(b, version)))
     sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))

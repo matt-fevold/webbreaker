@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from webbreaker.webbreakerlogger import Logger
+from webbreaker.common.webbreakerlogger import Logger
 
 
 class LogExceptionHelper(object):

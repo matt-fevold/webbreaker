@@ -1,4 +1,5 @@
 click
+colorama
 configparser>=3.5.0
 cryptography>=1.8.0
 dpath>=1.4.0

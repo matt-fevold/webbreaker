@@ -8,8 +8,8 @@ try:
     import urlparse as urlparse
 except ImportError:
     from urllib.parse import urlparse
-from webbreaker.webbreakerconfig import WebBreakerConfig
-from webbreaker.webbreakerlogger import Logger
+from webbreaker.common.webbreakerconfig import WebBreakerConfig
+from webbreaker.common.webbreakerlogger import Logger
 
 handle_scan_event = None
 reporter = WebBreakerConfig().create_reporter()

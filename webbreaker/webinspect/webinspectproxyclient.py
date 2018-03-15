@@ -4,8 +4,8 @@
 import random
 import string
 import webinspectapi.webinspect as webinspectapi
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.confighelper import Config
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.confighelper import Config
 
 
 class WebinspectProxyClient(object):

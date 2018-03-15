@@ -2,7 +2,7 @@ import pytest
 
 import mock
 
-from webbreaker.webinspectauth import WebInspectAuth
+from webbreaker.webinspect.webinspectauth import WebInspectAuth
 
 
 @pytest.fixture(params=[
@@ -33,8 +33,8 @@ def config_credentials(request):
 # want to test all paths that can be reached in the authenticate method.
 
 
-@mock.patch('webbreaker.webinspectauth.SecretClient')
-@mock.patch('webbreaker.webinspectauth.config')
+@mock.patch('webbreaker.webinspect.webinspectauth.SecretClient')
+@mock.patch('webbreaker.webinspect.webinspectauth.config')
 def test_auth_not_required_RAN_WITH_no_cli_input_RAN_WITH_cli_input_AND_creds_in_config(mock_config, mock_secret_client, cli_credentials):
     mock_config.return_value.get.return_value = 'false'  # auth not required
 
@@ -45,8 +45,8 @@ def test_auth_not_required_RAN_WITH_no_cli_input_RAN_WITH_cli_input_AND_creds_in
     # run 1 None, None :: run 2 cli_username, cli_password are passed in.
     assert auth_config.authenticate(cli_credentials[0], cli_credentials[1]) == (None, None)
 
-@mock.patch('webbreaker.webinspectauth.SecretClient')
-@mock.patch('webbreaker.webinspectauth.config')
+@mock.patch('webbreaker.webinspect.webinspectauth.SecretClient')
+@mock.patch('webbreaker.webinspect.webinspectauth.config')
 def test_auth_not_required_RAN_WITH_no_cli_input_RAN_WITH_cli_input_AND_no_creds_in_config(mock_config, mock_secret_client, cli_credentials):
     mock_config.return_value.get.return_value = 'false'  # auth not required
 
@@ -59,8 +59,8 @@ def test_auth_not_required_RAN_WITH_no_cli_input_RAN_WITH_cli_input_AND_no_creds
 
 
 # test auth required with cli supplied credentials with and without config file credentials
-@mock.patch('webbreaker.webinspectauth.SecretClient')
-@mock.patch('webbreaker.webinspectauth.config')
+@mock.patch('webbreaker.webinspect.webinspectauth.SecretClient')
+@mock.patch('webbreaker.webinspect.webinspectauth.config')
 def test_auth_required_cli_passed_creds_RAN_WITH_no_creds_in_config_RAN_WITH_creds_in_config(mock_config, mock_secret_client, config_credentials):
     # auth required
     mock_config.get.return_value = "true"
@@ -73,8 +73,8 @@ def test_auth_required_cli_passed_creds_RAN_WITH_no_creds_in_config_RAN_WITH_cre
 
 # have to break this next one into two tests since without values in config we prompt the user for input which
 #   requires special handling.
-@mock.patch('webbreaker.webinspectauth.SecretClient')
-@mock.patch('webbreaker.webinspectauth.config')
+@mock.patch('webbreaker.webinspect.webinspectauth.SecretClient')
+@mock.patch('webbreaker.webinspect.webinspectauth.config')
 def test_auth_required_creds_not_in_config_no_cli_creds_RAN_WITH_creds_in_config(mock_config, mock_secret_client):
     mock_config.get.return_value = "true" # auth required
 
@@ -87,9 +87,9 @@ def test_auth_required_creds_not_in_config_no_cli_creds_RAN_WITH_creds_in_config
 
 
 # test the click stuff
-@mock.patch('webbreaker.webinspectauth.auth_prompt')
-@mock.patch('webbreaker.webinspectauth.SecretClient')
-@mock.patch('webbreaker.webinspectauth.config')
+@mock.patch('webbreaker.webinspect.webinspectauth.auth_prompt')
+@mock.patch('webbreaker.webinspect.webinspectauth.SecretClient')
+@mock.patch('webbreaker.webinspect.webinspectauth.config')
 def test_auth_required_creds_not_in_config_no_cli_creds_RAN_WITH_no_creds_in_config(mock_config, mock_secret_client, mock_prompt):
     mock_config.get.return_value = "true"  # auth required
 
@@ -105,7 +105,7 @@ def test_auth_required_creds_not_in_config_no_cli_creds_RAN_WITH_no_creds_in_con
     assert auth_config.authenticate(None, None) == ("prompt_username","prompt_password")
 
 
-@mock.patch('webbreaker.webinspectauth.config')
+@mock.patch('webbreaker.webinspect.webinspectauth.config')
 def test__check_if_authenticate_required_true_false(mock_config, true_false):
     # auth required in config or not (returns 'true' then 'false')
     mock_config.get.return_value = true_false[0]
@@ -117,7 +117,7 @@ def test__check_if_authenticate_required_true_false(mock_config, true_false):
 
 # TODO finish this test
 #   was having issues raising an error with side_effects.
-@mock.patch('webbreaker.webinspectauth.config')
+@mock.patch('webbreaker.webinspect.webinspectauth.config')
 def test__check_if_authenticate_required_exception_handling(mock_config):
     pass
 

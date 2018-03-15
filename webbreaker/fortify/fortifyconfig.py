@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-from webbreaker.webbreakerlogger import Logger
+from webbreaker.common.webbreakerlogger import Logger
 from subprocess import CalledProcessError
-from webbreaker.secretclient import SecretClient
-from webbreaker.confighelper import Config
+from webbreaker.common.secretclient import SecretClient
+from webbreaker.common.confighelper import Config
 
 try:
     import ConfigParser as configparser

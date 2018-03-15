@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from webbreaker.webbreakerlogger import Logger
+from webbreaker.common.webbreakerlogger import Logger
 
 
 json_scan_settings = {

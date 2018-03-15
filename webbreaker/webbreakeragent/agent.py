@@ -9,7 +9,7 @@ import json
 import socket
 from __init__ import __version__
 from webbreaker.notifiers.emailer import EmailNotifier
-from webbreaker.fortifyconfig import FortifyConfig
+from webbreaker.fortify.fortifyconfig import FortifyConfig
 from fortifyapi.fortify import FortifyApi
 
 

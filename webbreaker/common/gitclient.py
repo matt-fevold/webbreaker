@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from webbreaker.gitapi.git import GitApi
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.confighelper import Config
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.confighelper import Config
 import requests
 import requests.exceptions
 import requests.packages.urllib3

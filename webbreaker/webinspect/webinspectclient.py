@@ -6,12 +6,12 @@ import ntpath
 import requests
 import urllib3
 from webinspectapi.webinspect import WebInspectApi
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.webinspectconfig import WebInspectConfig
-from webbreaker.webinspectjitscheduler import WebInspectJitScheduler
-import webbreaker.webinspectjson as webinspectjson
-from webbreaker.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webbreaker.webinspect.webinspectconfig import WebInspectConfig
+from webbreaker.webinspect.webinspectjitscheduler import WebInspectJitScheduler
+import webbreaker.webinspect.webinspectjson as webinspectjson
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 import sys
 from exitstatus import ExitStatus
 

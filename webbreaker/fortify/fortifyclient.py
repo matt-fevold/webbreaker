@@ -3,8 +3,8 @@
 
 import os
 import socket
-from webbreaker.webbreakerhelper import WebBreakerHelper
-from webbreaker.webbreakerlogger import Logger
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webbreaker.common.webbreakerlogger import Logger
 from fortifyapi.fortify import FortifyApi
 
 

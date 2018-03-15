@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import smtplib
-import os
 from webbreaker.notifiers.notifier import Notifier
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.confighelper import Config
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.confighelper import Config
 from subprocess import CalledProcessError
 
 try:

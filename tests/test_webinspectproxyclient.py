@@ -5,7 +5,7 @@ import re
 from testfixtures import LogCapture
 from mock import mock_open
 
-from webbreaker.webinspectproxyclient import WebinspectProxyClient
+from webbreaker.webinspect.webinspectproxyclient import WebinspectProxyClient
 from webinspectapi.webinspect import WebInspectResponse
 
 try:
@@ -79,7 +79,7 @@ def test_config_init_variables_all_set():
 
 
 @mock.patch('webinspectapi.webinspect.WebInspectApi')
-@mock.patch('webbreaker.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
 def test_get_cert_proxy_success(open_mock, api_mock):
     api_mock.return_value = ClassHelper(True)
 
@@ -102,7 +102,7 @@ def test_get_cert_proxy_failure(api_mock, caplog):
 
 
 @mock.patch('webinspectapi.webinspect.WebInspectApi')
-@mock.patch('webbreaker.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
 def test_get_cert_proxy_exception_unbound(open_mock, api_mock, caplog):
     api_mock.return_value = ClassHelper(True)
 
@@ -203,7 +203,7 @@ def test_list_proxy_failure(api_mock, caplog):
 
 
 @mock.patch('webinspectapi.webinspect.WebInspectApi')
-@mock.patch('webbreaker.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
 def test_download_proxy_webmacro_success(open_mock, api_mock, caplog):
     api_mock.return_value = ClassHelper(True)
 
@@ -220,7 +220,7 @@ def test_download_proxy_webmacro_success(open_mock, api_mock, caplog):
 
 
 @mock.patch('webinspectapi.webinspect.WebInspectApi')
-@mock.patch('webbreaker.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
 def test_download_proxy_setting_success(open_mock, api_mock, caplog):
     api_mock.return_value = ClassHelper(True)
 
@@ -237,7 +237,7 @@ def test_download_proxy_setting_success(open_mock, api_mock, caplog):
 
 
 @mock.patch('webinspectapi.webinspect.WebInspectApi')
-@mock.patch('webbreaker.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
 def test_download_proxy_no_file_type(open_mock, api_mock, caplog):
     api_mock.return_value = ClassHelper(True)
 
@@ -255,7 +255,7 @@ def test_download_proxy_no_file_type(open_mock, api_mock, caplog):
 
 
 @mock.patch('webinspectapi.webinspect.WebInspectApi')
-@mock.patch('webbreaker.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
 def test_download_proxy_failure(open_mock, api_mock, caplog):
     api_mock.return_value = ClassHelper(False)
 
@@ -272,7 +272,7 @@ def test_download_proxy_failure(open_mock, api_mock, caplog):
 
 
 @mock.patch('webinspectapi.webinspect.WebInspectApi')
-@mock.patch('webbreaker.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.webinspectproxyclient.open', new_callable=mock_open, read_data="data")
 def test_download_proxy_unbound_exception(open_mock, api_mock, caplog):
     api_mock.return_value = ClassHelper(True)
 

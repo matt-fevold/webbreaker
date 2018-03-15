@@ -4,10 +4,9 @@ from subprocess import CalledProcessError
 import os
 import sys
 import re
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.confighelper import Config
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.confighelper import Config
 from cryptography.fernet import Fernet
-from os.path import expanduser
 
 try:
     import ConfigParser as configparser

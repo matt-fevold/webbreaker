@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
-from webbreaker.webbreakerhelper import WebBreakerHelper
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
 
 try:
     import ConfigParser as configparser

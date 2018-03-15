@@ -4,8 +4,8 @@
 import os
 import json
 import webinspectapi.webinspect as webinspectapi
-from webbreaker.webbreakerlogger import Logger
-from webbreaker.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 import sys
 from exitstatus import ExitStatus
 
