@@ -8,11 +8,10 @@ try:
     import urlparse as urlparse
 except ImportError:
     from urllib.parse import urlparse
-from webbreaker.common.webbreakerconfig import WebBreakerConfig
+
 from webbreaker.common.webbreakerlogger import Logger
 
 handle_scan_event = None
-reporter = WebBreakerConfig().create_reporter()
 
 
 # Use a closure for events related to scan status changes
@@ -31,8 +30,6 @@ def create_scan_event_handler(webinspect_client, scan_id, webinspect_settings):
                 event['targets'] = webinspect_settings['webinspect_allowed_hosts']
             else:
                 event['targets'] = webinspect_settings['webinspect_scan_targets']
-
-            reporter.report(event)
 
             if external_termination:
                 webinspect_client.stop_scan(scan_id)

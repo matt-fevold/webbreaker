@@ -33,16 +33,13 @@ from webbreaker.fortify.fortifyconfig import FortifyConfig
 from webbreaker.webinspect.webinspectscanhelpers import create_scan_event_handler
 from webbreaker.webinspect.webinspectscanhelpers import scan_running
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
-from webbreaker.common.gitclient import GitClient, write_agent_info, read_agent_info, format_git_url
 from webbreaker.common.secretclient import SecretClient
 from webbreaker.threadfix.threadfixclient import ThreadFixClient
 from webbreaker.threadfix.threadfixconfig import ThreadFixConfig
 from webbreaker.webinspect.webinspectproxyclient import WebinspectProxyClient
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
-import re
 import sys
 from exitstatus import ExitStatus
-import subprocess
 
 logexceptionhelper = LogExceptionHelper()
 
@@ -54,7 +51,6 @@ except ImportError as e:  # module will fail if git is not installed
                      (Logger.app_logfile, e.message))
 
 handle_scan_event = None
-reporter = None
 
 
 class Config(object):
@@ -740,160 +736,12 @@ def upload(config, fortify_user, fortify_password, application, version, scan_na
         Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")
 
 
-@fortify.command(name='scan',
-                 short_help="Start Fortify scan",
-                 help=WebBreakerHelper().fortify_scan_desc())
-@click.option('--fortify_user',
-              required=False,
-              help="Specify Fortify username")
-@click.option('--fortify_password',
-              required=False,
-              help="Specify Fortify password")
-@click.option('--application',
-              required=False,
-              help="Assign Fortify app name"
-              )
-@click.option('--version',
-              required=True,
-              help="Assign Fortify app version"
-              )
-@click.option('--build_id',
-              required=True,
-              help="Assign Jenkins BuildID")
-@pass_config
-def fortify_scan(config, fortify_user, fortify_password, application, version, build_id):
-    fortify_config = FortifyConfig()
-    if application:
-        fortify_config.application_name = application
-
-    if not fortify_user or not fortify_password:
-        Logger.console.info("No Fortify username or password provided. Checking fortify.ini for secret")
-        if fortify_config.has_auth_creds():
-            Logger.console.info("Fortify credentials found in fortify.ini")
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           project_template=fortify_config.project_template,
-                                           application_name=fortify_config.application_name, scan_name=version,
-                                           fortify_username=fortify_config.username,
-                                           fortify_password=fortify_config.password)
-        else:
-            Logger.console.info("Fortify credentials not found in fortify.ini")
-            fortify_user, fortify_password = fortify_prompt()
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           project_template=fortify_config.project_template,
-                                           application_name=fortify_config.application_name,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password, scan_name=version)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            Logger.console.info("Fortify credentials stored")
-
-        pv_url = fortify_client.build_pv_url()
-
-        if pv_url and pv_url != -1:
-            write_agent_info('fortify_pv_url', pv_url)
-            write_agent_info('fortify_build_id', build_id)
-        else:
-            Logger.console.critical("Unable to complete command 'fortify scan'")
-
-    else:
-        fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                       project_template=fortify_config.project_template,
-                                       application_name=fortify_config.application_name,
-                                       fortify_username=fortify_user,
-                                       fortify_password=fortify_password, scan_name=version)
-        fortify_config.write_username(fortify_user)
-        fortify_config.write_password(fortify_password)
-        Logger.console.info("Fortify credentials stored")
-        pv_url = fortify_client.build_pv_url()
-        if pv_url and pv_url != -1:
-            write_agent_info('fortify_pv_url', pv_url)
-            write_agent_info('fortify_build_id', build_id)
-        else:
-            Logger.console.critical("Unable to complete command 'fortify scan'")
-
-
 @cli.group(short_help="Manage credentials & notifiers",
            help=WebBreakerHelper().admin_desc(),
            )
 @pass_config
 def admin(config):
     pass
-
-
-@admin.command(name='notifier',
-               short_help="Get contributors of git repo",
-               help=WebBreakerHelper().admin_notifier_desc()
-               )
-@click.option('--email',
-              is_flag=True,
-              help="Flag to specify email notifications")
-@click.option('--git_url',
-              required=True,
-              help="Specify Git URL")
-@pass_config
-def notifier(config, email, git_url):
-    try:
-        if not email:
-            Logger.console.info(
-                "'webbreaker admin notifier' currently only supports email notifications. Please use the '--email' flag")
-            return
-        else:
-            git_url = format_git_url(git_url)
-            if not git_url:
-                Logger.console.info("The git_url provided is invalid")
-                return
-            else:
-                parser = urlparse(git_url)
-                host = "{}://{}".format(parser.scheme, parser.netloc)
-                path = parser.path
-                r = re.search('\/(.*)\/', path)
-                owner = r.group(1)
-                r = re.search('\/.*\/(.*)', path)
-                repo = r.group(1)
-                git_client = GitClient(host=host)
-                emails = git_client.get_all_emails(owner, repo)
-
-                if emails:
-                    write_agent_info('git_emails', emails)
-                    write_agent_info('git_url', git_url)
-                else:
-                    Logger.console.info("Unable to complete command 'webbreaker admin notifier'")
-
-    except (AttributeError, UnboundLocalError) as e:
-        Logger.app.error("Unable to query git repo for email".format(e))
-
-
-@admin.command(name='agent',
-               short_help="Monitor scans and notify contributors",
-               help=WebBreakerHelper().admin_agent_desc()
-               )
-@click.option('--start',
-              required=False,
-              is_flag=True,
-              help="Flag that instructs WebBreaker to create an agent")
-@pass_config
-def agent(config, start):
-    if not start:
-        try:
-            agent_data = read_agent_info()
-            sys.stdout.write(str("Git URL: {}\n".format(agent_data['git_url'])))
-            sys.stdout.write(str("Contributer Emails: {}\n".format(", ".join(agent_data['git_emails']))))
-            sys.stdout.write(str("SSC URL: {}\n".format(agent_data['fortify_pv_url'])))
-            sys.stdout.write(str("Build ID: {}\n".format(agent_data['fortify_build_id'])))
-            # sys.stdout.write(str("Your agent.json file is complete...\n"))
-        except TypeError as e:
-            Logger.app.error("Unable to complete command 'admin': {}".format(e))
-            sys.stdout.write(str("Unable to complete read agent configurations!\n"))
-            return
-    else:
-        try:
-            # If any data is missing, verifier will output and exit
-            # verifier = AgentVerifier('webbreaker/etc/agent.json')
-            pid = subprocess.Popen(['python', 'webbreaker/webbreakeragent/agent.py', '.webbreaker/etc/agent.json'])
-            sys.stdout.write(str("WebBreaker agent started successfully.\n"))
-        except TypeError as e:
-            Logger.app.error("Unable to complete command 'admin agent': {}".format(e))
-        return
 
 
 @admin.command(name='credentials',

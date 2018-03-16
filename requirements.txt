@@ -10,6 +10,6 @@ httplib2
 ndg-httpsclient
 pyasn1
 pyOpenSSL
-requests
+requests>=2.18.4
 validators
 webinspectapi>=1.0.26

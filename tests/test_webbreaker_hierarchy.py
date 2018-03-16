@@ -43,9 +43,6 @@ def test_fortify_hierarchy(runner):
     result = runner.invoke(webbreaker, ['fortify', 'list', '--help'])
     assert result.exit_code == 0
 
-    result = runner.invoke(webbreaker, ['fortify', 'scan', '--help'])
-    assert result.exit_code == 0
-
     result = runner.invoke(webbreaker, ['fortify', 'upload', '--help'])
     assert result.exit_code == 0
 
@@ -54,17 +51,12 @@ def test_fortify_hierarchy(runner):
 
 
 def test_admin_hierarchy(runner):
-    result = runner.invoke(webbreaker, ['admin', 'agent', '--help'])
-    assert result.exit_code == 0
-
     result = runner.invoke(webbreaker, ['admin', 'credentials', '--help'])
-    assert result.exit_code == 0
-
-    result = runner.invoke(webbreaker, ['admin', 'notifier', '--help'])
     assert result.exit_code == 0
 
     result = runner.invoke(webbreaker, ['admin', 'secret', '--help'])
     assert result.exit_code == 0
+
 
 def test_threadfix_hierarchy(runner):
     result = runner.invoke(webbreaker, ['threadfix', 'teams', '--help'])

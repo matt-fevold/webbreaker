@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from webbreaker.notifiers import emailer
+
 from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.notifiers import reporter
 from webbreaker.common.confighelper import Config
 
 try:
@@ -32,11 +31,3 @@ class WebBreakerConfig(object):
             Logger.console.info("Your scan email notifier is not configured: {}".format(self.config))
 
         return emailer_dict
-
-    def create_reporter(self):
-        notifiers = []
-
-        emailer_settings = self.parse_emailer_settings()
-        notifiers.append(emailer.EmailNotifier(emailer_settings))
-
-        return reporter.Reporter(notifiers)
