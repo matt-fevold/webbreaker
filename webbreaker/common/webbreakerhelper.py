@@ -32,80 +32,78 @@ class WebBreakerHelper(object):
         return banner
 
     @classmethod
-    def webinspect_proxy_desc(cls):
-        return """
-
-        """
-    @classmethod
     def webbreaker_desc(cls):
-        return """
+        return ("""{0}
         WebBreaker is an open source Dynamic Application Security Test Orchestration (DASTO) client, enabling development teams
-        to release secure software with continuous delivery, visibility, and scalability..
-        """
+        to release secure software.
+        {1}""".format(Fore.RED,Style.RESET_ALL))
+
+    @classmethod
+    def webinspect_proxy_desc(cls):
+        return ("""
+        Instantiates a new WebInspect proxy on a server stated on the command line or declared in the config.ini.
+        Options include port, proxy name, and WebInspect server.\n
+        {0}
+        webbreaker webinspect proxy --proxy_name=important_wi_scan --port=9001
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def webinspect_desc(cls):
-        return """
+        return ("""{0}
         WebInspect is commercial software for Dynamic Application Security Testing (DAST) of Web applications
         and services.
-        """
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def webinspect_scan_desc(cls):
-        return """
+        return ("""
         Launch a WebInspect scan from the WebInspect RESTFul API with scan results downloaded locally in both XML
         and FPR formats.  For example:\n
-        \033[91m
+        {0}
         webbreaker webinspect scan --settings important_wi_site
-        \033[0m
-        """
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def webinspect_list_desc(cls):
-        return """
+        return ("""
         List WebInspect scans configured in the config.ini or from an explicit server option. All communication implies
-        https unless http is specified.
-        \033[91m
+        https unless http is specified.\n
+        {0}
         webbreaker webinspect list
-        \033[0m
-        """
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def webinspect_servers_desc(cls):
-        return """
+        return ("""
         List all configured WebInspect servers from the config.ini.  For Example:\n
-        \033[91m
+        {0}
         webbreaker webinspect servers
-        \033[0m
-        """
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def webinspect_download_desc(cls):
-        return """
+        return ("""
         Download or export a WebInspect scan file to the local file system from a WebInspect server or sensor.
         For example:\n
-        \033[91m
+        {0}
         webbreaker webinspect download --server https://webinspect.example.com:8083 --scan_name important_wi_scan
-        \033[0m
-        """
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def webinspect_proxy_start_desc(cls):
-        return """
+        return ("""
         Start a WebInspect proxy for creating a settings file and/or a workflow webmacro to scan a site.  For example:\n
-        \033[91m
+        {0}
         webbreaker webinspect proxy --start --port=9001 --proxy_name=example_site
-        \033[0m
-        """
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def webinspect_proxy_stop_desc(cls):
-        return """
+        return ("""
         Stop the WebInspect proxy and automatically pull the webmacro and setting file locally.  For example:\n
-        \033[91m
+        {0}
         webbreaker webinspect proxy --stop --proxy_name=example_site
-        \033[0m
-        """
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def fortify_desc(cls):
@@ -116,67 +114,43 @@ class WebBreakerHelper(object):
 
     @classmethod
     def fortify_download_desc(cls):
-        return """
+        return ("""
         Download a Fortify Sourceanalyzer (SCA) or WebInspect scan from a specified Project/Application Version.  All
         scan results are included in a .fpr file.  For example\n
-        \033[91m
+        {0}
         webbreaker fortify download --application WEBINSPECT --version important_site
-        \033[0m
+        {1}\n
         WARNING :: Do not specify fortify username and password using options unless you are willing to have
         your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
-        """
+        """.format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def fortify_list_desc(cls):
-        return """
+        return ("""
         Interactive Listing of all Fortify SSC Project/Application Versions. For example:\n
-        \033[91m
+        {0}
         webbreaker fortify list
-        \033[0m
+        {1}\n
         WARNING :: Do not specify fortify username and & password using options unless you are willing to have
         your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
-        """
-
-    @classmethod
-    def fortify_scan_desc(cls):
-        return """
-        Retrieve Fortify SSC Application Version URL and Jenkins $BUILD_ID in agent.json. If application
-        is not provided, the default SSC Application/Project is declared in the config.ini under application_name.
-
-        WARNING :: Do not specify fortify username and & password using options unless you are willing to have
-        your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
-        """
+        """.format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def fortify_upload_desc(cls):
-        return """
+        return ("""
         Upload a WebInspect .fpr scan to an explicit Fortify SSC Application/Project Version with '--version'
         For example:\n
-        \033[91m
+        {0}
         webbreaker fortify upload --scan_name example_com-abc --application WEBINSPECT --version important_site
-        \033[0m
+        {1}
         WARNING :: Do not specify fortify username and & password using options unless you are willing to have
         your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
-        """
+        """.format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def admin_desc(cls):
         return """
         WebBreaker administrative commands for managing Fortify SSC, ThreadFix, and WebInspect credentials.
-        """
-
-    @classmethod
-    def admin_notifier_desc(cls):
-        return """
-        Retrieve and store emails from a specified Github repo.  An OAuth Github token is typically required for this action
-        under the config.ini
-        """
-
-    @classmethod
-    def admin_agent_desc(cls):
-        return """
-        Poll the Fortify SSC Cloudscan API endpoint from a Fortify Sourceanalyzer Build ID and email the Github repo's
-        contributors upon scan completion.
         """
 
     @classmethod

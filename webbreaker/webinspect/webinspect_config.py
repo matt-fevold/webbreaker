@@ -287,7 +287,6 @@ class WebInspectConfig(object):
         Logger.app.debug("Completed webinspect settings parse")
         return webinspect_dict
 
-    # TODO: Move to the WebbreakerConfig class
     def fetch_webinspect_configs(self, options):
         config_helper = Config()
         etc_dir = config_helper.etc

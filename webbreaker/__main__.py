@@ -24,20 +24,23 @@ from colorama import Style
 import click
 from webbreaker import __version__ as version
 from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.webinspect.webinspectconfig import WebInspectConfig
-from webbreaker.webinspect.webinspectauth import WebInspectAuth, auth_prompt
-from webbreaker.webinspect.webinspectclient import WebinspectClient
-from webbreaker.webinspect.webinspectqueryclient import WebinspectQueryClient
-from webbreaker.fortify.fortifyclient import FortifyClient
+from webbreaker.webinspect.authentication import WebInspectAuth, auth_prompt
 from webbreaker.fortify.fortifyconfig import FortifyConfig
-from webbreaker.webinspect.webinspectscanhelpers import create_scan_event_handler
-from webbreaker.webinspect.webinspectscanhelpers import scan_running
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.secretclient import SecretClient
 from webbreaker.threadfix.threadfixclient import ThreadFixClient
 from webbreaker.threadfix.threadfixconfig import ThreadFixConfig
-from webbreaker.webinspect.webinspectproxyclient import WebinspectProxyClient
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
+
+from webbreaker.webinspect.proxy import WebInspectProxy
+from webbreaker.webinspect.scan import WebInspectScan
+from webbreaker.webinspect.list_scans import WebInspectListScans
+from webbreaker.webinspect.download import WebInspectDownload
+
+from webbreaker.webinspect.list_servers import WebInspectListServers
+from webbreaker.fortify.fortify import Fortify
+import re
+
 import sys
 from exitstatus import ExitStatus
 
@@ -67,15 +70,13 @@ def fortify_prompt():
     return fortify_user, fortify_password
 
 
-
 @click.group(help=WebBreakerHelper().webbreaker_desc())
-@pass_config
-def cli(config):
+def cli():
     # Show something pretty to start
     webbreaker_ascii = WebBreakerHelper.ascii_motd()
     b = WebBreakerHelper.banner(text=(webbreaker_ascii))
 
-    sys.stdout.write(str("{0}\nVersion {1}\n".format(b, version)))
+    sys.stdout.write(str("{0}{1}\nVersion {2}{3}\n".format(Fore.RED, b, version,Style.RESET_ALL)))
     sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
     SecretClient().verify_secret()
 
@@ -83,8 +84,7 @@ def cli(config):
 @cli.group(short_help="Interaction with Webinspect API",
            help=WebBreakerHelper().webinspect_desc(),
            )
-@pass_config
-def webinspect(config):
+def webinspect():
     pass
 
 
@@ -152,182 +152,32 @@ def webinspect(config):
               required=False,
               multiple=True,
               help="Assign workflow macro(s)")
-
-@pass_config
-def scan(config, **kwargs):
-    try:
-        # Setup our configuration...
-        webinspect_config = WebInspectConfig()
-        Logger.app.debug("Webinspect Config: {}".format(webinspect_config))
-
-        ops = kwargs.copy()
-
-        username = ops['username']
-        password = ops['password']
-
-        auth_config = WebInspectAuth()
-        username, password = auth_config.authenticate(username, password)
-
-        # Convert multiple args from tuples to lists
-        ops['allowed_hosts'] = list(kwargs['allowed_hosts'])
-        ops['start_urls'] = list(kwargs['start_urls'])
-        ops['workflow_macros'] = list(kwargs['workflow_macros'])
-
-        # ...as well as pulling down webinspect server config files from github...
-        webinspect_config.fetch_webinspect_configs(ops)
-
-        # ...and settings...
-        webinspect_settings = webinspect_config.parse_webinspect_options(ops)
-
-        # OK, we're ready to actually do something now
-
-        # The webinspect client is our point of interaction with the webinspect server farm
-        webinspect_client = WebinspectClient(webinspect_settings, username=username, password=password)
-
-        # if a scan policy has been specified, we need to make sure we can find/use it
-        webinspect_client.verify_scan_policy(webinspect_config)
-
-        # Upload whatever configurations have been provided...
-        # All skipped unless explicitly declared in CLI
-        if webinspect_client.webinspect_upload_settings:
-            webinspect_client.upload_settings()
-
-        if webinspect_client.webinspect_upload_webmacros:
-            webinspect_client.upload_webmacros()
-
-        # if there was a provided scan policy, we've already uploaded so don't bother doing it again. hack.
-        if webinspect_client.webinspect_upload_policy and not webinspect_client.scan_policy:
-            webinspect_client.upload_policy()
-
-        Logger.app.info("Launching a scan")
-        # ... And launch a scan.
-
-        try:
-            scan_id = webinspect_client.create_scan()
-            Logger.app.debug("Scan ID: {}".format(scan_id))
-
-            if scan_id:
-                # Initialize handle_scan_event first then go to webinspectscanhelpers
-
-                global handle_scan_event
-                Logger.app.debug("handle_scan_event: {}".format(handle_scan_event))
-                handle_scan_event = create_scan_event_handler(webinspect_client, scan_id, webinspect_settings)
-                handle_scan_event('scan_start')
-                Logger.app.debug("Starting scan handling")
-                Logger.app.info("Execution is waiting on scan status change")
-                with scan_running():
-                    webinspect_client.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
-                status = webinspect_client.get_scan_status(scan_id)
-                Logger.app.info("Scan status has changed to {0}.".format(status))
-
-                if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
-                    Logger.app.error(
-                        "See the WebInspect server scan log --> {}, typically the application to be scanned is "
-                        "unavailable.".format(WebInspectConfig().endpoints))
-                    Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
-                    handle_scan_event('scan_end')
-                    sys.exit(ExitStatus.failure)
-
-            webinspect_client.export_scan_results(scan_id, 'fpr')
-            webinspect_client.export_scan_results(scan_id, 'xml')
-            # TODO add json export
-
-        except (
-        requests.exceptions.ConnectionError, requests.exceptions.HTTPError, NameError, KeyError, IndexError) as e:
-            Logger.app.error(
-                # "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-                "WebInspect scan was not properly configured, unable to launch!! see also: {}".format(e))
-            raise
-
-        # If we've made it this far, our new credentials are valid and should be saved
-        if username is not None and password is not None and not auth_config.has_auth_creds():
-            auth_config.write_credentials(username, password)
-
-        try:
-            handle_scan_event('scan_end')
-            Logger.app.info("Webbreaker WebInspect has completed.")
-
-        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
-                IndexError) as e:
-            Logger.app.error(
-                # "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-                "Webbreaker WebInspect scan was unable to complete! See also: {}".format(e))
-            raise
-
-    except:
-        Logger.app.error("WebBreaker exited due to an exception")
-
+def webinspect_scan(**kwargs):
+    WebInspectScan(kwargs.copy())
 
 
 @webinspect.command(name='list',
                     short_help="List WebInspect scans",
                     help=WebBreakerHelper().webinspect_list_desc())
 @click.option('--scan_name',
-              required=False,
               help="Specify WebInspect scan name")
 @click.option('--server',
-              required=False,
               multiple=True,
               help="Specify WebInspect server URL(S)")
 @click.option('--username',
-              required=False,
               help="Specify WebInspect username")
 @click.option('--password',
-              required=False,
               help="Specify WebInspect password")
-@pass_config
-def webinspect_list(config, server, scan_name, username, password):
-    if len(server):
-        servers = []
-        for s in server:
-            servers.append(s)
-    else:
-        servers = [(e[0]) for e in WebInspectConfig().endpoints]
 
-    auth_config = WebInspectAuth()
-    username, password = auth_config.authenticate(username, password)
-
-    for server in servers:
-        query_client = WebinspectQueryClient(host=server, username=username,
-                                             password=password)
-        if scan_name:
-            results = query_client.get_scan_by_name(scan_name)
-            if results and len(results):
-                print("Scans matching the name {} found on {}".format(scan_name, server))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for match in results:
-                    print("{0:80} {1:40} {2:10}".format(match['Name'], match['ID'], match['Status']))
-            else:
-                Logger.app.error("No scans matching the name {} were found on {}".format(scan_name, server))
-
-        else:
-            results = query_client.list_scans()
-            if results and len(results):
-                print("Scans found on {}".format(server))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for scan in results:
-                    print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
-            else:
-                print("No scans found on {}".format(server))
-        print('\n\n\n')
-    # If we've made it this far, our new credentials are valid and should be saved
-    if username is not None and password is not None and not auth_config.has_auth_creds():
-        auth_config.write_credentials(username, password)
+def webinspect_list_scans(scan_name, server, username, password):
+    WebInspectListScans(scan_name, server, username, password)
 
 
 @webinspect.command(name='servers',
                     short_help="List all WebInspect servers",
                     help=WebBreakerHelper().webinspect_servers_desc())
-@pass_config
-def servers_list(config):
-    servers = [(e[0]) for e in WebInspectConfig().endpoints]
-    print('\n\nFound WebInspect Servers')
-    print('-' * 30)
-    for server in servers:
-        print(server)
-    print('\n')
+def webinspect_list_servers():
+    WebInspectListServers()
 
 
 @webinspect.command(name='download',
@@ -352,48 +202,8 @@ def servers_list(config):
 @click.option('--password',
               required=False,
               help="Specify WebInspect password")
-@pass_config
-def download(config, server, scan_name, scan_id, x, username, password):
-
-    try:
-        auth_config = WebInspectAuth()
-        username, password = auth_config.authenticate(username, password)
-
-        query_client = WebinspectQueryClient(host=server, username=username, password=password)
-
-        if not scan_id:
-            results = query_client.get_scan_by_name(scan_name)
-            if len(results) == 0:
-                Logger.app.error("No scans matching the name {} where found on this host".format(scan_name))
-            elif len(results) == 1:
-                scan_id = results[0]['ID']
-                Logger.app.info("Scan matching the name {} found.".format(scan_name))
-                Logger.app.info("Downloading scan {}".format(scan_name))
-                query_client.export_scan_results(scan_id, scan_name, x)
-            else:
-                Logger.app.info("Multiple scans matching the name {} found.".format(scan_name))
-                print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                for result in results:
-                    print("{0:80} {1:40} {2:10}".format(result['Name'], result['ID'], result['Status']))
-        else:
-            if query_client.get_scan_status(scan_id):
-                query_client.export_scan_results(scan_id, scan_name, x)
-
-            else:
-                if query_client.get_scan_status(scan_id):
-                    query_client.export_scan_results(scan_id, scan_name, x)
-                else:
-                    Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
-
-    except (UnboundLocalError, TypeError, UnboundLocalError) as e:
-        # except (ValueError, UnboundLocalError, TypeError, NameError) as e:
-        logexceptionhelper.LogErrorWebInspectDownload(e)
-
-    # If we've made it this far, our new credentials are valid and should be saved
-    if username is not None and password is not None and not auth_config.has_auth_creds():
-        auth_config.write_credentials(username, password)
-
+def webinspect_download_scan(server, scan_name, scan_id, x, username, password):
+    WebInspectDownload(server, scan_name, scan_id, x, username, password)
 
 
 @webinspect.command(name='proxy',
@@ -441,104 +251,16 @@ def download(config, server, scan_name, scan_id, x, username, password):
 @click.option('--password',
               required=False,
               help="Specify WebInspect password")
-def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username, password):
-    try:
-        if server:
-            servers = [server]
-        else:
-            servers = [(e[0]) for e in WebInspectConfig().endpoints]
-
-        auth_config = WebInspectAuth()
-        username, password = auth_config.authenticate(username, password)
-
-        if list:
-            for server in servers:
-                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-                results = proxy_client.list_proxy()
-                if results and len(results):
-                    print("Proxies found on {}".format(proxy_client.host))
-                    print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
-                    print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
-                    for match in results:
-                        print("{0:80} {1:40} {2:10}".format(match['instanceId'], match['address'], match['port']))
-                    Logger.app.info("Succesfully listed proxies from: '{}'".format(server))
-                else:
-                    Logger.app.error("No proxies found on '{}'".format(server))
-
-        elif start:
-            server = servers[0]
-            proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-            proxy_client.get_cert_proxy()
-            result = proxy_client.start_proxy()
-
-            if result and len(result):
-                Logger.app.info("Proxy successfully started")
-                print("Server\t\t:\t'{}'".format(server))
-                print("Instance ID\t:\t{}".format(result['instanceId']))
-                print("Address\t\t:\t{}".format(result['address']))
-                print("Port\t\t:\t{}".format(result['port']))
-            else:
-                Logger.app.error("Unable to start proxy on '{}'".format(server))
-                sys.exit(ExitStatus.failure)
-        elif not proxy_name:
-            Logger.app.error("Please enter a proxy name.")
-            sys.exit(ExitStatus.failure)
-
-        elif stop:
-            for server in servers:
-
-                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-                result = proxy_client.get_proxy()
-                if result:
-                    proxy_client.download_proxy(webmacro=False, setting=True)
-                    proxy_client.download_proxy(webmacro=True, setting=False)
-                    proxy_client.delete_proxy()
-                    sys.exit(ExitStatus.success)
-                else:
-                    Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-                    sys.exit(ExitStatus.failure)
-
-        elif download:
-            for server in servers:
-                server = 'https://' + server
-                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-                result = proxy_client.get_proxy()
-                if result:
-                    proxy_client.download_proxy(webmacro, setting)
-                    sys.exit(ExitStatus.success)
-                else:
-                    Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-                    sys.exit(ExitStatus.failure)
-
-        elif upload:
-            for server in servers:
-                server = 'https://' + server
-                proxy_client = WebinspectProxyClient(proxy_name, port, server, username=username, password=password)
-                result = proxy_client.get_proxy()
-                if result:
-                    proxy_client.upload_proxy(upload)
-                    sys.exit(ExitStatus.success)
-                else:
-                    Logger.app.error("Proxy: '{}' not found on any server.".format(proxy_name))
-                    sys.exit(ExitStatus.failure)
-        else:
-            Logger.app.error("Error: No proxy command was given.")
-            sys.exit(ExitStatus.failure)
-
-        # If we've made it this far, our new credentials are valid and should be saved
-        if username is not None and password is not None and not auth_config.has_auth_creds():
-            auth_config.write_credentials(username, password)
-
-    except (UnboundLocalError, EnvironmentError) as e:
-        Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
-        sys.exit(ExitStatus.failure)
+def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username,
+                     password):
+    WebInspectProxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username,
+                    password)
 
 
 @cli.group(short_help="Interaction with Fortify API",
            help=WebBreakerHelper().fortify_desc(),
            )
-@pass_config
-def fortify(config):
+def fortify():
     pass
 
 
@@ -555,45 +277,10 @@ def fortify(config):
               required=False,
               help="Specify Fortify app name"
               )
-@pass_config
-def fortify_list(config, fortify_user, fortify_password, application):
-    fortify_config = FortifyConfig()
-    try:
-        if fortify_user and fortify_password:
-            Logger.app.info("Importing Fortify credentials")
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            Logger.app.info("Fortify credentials stored")
-        else:
-            Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
-            if fortify_config.has_auth_creds():
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                               fortify_username=fortify_config.username,
-                                               fortify_password=fortify_config.password)
-                Logger.app.info("Fortify username and password successfully found in config.ini")
-            else:
-                Logger.app.info("Fortify credentials not found in config.ini")
-                fortify_user, fortify_password = fortify_prompt()
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                               fortify_username=fortify_user,
-                                               fortify_password=fortify_password)
-                fortify_config.write_username(fortify_user)
-                fortify_config.write_password(fortify_password)
-                Logger.app.info("Fortify credentials stored")
-        if application:
-            fortify_client.list_application_versions(application)
-        else:
-            fortify_client.list_versions()
-        Logger.app.info("Fortify list has successfully completed")
-    except ValueError:
-        Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
-        sys.exit(ExitStatus.failure)
-    except (AttributeError, UnboundLocalError, TypeError) as e:
-        Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
-        sys.exit(ExitStatus.failure)
+def fortify_list_application_versions(fortify_user, fortify_password, application):
+    # TODO
+    fortify = Fortify()
+    fortify.list(fortify_user, fortify_password, application)
 
 
 @fortify.command(name='download',
@@ -612,55 +299,10 @@ def fortify_list(config, fortify_user, fortify_password, application):
 @click.option('--version',
               required=True,
               help="Specify Fortify app version")
-@pass_config
-def fortify_download(config, fortify_user, fortify_password, application, version):
-    fortify_config = FortifyConfig()
-    if application:
-        fortify_config.application_name = application
-    try:
-        if fortify_user and fortify_password:
-            Logger.app.info("Importing Fortify credentials")
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           project_template=fortify_config.project_template,
-                                           application_name=fortify_config.application_name,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            Logger.app.info("Fortify credentials stored")
-        else:
-            Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
-            if fortify_config.has_auth_creds():
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                               project_template=fortify_config.project_template,
-                                               application_name=fortify_config.application_name,
-                                               fortify_username=fortify_config.username,
-                                               fortify_password=fortify_config.password)
-                Logger.app.info("Fortify username and password successfully found in config.ini")
-            else:
-                Logger.app.info("Fortify credentials not found in config.ini")
-                fortify_user, fortify_password = fortify_prompt()
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                               project_template=fortify_config.project_template,
-                                               application_name=fortify_config.application_name,
-                                               fortify_username=fortify_user,
-                                               fortify_password=fortify_password)
-                fortify_config.write_username(fortify_user)
-                fortify_config.write_password(fortify_password)
-                Logger.app.info("Fortify credentials stored")
-        version_id = fortify_client.find_version_id(version)
-        if version_id:
-            filename = fortify_client.download_scan(version_id)
-            if filename:
-                Logger.app.info("Scan file for version {} successfully written to {}".format(version_id, filename))
-            else:
-                Logger.app.error("Scan download for version {} has failed".format(version_id))
-        else:
-            Logger.app.error("No version matching {} found under {} in Fortify".format(version, application))
-    except ValueError:
-        Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
-    except (AttributeError, UnboundLocalError) as e:
-        Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
+def fortify_download_scan(fortify_user, fortify_password, application, version):
+    # TODO
+    fortify = Fortify()
+    fortify.download(fortify_user, fortify_password, application, version)
 
 
 @fortify.command(name='upload',
@@ -683,64 +325,16 @@ def fortify_download(config, fortify_user, fortify_password, application, versio
 @click.option('--scan_name',
               required=False,
               help="Specify name if file name is different than version")
-@pass_config
-def upload(config, fortify_user, fortify_password, application, version, scan_name):
-    fortify_config = FortifyConfig()
-    # Fortify only accepts fpr scan files
-    x = 'fpr'
-    if application:
-        fortify_config.application_name = application
-    if not scan_name:
-        scan_name = version
-    try:
-        if not fortify_user or not fortify_password:
-            Logger.console.info("No Fortify username or password provided. Validating config.ini for secret")
-            if fortify_config.has_auth_creds():
-                Logger.console.info("Fortify credentials found in config.ini")
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                               project_template=fortify_config.project_template,
-                                               application_name=fortify_config.application_name, scan_name=version,
-                                               extension=x, fortify_username=fortify_config.username,
-                                               fortify_password=fortify_config.password)
-            else:
-                Logger.console.info("Fortify credentials not found in config.ini")
-                fortify_user, fortify_password = fortify_prompt()
-                fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                               project_template=fortify_config.project_template,
-                                               application_name=fortify_config.application_name,
-                                               fortify_username=fortify_user,
-                                               fortify_password=fortify_password, scan_name=version,
-                                               extension=x)
-                fortify_config.write_username(fortify_user)
-                fortify_config.write_password(fortify_password)
-                Logger.console.info("Fortify credentials stored")
-        else:
-            fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
-                                           project_template=fortify_config.project_template,
-                                           application_name=fortify_config.application_name,
-                                           fortify_username=fortify_user,
-                                           fortify_password=fortify_password, scan_name=version, extension=x)
-            fortify_config.write_username(fortify_user)
-            fortify_config.write_password(fortify_password)
-            Logger.console.info("Fortify credentials stored")
-
-        reauth = fortify_client.upload_scan(file_name=scan_name)
-
-        if reauth == -2:
-            # The given application doesn't exist
-            Logger.console.critical("Fortify Application {} does not exist. Unable to upload scan.".format(application))
-
-    except (IOError, ValueError) as e:
-        Logger.console.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
-    except (UnboundLocalError):
-        Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")
+def fortify_upload_scan(fortify_user, fortify_password, application, version, scan_name):
+    # TODO
+    fortify = Fortify()
+    fortify.upload(fortify_user, fortify_password, application, version, scan_name)
 
 
 @cli.group(short_help="Manage credentials & notifiers",
            help=WebBreakerHelper().admin_desc(),
            )
-@pass_config
-def admin(config):
+def admin():
     pass
 
 
@@ -748,7 +342,6 @@ def admin(config):
                short_help="Create & update Fortify credentials",
                help=WebBreakerHelper().admin_credentials_desc()
                )
-@pass_config
 @click.option('--fortify',
               required=False,
               is_flag=True,
@@ -767,7 +360,7 @@ def admin(config):
 @click.option('--password',
               required=False,
               help="Specify username")
-def credentials(config, fortify, webinspect, clear, username, password):
+def admin_credentials(fortify, webinspect, clear, username, password):
     if fortify:
         fortify_config = FortifyConfig()
         if clear:
@@ -818,12 +411,11 @@ def credentials(config, fortify, webinspect, clear, username, password):
                short_help="Generate & update encryption key",
                help=WebBreakerHelper().admin_secret_desc()
                )
-@pass_config
 @click.option('-f', '--force',
               required=False,
               is_flag=True,
               help="Optional flag to prevent confirmation prompt")
-def secret(config, force):
+def admin_secret(force):
     secret_client = SecretClient()
     if secret_client.secret_exists():
         if not force:
@@ -842,8 +434,7 @@ def secret(config, force):
 @cli.group(short_help="Interaction with ThreadFix API",
            help=WebBreakerHelper().threadfix_desc()
            )
-@pass_config
-def threadfix(config):
+def threadfix():
     pass
 
 
@@ -851,8 +442,7 @@ def threadfix(config):
                    short_help="List all ThreadFix teams",
                    help=WebBreakerHelper().threadfix_team_desc()
                    )
-@pass_config
-def team(config):
+def threadfix_list_teams():
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     teams = threadfix_client.list_teams()
@@ -871,14 +461,13 @@ def team(config):
                    short_help="List team's ThreadFix applications",
                    help=WebBreakerHelper().threadfix_application_desc(),
                    )
-@pass_config
 @click.option('--team_id',
               required=False,
               help="ThreadFix team ID")
 @click.option('--team',
               required=False,
               help="ThreadFix team name")
-def application(config, team_id, team):
+def threadfix_list_applications(team_id, team):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     if not team_id and not team:
@@ -905,7 +494,6 @@ def application(config, team_id, team):
                    short_help="Create application in ThreadFix",
                    help=WebBreakerHelper().threadfix_create_desc()
                    )
-@pass_config
 @click.option('--team_id',
               required=False,
               help="Assign ThreadFix team ID")
@@ -919,7 +507,7 @@ def application(config, team_id, team):
               required=False,
               default=None,
               help="Assign an Option URL")
-def create(config, team_id, team, application, url):
+def threadfix_create_application(team_id, team, application, url):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     if not team_id and not team:
@@ -941,11 +529,10 @@ def create(config, team_id, team, application, url):
 @threadfix.command(name='scans',
                    short_help="List ThreadFix scans",
                    help=WebBreakerHelper().threadfix_scan_desc())
-@pass_config
 @click.option('--app_id',
               required=True,
               help="ThreadFix Application ID")
-def scan(config, app_id):
+def threadfix_list_scans(app_id):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     scans = threadfix_client.list_scans_by_app(app_id)
@@ -964,7 +551,6 @@ def scan(config, app_id):
                    short_help="Upload local scan to ThreadFix",
                    help=WebBreakerHelper().threadfix_upload_desc()
                    )
-@pass_config
 @click.option('--app_id',
               required=False,
               help="Assign ThreadFix Application ID")
@@ -974,7 +560,7 @@ def scan(config, app_id):
 @click.option('--scan_file',
               required=True,
               help="Assign file to upload")
-def threadfix_upload(config, app_id, application, scan_file):
+def threadfix_upload_scan(app_id, application, scan_file):
     if not app_id and not application:
         Logger.app.error("Please specify either an application or app_id!")
         return
@@ -1027,8 +613,7 @@ def threadfix_upload(config, app_id, application, scan_file):
               required=False,
               default=None,
               help="Specify application name to list")
-@pass_config
-def threadfix_list(config, team, application):
+def threadfix_list_applications(team, application):
     threadfix_config = ThreadFixConfig()
     threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
     applications = threadfix_client.list_all_apps(team, application)

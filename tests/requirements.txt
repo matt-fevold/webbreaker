@@ -1,6 +1,7 @@
 coverage
 detox
 mock
+pytest
 pytest-runner
 testfixtures
 tox

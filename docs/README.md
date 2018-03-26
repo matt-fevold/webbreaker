@@ -15,7 +15,7 @@
 - [Testing `testing`](#testing)
 - [Notifications `notifications`](#notifications)
 
-[Configurations](#configurations)
+[Configuration](#configuration)
 
 - [WebBreaker `webbreaker_config`](#webbreaker-config)
 - [Fortify `fortify_config`](#fortify-config)
@@ -23,35 +23,8 @@
 - [WebInspect `webinspect_config`](#webinspect-config)
 - [Email `email_config`](#email-config)
 
-[Verbose Cheatsheet: Webinspect `webinspect_cheatsheet`](#verbose-cheatsheet-webinspect)
+- [WebBreaker Command Usage `webbreaker_cheatsheet`](#webbreaker-cheatsheet)
 
-- [Scan: `webinspect_scan`](#webinspect-scan)
-- [Servers: `webinspect_servers`](#webinspect-servers)
-- [List: `webinspect_list`](#webinspect-list)
-- [Download: `webinspect_download`](#webinspect-download)
-
-[Verbose Cheatsheet: Fortify `fortify_cheatsheet`](#verbose-cheatsheet-fortify)
-
-- [List: `fortify_list`](#fortify-list)
-- [Download: `fortify_download`](#fortify_download)
-- [Upload: `fortify_upload`](#fortify-upload)
-- [Scan: `fortify_scan`](#fortify-scan)
-
-[Verbose Cheatsheet: ThreadFix `threadfix_cheatsheet`](#verbose-cheatsheet-threadfix)
-
-- [List: `threadfix_list`](#threadfix_list)
-- [Teams: `threadfix_teams`](#threadfix_teams)
-- [Applications: `threadfix_applications`](#threadfix_applications)
-- [Scans: `threadfix_scans`](#threadfix_scans)
-- [Upload: `threadfix_upload`](#threadfix_upload)
-- [Create App: `threadfix_create_app`](#threadfix_create_app)
-
-[Verbose Cheatsheet: Admin `admin_cheatsheet`](#verbose-cheatsheet-admin)
-
-- [Notifier: `admin_notifier`](#admin-notifier)
-- [agent: `admin_agent`](#admin-agent)
-- [Credentials: `admin_credentials`](#admin-credentials)
-- [Secret: `admin_secret`](#admin-secret)
 
 ## Introduction `introduction`
 
@@ -114,10 +87,8 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
         - scan
         - download
     - admin
-        - notifier
-        - agent
         - credentials
-        - secret
+        - clear
     - threadfix
         - list
         - teams
@@ -126,13 +97,10 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
         - upload
         - create_app
 
-A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|admin] [lower-level command] [OPTIONS]'
+A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'
 
 ### Logging `logging`
-WebBreaker may be implemented with Elastic Stack for log aggregation. Recommended compenents include 
-Filebeat agents installed on all WebInspect servers, forwarding to Logstash, and visualized in Kibana. General 
-implementation details are [here](https://qbox.io/blog/welcome-to-the-elk-stack-elasticsearch-logstash-kibana/).  
-A recommended approach is to tag log events and queries with ```WebInspect``` and ```webbreaker```, but remember 
+WebBreaker local logs may be found under `~/.webbreaker/logs` and can be implemented with Elastic Stack for log aggregation. Recommended compenents include Filebeat agents installed on all WebInspect servers, forwarding to Logstash, and visualized in Kibana. General implementation details are [here](https://qbox.io/blog/welcome-to-the-elk-stack-elasticsearch-logstash-kibana/).  A recommended approach is to tag log events and queries with ```WebInspect``` and ```webbreaker```, but remember 
 queries are case sensitive.
 
 ### Docker `docker`
@@ -180,23 +148,19 @@ python setup.py test
 ```
 
 ### Notifications
-WebBreaker provides notifications for start-scan and end-scan events. A simple publisher/subscriber 
-pattern is implemented under the ```webbreaker/notifiers```.  A Reporter object will hold a collection
-of Notifiers, each of which implements a Notify function responsible for creating the desired notification. 
-Currently, two notification types are implemented email and database.
+WebBreaker provides notifications or email for start-scan and end-scan events. 
 
 The email notifier merges the provided event data into an HTML email message and sends the message. All SMTP-related 
-settings are managed under your user's home directory within the .webbreaker/config.ini, and read during the webbreaker execution.
+settings are managed under your user's home directory within the `~.webbreaker/config.ini`, and read during the webbreaker execution.
 
 If an error occurs on behalf of the notifiers at any point during the process of creating or sending 
 notifications, the event will be logged, without any interruption of WebBreaker execution or the WebInspect scan.
 
-## Configurations
+## Configuration
 
-This is a compelte example of what will be generated under ~/.webbreaker/config.ini on the first WebBreaker execution
+Below is the default config.ini that is set at first time install, once you execute `webbreaker` for the first time.  All subsequent installs and updates will not update your `~/.webbreaker/config.ini` unless it is deleted.  You will need to modify the appropriate sections to your environment specifications.
 
-To import your own config file just replace your own 'config.ini' under ~/.webbreaker/config.ini
-### Example 
+### Default 
 ````
 [fortify]
 ssc_url = https://fortify.example.com
@@ -287,94 +251,76 @@ email_template =
         </html>
 ````
 
-### WebBreaker `webbreaker_config`
-Global settings for webbreaker.
-
-####[webbreaker_install]
-Directory where webbreaker is installed. The default is set to `.` to signify the current directory of webbreaker. 
-
-*Note:* This will be moved to [webbreaker] `install`
-
-####[git]
-Stores Git API auth token and url of a default WebBreaker Agent.
-
-*Note:* This will be moved to under [webbreaker]
-
-### ThreadFix `threadfix_config`
-#### Configuration `threadfix_config`
+### [threadFix]
 ##### host
 Threadfix host that will be used.
 
 ##### api_key
 This api_key to authenticate ThreadFix actions
 
-### Fortify `fortify_config`
-#### Configuration `fortify_config`
+### [fortify]
 Fortify SSC settings can be found under [fortify]
 
 ##### ssc_url
 URL of the fortify server to contact
 
 ##### project_template
-Static value
+Static value of the Fortify SSC Project Template you wish to set as a default for each Application Version you create.
 
 ##### application_name
-Static Value
+Static Value of the default Fortify SSC Application you wish to use without stating it on the command line.
 
-##### fortify_username
-Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use 
-`webbreaker admin credentials --fortify` to set your username & password.
-##### fortify_password
+##### username
 Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use 
 `webbreaker admin credentials --fortify` to set your username & password.
 
-### WebInspect `webinspect_config`
+##### password
+Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use 
+`webbreaker admin credentials --fortify` to set your username & password.
 
-#### Configuration `webinspect_config`
-WebInspect scan configuration files for `policies` are versioned and hosted from a GIT repository determined 
-in `webbreaker/etc/webinspect.ini`.  Additionally, all WebInspect policies and servers are managed from this 
-configuration file.  The section 
+### [webinspect]
 
-All WebInspect distributions are packaged with a `Default.xml` file that may be overridden and uploaded 
+WebInspect scan configuration files for `policies` are versioned and hosted from a GIT repository configured 
+in `~/.webbreaker/config.ini`.  Additionally, all WebInspect policies and servers are managed from this 
+configuration file.  
+
+All WebInspect distributions are packaged with a `Default.xml` setting file that may be overridden and uploaded 
 to the WebInspect deployment with the webbreaker option `--settings`.  The setting xml file contains 
-all possible options for your scan including, a WebInspect scan including policy, workflow and/or login 
+all possible options for your scan, including a WebInspect scan including policy, workflow and/or login 
 macro, scan depth, and allowed hosts.
 
+#### server_XX and endpoint_XX
+Provides a _Just-In-Time_ (JIT) scheduler provides the ability to load balance a WebInspect cluster for scans.
 
-####[webinspect_endpoints]
-Provides a _Just-In-Time_ (JIT) scheduler or the ability to load balance scans amongst a WebInspect cluster.
+#### webinspect_size
+Sets the number for large and small WebInspect scan servers. This assists with _Just-In-Time_ (JIT) scheduling
 
-Will be moving 'large' & 'medium' under [webinspect_size] in the future.
-
-####[webinspect_size]
-Sets the number for large and small WebInspect scan servers. This helps with _Just-In-Time_ (JIT) scheduling
-
-####[webinspect_default_size]
-Will be moved under [webinspect_size] in the future. 
-
-####[webinspect_repo]
+#### webinspect_repo
 A unique GIT repo is defined by the user and is mutually exclusive from the WebBreaker source.  The 
 assumption is each WebBreaker installation will have a unique GIT URL defined.  Upon each execution, 
 the repo refreshes *all* settings file(s), assuming that there may be newly created, deletions, or modifications 
 of settings files.  All settings files used in execution must reside in this respective repo 
-under `.webbreaker/etc/webinspect/settings`.
+under `~/.webbreaker/etc/webinspect/settings`.
 
-*Note:* dir will be deprecated
+#### username
+Basic authentication with `.htaccess` syntax configured on your WebInspect server
 
-####[webinspect_policies]
+If authentication is set to true, all WebInspect requests will use basic auth. A user will be prompted for
+credentials which, if valid, will be encrypted and saved. Credentials can also be set via the
+`webbreaker admin credentials --webinspect` command.
+
+#### password
+Basic authentication with `.htaccess` syntax configured on your WebInspect server
+
+### [webinspect_policy]
 Grouping of proprietary WebInspect tests to perform.  Tests or rules are represented in an `xml` element with 
 a `.policy` file extension.  Custom tests or Checks are mapped to a unique WebInspect ID.  The mapping for all 
-policies shipped with WebInspect are mapped with their respective GUID within the `[webinspect_policies]` section.
+policies shipped with WebInspect are mapped with their respective GUID within this section.
 
 *Note:* All custom polices are automatically uploaded to the targeted WebInspect server and must be referenced 
 as a GUID.  
 
-####[webinspect]
-If authentication is set to true, all WebInspect requests will use basic auth. A user will be prompted for
-credentials which, if valid, will be encrypted and saved. Credentials can also be set via the
-'webbreaker admin credentials --webinspect' command.
-
-### Email `email_config`
+### email
 Notifications for start-scan and end-scan events. A simple publisher/subscriber pattern is implemented under 
 the "notifiers" folder.
 
@@ -384,387 +330,5 @@ for creating the desired notification. Currently, two notification types are imp
 The email notifier merges the provided event data into an HTML email message and sends the message. All 
 SMTP-related settings are stored in .emailrc, and read during program startup.
 
-## Verbose Cheatsheet: Webinspect `webinspect_cheatsheet`
-### WebInspect Scan `webinspect_scan`
-##### Options
-
-##### Commands
-Launch a scan using the settings file important_site_auth.xml (WebBreaker assumes the .xml extension)
-```
-webbreaker webinspect scan --settings important_site_auth
-```
-
-Launch a scan using the settings file important_site_auth.xml (WebBreaker assumes the .xml extension) with the allowed hosts important-site.com and m.important-site.com
-**Note: The start_urls, allowed_hosts, and workflow_macros options can all be used multiple times in this format**
-```
-webbreaker webinspect scan --settings important_site_auth --allowed_hosts important-site.com --allowed_hosts m.important-site.com
-```
-
-Launch a scan using a settings file found by absolute path instead of one downloaded from the webinspect.ini repo
-```
-webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth
-```
-#### WebInspect Scan Options
-##### Options
-
-##### Commands
-
-Specify name of scan --scan_name ${BUILD_TAG}
-```--scan_name```
-
-Specify name of settings file, without the .xml extension. WebBreaker will  by default try to locate this file in in the repo found in .config. If your file is not in the repo, you may instead pass an absolute path to the file
-```--settings```
-
-Size of scanner required. Valid values if provided are 'medium' or 'large'
-```--size```
-
-Overrides the setting scan mode value.  Acceptable values are crawl, scan, or all.
-```--scan_mode```
-
-Overrides the scope value.  Acceptable values are all, strict, children, and ancestors.
-```--scan_scope```
-
-Overrides existing or adds a recorded login sequence to authenticate to the targeted application
-```--login_macro```
-
-Assign either custom or built-in WebInspect policies, for example AggressiveSQLInjection, AllChecks, ApacheStruts, Application, Assault, CriticalsAndHighs, CrossSiteScripting, Development, Mobile, NoSQLAndNode.js OpenSSLHeartbleed, OWASPTop10ApplicationSecurityRisks2013, OWASPTop10ApplicationSecurityRisks2007 OWASPTop10ApplicationSecurityRisks2010, PassiveScan, Platform, PrivilegeEscalation, QA, Quick, Safe, SOAP, SQLInjection, Standard and TransportLayerSecurity
-```--scan_policy```
-
-Type of scan to be performed list-driven or workflow-driven scan. Acceptable values are `url` or `macro`
-```--scan_start```
-
-Enter a single url or multiple each with it's own --start_urls. For example --start_urls http://test.example.com --start_urls http://test2.example.com
-```--start_urls```
-
---upload_settings, upload setting file to the webinspect host, settings are hosted under webbreaker/etc/webinspect/settings, all settings files end with an .xml extension, the xml extension is not needed and shouldn't be included.
-```--upload_settings```
-
---upload_policy xss, upload policy file to the webinspect scanner policies are hosted under webbreaker/etc/webinspect/policies, all policy files end with a .policy extension, the policy extension is not needed and shouldn't be included.
-```--upload_policy```
-
---upload_webmacro to the webinspect scanner macros are hosted under webbreaker/etc/webinspect/webmacros, all webmacro files end with the .webmacro extension, the extension should NOT be included.
-```--upload_webmacros```
-
---fortify_user authenticates the Fortify SSC user for uploading WebInspect `.fpr` formatted scan
-```--fortify_user```
-
-Include the hosts to scan without the protocol or scheme http:// or https://, either a single host or multiple hosts each with it's own --allowed_hosts. If --allowed_hosts is not provided, all hosts explicitly stated within the option, --start_urls will be used.  Keep in mind, if this option is used you must re-enter your host as provided in --start_urls
-```--allowed_hosts```
-
---workflow_macros are located under webbreaker/etc/webinspect/webmacros. Overrides the login macro. Acceptable values are login .webmacros files available on the WebInspect scanner to be used.
-```--workflow_macros```
-
-
-### WebInspect Servers `webinspect_servers`
-##### Options
-
-##### Commands
-List all servers found in webbreaker/etc/webinspect.ini
-```
-webbreaker webinspect servers
-```
-
-#### WebInspect List `webinspect_list`
-##### Options
-
-##### Commands
-List all scans (scan name, scan id, and scan status) found on the server webinspect-server-1.example.com:8083
-```
-webbreaker webinspect list --server webinspect-server-1.example.com:8083
-```
-
-List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 whose scan name matches the query 'important_site'
-```
-webbreaker webinspect list --server webinspect-server-1.example.com:8083 --scan_name important_site
-```
-
-List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 and webinspect-server-2.example.com:8083
-```
-webbreaker webinspect list --server webinspect-server-1.example.com:8083 --server webinspect-server-2.example.com:8083
-```
-
-List all scans (scan name, scan id, and scan status) found on the servers webinspect-server-1.example.com:8083 and webinspect-server-2.example.com:8083 whose scan name matches the query 'important_site'
-```
-webbreaker webinspect list --server webinspect-server-1.example.com:8083 --server webinspect-server-2.example.com:8083 --scan_name important_site
-```
-
-List all scans (scan name, scan id, and scan status) found on all servers listed in webbreaker/etc/webinspect.ini
-```
-webbreaker webinspect list
-```
-
-List all scans (scan name, scan id, and scan status) containing the query 'important_site' found on all servers listed in webbreaker/etc/webinspect.ini
-```
-webbreaker webinspect list --scan_name important_site
-```
-
-List all scans (scan name, scan id, and scan status) found on the server webinspect-server-1.example.com:8083. Interaction with server will use http instead of https.
-```
-webbreaker webinspect list --server webinspect-server-1.example.com:8083 --protocol http
-```
-#### WebInspect Downlaod `webinspect_download`
-##### Options
-
-##### Commands
-For these examples, assume the server has scans with names important_site_auth, important_site_api, important_site_internal
-
-Download the results from the important_site_auth scan found on webinspect-server-2.example.com:8083 as an fpr file
-```
-webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site_auth
-```
-
-Because multiple scan names on webinspect-server-2.example.com:8083 match 'important_site', this command will list them in output and no files will be downloaded
-```
-webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site
-```
-
-Download the results of scan 'important_site_auth' from webinspect-server-2.example.com:8083 in xml format
-```
-webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site_auth -x xml
-```
-
-Download WebInspect scan by ID. Scan will be downloaded as important_site_auth.fpr (This is helpful when multiple scans have the same_name):
-```
-webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --scan_id my_important_scans_id
-```
-
-Download the results from the important_site_auth scan found on webinspect-server-2.example.com:8083 as an fpr file. All interaction with webinspect-server-2.example.com:8083 will use http instead of https
-```
-webbreaker webinspect download --server webinspect-server-2.example.com:8083 --scan_name important_site_auth --protocol http
-```
-
-## Verbose Cheatsheet: Fortify `fortify_cheatsheet`
-#### Fortify List `fortify_list`
-##### Options
-
-##### Commands
-
-List all versions found on Fortify (using the url listed in fortify.ini). Authentication to Fortify will use the username and password I have stored as environment variables.
-```
-webbreaker fortify list --fortify_user $FORT_USER --fortify_password $FORT_PASS
-```
-
-List all versions found on Fortify (using the url listed in fortify.ini). User will be prompted for their username and password to authenticate to Fortify.
-**Note: When username/password authentication is successful, Fortify will provide a token that is valid for 24 hours. WebBreaker encryptes this token and stores it in fortify.ini. As long as you have a valid token, you will not be prompted for your username and password.**
-```
-webbreaker fortify list
-```
-
-List all versions found on Fortify (using the url listed in fortify.ini) that belong to the application 'webinspect'
-**Note: Fortify applications are also sometimes refered to as projects**
-```
-webbreaker fortify list --application webinspect
-```
-
-#### Fortify Download `fortify_download`
-##### Options
-
-##### Commands
-Download lastest .fpr scan from Fortify SSC with application/project & version name
-```
-webbreaker fortify download --application my_other_app --version important_site_auth
-```
-
-Download lastest .fpr scan from Fortify SSC with application/project from fortify.ini & version name
-```
-webbreaker fortify download --version important_site_auth
-```
-
-Download lastest .fpr scan from Fortify SSC with application/project & version name and command-line authentication
-```
-webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version important_site_auth
-```
-
-#### Fortify Upload `fortify_upload`
-##### Options
-
-##### Commands
-Upload the file important_site_auth.fpr to the important_site_auth version on Fortify (using the url listed in fortify.ini). User will be prompted for their username and password to authenticate to Fortify.
-**Note: When username/password authentication is successful, Fortify will provide a token that is valid for 24 hours. WebBreaker encryptes this token and stores it in fortify.ini. As long as you have a valid token, you will not be prompted for your username and password.**
-```
-webbreaker fortify upload --version important_site_auth
-```
-
-Upload the file important_site_auth.fpr to the important_site_auth version on Fortify (using the url listed in fortify.ini). Authentication to Fortify will use the username and password I have stored as environment variables.
-```
-webbreaker fortify upload --fortify_user $FORT_USER --fortify_password $FORT_PASS --version important_site_auth
-```
-
-Upload the file important_site_auth.fpr to the important_site_auth version under the application my_other_app on Fortify. If --application is not provided, WebBreaker will use the application name found in fortify.ini
-```
-webbreaker fortify upload --application my_other_app --version important_site_auth
-```
-
-Upload the file auth_scan.fpr to the important_site_auth version on Fortify
-```
-webbreaker fortify upload --version important_site_auth --scan_name auth_scan
-```
-
-#### Fortify Scan `fortify_scan`
-##### Options
-
-##### Commands
-Retrieve and store Fortify Version url and Jenkins BuildID in agent.json. If application is not provided, WebBreaker will use the application in fortify.ini. User will be prompted for their username and password to authenticate to Fortify
-```
-webbreaker fortify scan --version important_site_auth --build_id my_latest_build
-```
-
-Retrieve and store Fortify Version url and Jenkins BuildID in agent.json with Fortify Application override. User will be prompted for their username and password to authenticate to Fortify
-```
-webbreaker fortify scan --application my_other_app --version important_site_auth --build_id my_latest_build
-```
-
-Retrieve and store Fortify Version url and Jenkins BuildID with command-line authentication. Authentication to Fortify will use the username and password I have stored as environment variables
-```
-webbreaker fortify scan --version important_site_auth --build_id my_latest_build --fortify_user $FORT_USER --fortify_password $FORT_PASS
-```
-
-## Verbose Cheatsheet: ThreadFix `threadfix_cheatsheet`
-#### ThreadFix List `threadfix_list`
-##### Options
-
-##### Commands
-List all applications (ID, Team Name, Application Name) across all teams found in ThreadFix
-```
-webbreaker threadfix list
-```
-
-List all applications (ID, Team Name, Application Name) with names containing 'secret' across all teams with names containing 'Marketing'. Queries are not case sensitive.
-```
-webbreaker threadfix list --team Marketing --application secret
-```
-
-#### ThreadFix Teams `threadfix_teams`
-##### Options
-
-##### Commands
-List all teams (ID and Name) found in ThreadFix
-```
-webbreaker threadfix teams
-```
-
-#### ThreadFix Applications `threadfix_applications`
-##### Options
-
-##### Commands
-List all applications (ID and Name) found in ThreadFix that belong to the team with ID=123
-```
-webbreaker threadfix applications --team_id 123
-```
-
-List all applications (ID and Name) found in ThreadFix that belong to the Marketing team
-```
-webbreaker threadfix applications --team_name Marketing
-```
-
-#### ThreadFix Scans `threadfix_scans`
-##### Options
-
-##### Commands
-List all scans (ID Scanner, and Filename) found in ThreadFix that belong to the application with ID=345
-```
-webbreaker threadfix scans --app_id 345
-```
-
-#### ThreadFix Upload `threadfix_upload`
-##### Options
-
-##### Commands
-Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345
-```
-webbreaker threadfix upload --app_id 345 --scan_file my_app_scan.xml
-```
-
-Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App
-```
-webbreaker threadfix upload --app_name Marketing_App --scan_file my_app_scan.xml
-```
-
-#### ThreadFix Create App `threadfix_create_app`
-##### Options
-`  --start  Flag that instructs WebBreaker to create an agent`
-
-`  --help   Show this message and exit.`
-##### Commands
-Create a new application, with a given name and url, in ThreadFix under the team with ID=123
-```
-webbreaker threadfix create_app --team_id 123 --name new_marketing_app --url http://marketing.ourapp.com
-```
-
-Create a new application, with a given name and url, in ThreadFix under the Marketing team
-```
-webbreaker threadfix create_app --team_name Marketing --name new_marketing_app --url http://marketing.ourapp.com
-```
-
-## Verbose Cheatsheet: Admin `admin_cheatsheet`
-#### Admin Notifier `admin_notifier`
-##### Options
-`  --email         Flag to specify email notifications`
-  
-`  --git_url TEXT  Specify Git URL  [required]`
-  
-`  --help          Show this message and exit.`
-##### Commands
-Retrieve and store public emails of contributors to the webbreaker repo. Communication with the Git API requires a token stored in webbreaker.ini
-```
-webbreaker admin notifier --email --git_url https://github.com/target/webbreaker
-```
-
-#### Admin Agent `admin_agent`
-##### Options
-
-##### Commands
-View the current stored information for WebBreaker Agent based on most recent use of 'admin notifier' and 'fortify scan'
-```
-webbreaker admin agent
-```
-
-Create a WebBreaker Agent to monitor the Fortify Cloudscan specified in 'fortify scan'. On scan completion the agent will notify contributors found via 'admin notifiers':
-```
-webbreaker admin agent --start
-```
-
-#### Admin Credentials `admin_credentials`
-##### Options
-`  --fortify        Flag used to designate options as Fortify credentials`
-
-`  --webinspect     Flag used to designate options as WebInspect credentials`
-
-`  --clear          Flag to clear credentials of Fortify OR WebInspect`
-
-`  --username TEXT  Specify username`
-
-`  --password TEXT  Specify username`
-
-`  --help           Show this message and exit.`
-##### Commands
-Encrypt and store new Fortify credentials. User will be prompted for username and password. Credentials are validated before being stored.
-```
-webbreaker admin credentials --fortify
-```
-
-Encrypt and store new Fortify credentials passed as environment variables. Credentials are validated before being stored.
-```
-webbreaker admin credentials --fortify --username $FORT --password $FORT_PASS
-```
-
-Clear cuurent stored Fortify credentials.
-```
-webbreaker admin credentials --fortify --clear
-```
-
-#### Admin Secret `admin_secret`
-##### Options
-`-f, --force  Flag prevents confirmation prompt`
-
-##### Commands
-
-A new encryption key is created and all stored credentials are cleared. Through regular use you should not need to use this command. However, if WebBreaker is having troubles with encrypting credentials, this command will help it reset.
-```
-webbreaker admin secret
-```
-
-A new encryption key is created and all stored credentials are cleared. You will not be prompted to confirm this command.
-```
-webbreaker admin secret [-f / --force]
-```
+## WebBreaker Command Usage `webbreaker_cheatsheet`
+See [WebBreaker Cheatsheet](https://github.com/target/webbreaker/blob/feature-main-refactor/docs/cheatsheet.md)

@@ -24,8 +24,8 @@ def attr_error(test_var):
     raise AttributeError('Test Failure')
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_list_success(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
@@ -44,8 +44,8 @@ def test_fortify_list_success(client_mock, test_mock, runner, caplog):
     assert result.exit_code == 0
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_list_client_init_exeception(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
@@ -62,8 +62,8 @@ def test_fortify_list_client_init_exeception(client_mock, test_mock, runner, cap
     assert result.exit_code == 1
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_list_list_list_exeception(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
@@ -82,9 +82,9 @@ def test_fortify_list_list_list_exeception(client_mock, test_mock, runner, caplo
     assert result.exit_code == 1
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
-@mock.patch('webbreaker.__main__.fortify_prompt')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.auth_prompt')
 def test_fortify_list_prompt_success(prompt_mock, client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = False
     test_mock.has_auth_creds()
@@ -106,9 +106,9 @@ def test_fortify_list_prompt_success(prompt_mock, client_mock, test_mock, runner
     assert result.exit_code == 0
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
-@mock.patch('webbreaker.__main__.fortify_prompt')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.auth_prompt')
 def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = False
     test_mock.has_auth_creds()
@@ -127,9 +127,9 @@ def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runn
     assert result.exit_code == 1
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
-@mock.patch('webbreaker.__main__.fortify_prompt')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.auth_prompt')
 def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = False
     test_mock.has_auth_creds()
@@ -150,8 +150,8 @@ def test_fortify_list_prompt_exception(prompt_mock, client_mock, test_mock, runn
     assert result.exit_code == 1
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_list_application_exception(client_mock, test_mock, runner, caplog):
     test_mock.return_value.write_username.return_value = None
     test_mock.return_value.write_password.return_value = None
@@ -173,8 +173,8 @@ def test_fortify_list_application_exception(client_mock, test_mock, runner, capl
     assert result.exit_code == 0
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_list_application_success(client_mock, test_mock, runner, caplog):
     test_mock.return_value.write_username.return_value = None
     test_mock.return_value.write_password.return_value = None
@@ -196,8 +196,8 @@ def test_fortify_list_application_success(client_mock, test_mock, runner, caplog
     assert result.exit_code == 0
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_list_application_success(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
@@ -217,8 +217,8 @@ def test_fortify_list_application_success(client_mock, test_mock, runner, caplog
     assert result.exit_code == 0
 
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_list_application_exception(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
@@ -236,8 +236,8 @@ def test_fortify_list_application_exception(client_mock, test_mock, runner, capl
 
     assert result.exit_code == 1
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_download_success(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
@@ -257,8 +257,8 @@ def test_fortify_download_success(client_mock, test_mock, runner, caplog):
 
     assert result.exit_code == 0
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_download_failure(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()
@@ -278,8 +278,8 @@ def test_fortify_download_failure(client_mock, test_mock, runner, caplog):
 
     assert result.exit_code == 0
 
-@mock.patch('webbreaker.__main__.FortifyConfig')
-@mock.patch('webbreaker.__main__.FortifyClient')
+@mock.patch('webbreaker.fortify.fortify.FortifyConfig')
+@mock.patch('webbreaker.fortify.fortify.FortifyClient')
 def test_fortify_download_version_id_failure(client_mock, test_mock, runner, caplog):
     test_mock.return_value.has_auth_creds.return_value = True
     test_mock.has_auth_creds()

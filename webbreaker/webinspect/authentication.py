@@ -1,5 +1,4 @@
-
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from subprocess import CalledProcessError
@@ -10,7 +9,7 @@ from webbreaker.common.confighelper import Config
 from webbreaker.common.secretclient import SecretClient
 
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from click import prompt
+from webbreaker.common.authorization import auth_prompt
 
 try:
     import ConfigParser as configparser
@@ -25,28 +24,22 @@ runenv = WebBreakerHelper.check_run_env()
 logexceptionhelper = LogExceptionHelper()
 
 
-def auth_prompt(service_name):
-    username = prompt('{} user'.format(service_name))
-    password = prompt('{} password'.format(service_name), hide_input=True)
-    return username, password
-
-
 class WebInspectAuth(object):
     def __init__(self):
         Logger.app.debug("Starting webinspect auth config initialization")
 
-        self.require_authenticate = self._check_if_authenticate_required_()
+        self.require_authenticate = self._check_if_authenticate_required()
 
         if self.require_authenticate:
-            Logger.app.debug("Authenitcation is required by the config file")
+            Logger.app.debug("Authentication is required by the config file")
         else:
-            Logger.app.debug("Authenitcation is not required by the config file (or it couldn't read the config)")
+            Logger.app.debug("Authentication is not required by the config file (or it couldn't read the config)")
 
-        self.username, self.password = self._get_config_authentication_()
+        self.username, self.password = self._get_config_authentication()
 
         Logger.app.debug("Completed webinspect auth config initialization")
 
-    def _check_if_authenticate_required_(self):
+    def _check_if_authenticate_required(self):
         config_file = Config().config
         try:
             config.read(config_file)
@@ -57,7 +50,7 @@ class WebInspectAuth(object):
         except configparser.Error as e:
             Logger.app.error("Error reading {} {}".format(config_file, e))
 
-    def _get_config_authentication_(self):
+    def _get_config_authentication(self):
         secret_client = SecretClient()
 
         username = secret_client.get('webinspect', 'username')
