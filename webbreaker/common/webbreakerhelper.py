@@ -155,14 +155,14 @@ class WebBreakerHelper(object):
 
     @classmethod
     def admin_credentials_desc(cls):
-        return """
+        return ("""
         Interactive prompt to encrypt and store Fortify SSC credentials.  For example:\n
-        \033[91m
+        {0}
         webbreaker admin credentials --fortify or --webinspect
-        \033[0m
+        {1}
         WARNING :: Do not specify username and & password using options unless you are willing to have
         your credentials in your terminal history. An interactive prompt is recommended to store command line credentials!
-        """
+        """.format(Fore.RED, Style.RESET_ALL))
 
     @classmethod
     def admin_secret_desc(cls):
@@ -179,57 +179,57 @@ class WebBreakerHelper(object):
 
     @classmethod
     def threadfix_application_desc(cls):
-        return """
+        return ("""
         List all applications for a given ThreadFix team. Either team name OR team_id is required. For example:\n
-        \033[91m
+        {0}
         webbreaker threadfix list --team MARKETING
-        \033[0m
-        """
+        {1}
+        """.format(Fore.RED, Style.RESET_ALL))
     
     @classmethod
     def threadfix_create_desc(cls):
-        return """
+        return ("""
         Create a new application in ThreadFix. Use OPTIONS to specify application information.  For example:\n
-        \033[91m
+        {0}
         webbreaker threadfix create --team MARKETING --application new_marketing_app --url http://marketing.example.com
-        \033[0m
-        """
+        {1}
+        """.format(Fore.RED, Style.RESET_ALL))
 
     @classmethod
     def threadfix_list_desc(cls):
-        return """
+        return ("""
         List all applications across all teams. Use OPTIONS to specify either teams or applications to list.  For example:\n
-        \033[91m
+        {0}
         webbreaker threadfix list
-        \033[0m
-        """
+        {1}
+        """.format(Fore.RED, Style.RESET_ALL))
 
     @classmethod
     def threadfix_scan_desc(cls):
-        return """
+        return ("""
         List all application scans per ID, Scanner, and Filename in ThreadFix.  For example:\n
-        \033[91m
+        {0}
         webbreaker threadfix list --team Marketing --application MyApp
-        \033[0m
-        """
+        {1}
+        """.format(Fore.RED, Style.RESET_ALL))
 
     @classmethod
     def threadfix_team_desc(cls):
-        return """
+        return ("""
         List all team names with associated ThreadFix IDs.  For example:\n
-        \033[91m
+        {0}
         webbreaker threadfix list --team Marketing
-        \033[0m
-        """
+        {1}
+        """.format(Fore.RED, Style.RESET_ALL))
 
     @classmethod
     def threadfix_upload_desc(cls):
-        return """
+        return ("""
         Upload a scan from to a Team's Application in ThreadFix.  For example:\n
-        \033[91m
+        {0}
         webbreaker threadfix upload --application new_marketing_app --scan_file webinspect_scan.xml
-        \033[0m
-        """
+        {1}
+        """.format(Fore.RED, Style.RESET_ALL))
 
     @classmethod
     def email_template_config(cls):
