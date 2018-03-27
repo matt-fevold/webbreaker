@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title></title>
+
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/font-awesome.min.css">
+        <link rel="stylesheet" href="/css/highlight.dark.css">
+        <link rel="stylesheet" href="/css/main.css">
+    </head>
+    <body>
+
+        <header class="navbar navbar-default navbar-fixed-top">
+
+            <a class="navbar-brand" href="/">
+                The title
+                <small class="hidden-xs hidden-sm">
+                    This is the default subtitle!
+                </small>
+            </a>
+
+            
+        </header>
+
+        <main class="container">
+            <div class="row">
+
+                
+                <section id="content" class="col-sm-12">
+                    <h1 id="cheatsheet-of-webbreaker-commands">Cheatsheet of WebBreaker Commands</h1>
+<h2 id="webinspect-scan">WebInspect Scan</h2>
+<pre><code>Basic WebInspect scan:
+webbreaker webinspect scan --settings important_site_auth
+
+Basic WebInspect scan using command line auth credentials (only needed if authentication is enable in config.ini):
+webbreaker webinspect scan --settings important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
+
+WebInspect Scan with Scan overrides:
+webbreaker webinspect scan --settings important_site_auth --allowed_hosts example.com --allowed_hosts m.example.com
+
+Scan with absolute path to your local WebInspect settings:
+webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth</code></pre>
+<h2 id="webinspect-list">WebInspect List</h2>
+<pre><code># List all WebInspect servers configured in config.ini:
+webbreaker webinspect servers
+
+# List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com:
+webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083
+
+# List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com matching "important_site":
+webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083 --scan_name important_site
+
+# List all WebInspect scans on all servers:
+webbreaker webinspect list
+
+# List all WebInspect scans on all servers matching "important_site":
+webbreaker webinspect list --scan_name important_site
+
+# List all WebInspect scans on all servers using command line auth credentials:
+webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD</code></pre>
+<h2 id="webinspect-download">WebInspect Download</h2>
+<pre><code># Download WebInspect scan from server or sensor:
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth
+
+# Download WebInspect scan from server with credentials (only needed if authentication is enable in config.ini):
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
+
+# Download WebInspect scan as XML:
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth -x xml
+
+# Download WebInspect scan by ID:
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --scan_id my_important_scans_id   </code></pre>
+<h2 id="webinspect-proxy">WebInspect Proxy</h2>
+<pre><code># Start a WebInspect proxy called test-proxy on port 9001
+webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
+
+# List all the WebInspect proxies
+webbreaker webinspect proxy --list
+
+# Download the WebInspect proxy webmacro called test-proxy
+webbreaker webinspect proxy --download --webmacro --proxy_name test-proxy
+
+# Download the WebInspect proxy settings file called test-proxy
+webbreaker webinspect proxy --download --setting --proxy_name test-proxy
+
+# Upload a WebInspect webmacro proxy for a scan override called
+webbreaker webinspect proxy --upload test-proxy.webmacro --proxy_name test
+
+webbreaker webinspect proxy --stop --proxy_name test</code></pre>
+<h2 id="fortify-ssc">Fortify SSC</h2>
+<pre><code># List Fortify SSC Applications/Projects (NOTE: credentials need to be set from the admin commands)
+webbreaker fortify list
+
+# List Fortify SSC versions by application (case sensitive):
+webbreaker fortify list --application WEBINSPECT
+
+# Upload scan to Fortify SSC with command-line authentication (NOTE: Application or Project is taken from config.ini):
+webbreaker fortify upload --version important_site_auth --scan_name example_scan
+
+# Upload scan to Fortify SSC with application/project &amp; version name:
+webbreaker fortify upload --application my_other_app --version important_site_auth --scan_name auth_scan
+
+# Download lastest .fpr scan from Fortify SSC from a specific application/project &amp; version name:
+webbreaker fortify download --application my_other_app --version important_site_auth
+
+# Download lastest .fpr scan from Fortify SSC with application/project configured in config.ini:
+webbreaker fortify download --version important_site_auth
+
+# Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication:
+webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version important_site_auth</code></pre>
+<h2 id="threadfix">ThreadFix</h2>
+<pre><code># List all applications for all teams found in ThreadFix
+webbreaker threadfix list
+
+# List all applications with names containing 'secret' for all teams with names containing 'Marketing'
+webbreaker threadfix list --team Marketing --application MyApp
+
+# List all ThreadFix applications for the Marketing team
+webbreaker threadfix list --team Marketing
+
+# Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345
+webbreaker threadfix upload --application MyApp --scan_file my_app_scan.xml
+
+# Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App
+webbreaker threadfix upload --application Marketing_App --scan_file my_app_scan.xml
+
+# Create a new application, with a given name and url, in ThreadFix under the Marketing team
+webbreaker threadfix create --team Marketing --application new_marketing_app --url http://marketing.example.com</code></pre>
+<h2 id="webbreaker-administrative">WebBreaker Administrative</h2>
+<pre><code># Encrypt and store new Fortify SSC credentials. User will be prompted for username and password. 
+webbreaker admin credentials --fortify
+
+# Encrypt and store WebInspect credentials. User will be prompted for username and password. 
+webbreaker admin credentials --webinspect
+
+# Encrypt and store Fortify credentials as environment variables
+webbreaker admin credentials --fortify --username $FORT_USER --password $FORT_PASS
+
+Clear cuurent stored Fortify credentials.
+webbreaker admin credentials --fortify --clear</code></pre>
+                </section>
+
+            </div>
+        </main>
+
+        <footer>
+            <div class="container">
+                <p class="text-muted">
+                    website generated with <a href="http://couscous.io" title="Markdown website generator">Couscous</a>
+                </p>
+            </div>
+        </footer>
+
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//yastatic.net/highlightjs/8.2/highlight.min.js"></script>
+
+        <script>
+            $(function() {
+                $("section>h1").wrap('<div class="page-header" />');
+                // Syntax highlighting
+                hljs.initHighlightingOnLoad();
+            });
+        </script>
+
+    </body>
+</html>
