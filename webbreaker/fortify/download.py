@@ -11,9 +11,9 @@ from webbreaker.common.webbreakerlogger import Logger
 
 
 class FortifyDownload:
-    def __init__(self):
+    def __init__(self, username, password, application, version):
         self.config = FortifyConfig()
-        self.download()
+        self.download(username, password, application, version)
 
     def download(self, username, password, application, version):
         if application:

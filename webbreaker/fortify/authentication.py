@@ -39,7 +39,8 @@ class FortifyAuth:
         secret_client.set('fortify', 'username', username)
         secret_client.set('fortify', 'password', password)
 
-    def clear_redentials(self):
+    @staticmethod
+    def clear_credentials():
         secret_client = SecretClient()
         secret_client.clear_credentials('fortify', 'username', 'password')
 
