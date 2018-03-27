@@ -16,44 +16,44 @@ class Fortify:
     def _set_config_(self):
         self.config = FortifyConfig()
 
-    def list(self, fortify_user, fortify_password, application):
-        self.config = FortifyConfig()
-        try:
-            if fortify_user and fortify_password:
-                Logger.app.info("Importing Fortify credentials")
-                fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
-                                               fortify_username=fortify_user,
-                                               fortify_password=fortify_password)
-                self.config.write_username(fortify_user)
-                self.config.write_password(fortify_password)
-                Logger.app.info("Fortify credentials stored")
-            else:
-                Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
-                if self.config.has_auth_creds():
-                    fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
-                                                   fortify_username=self.config.username,
-                                                   fortify_password=self.config.password)
-                    Logger.app.info("Fortify username and password successfully found in config.ini")
-                else:
-                    Logger.app.info("Fortify credentials not found in config.ini")
-                    fortify_user, fortify_password = auth_prompt("Fortify")
-                    fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
-                                                   fortify_username=fortify_user,
-                                                   fortify_password=fortify_password)
-                    self.config.write_username(fortify_user)
-                    self.config.write_password(fortify_password)
-                    Logger.app.info("Fortify credentials stored")
-            if application:
-                fortify_client.list_application_versions(application)
-            else:
-                fortify_client.list_versions()
-            Logger.app.info("Fortify list has successfully completed")
-        except ValueError:
-            Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
-            sys.exit(ExitStatus.failure)
-        except (AttributeError, UnboundLocalError, TypeError) as e:
-            Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
-            sys.exit(ExitStatus.failure)
+    # def list(self, fortify_user, fortify_password, application):
+    #     self.config = FortifyConfig()
+    #     try:
+    #         if fortify_user and fortify_password:
+    #             Logger.app.info("Importing Fortify credentials")
+    #             fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
+    #                                            fortify_username=fortify_user,
+    #                                            fortify_password=fortify_password)
+    #             self.config.write_username(fortify_user)
+    #             self.config.write_password(fortify_password)
+    #             Logger.app.info("Fortify credentials stored")
+    #         else:
+    #             Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
+    #             if self.config.has_auth_creds():
+    #                 fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
+    #                                                fortify_username=self.config.username,
+    #                                                fortify_password=self.config.password)
+    #                 Logger.app.info("Fortify username and password successfully found in config.ini")
+    #             else:
+    #                 Logger.app.info("Fortify credentials not found in config.ini")
+    #                 fortify_user, fortify_password = auth_prompt("Fortify")
+    #                 fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
+    #                                                fortify_username=fortify_user,
+    #                                                fortify_password=fortify_password)
+    #                 self.config.write_username(fortify_user)
+    #                 self.config.write_password(fortify_password)
+    #                 Logger.app.info("Fortify credentials stored")
+    #         if application:
+    #             fortify_client.list_application_versions(application)
+    #         else:
+    #             fortify_client.list_versions()
+    #         Logger.app.info("Fortify list has successfully completed")
+    #     except ValueError:
+    #         Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
+    #         sys.exit(ExitStatus.failure)
+    #     except (AttributeError, UnboundLocalError, TypeError) as e:
+    #         Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
+    #         sys.exit(ExitStatus.failure)
 
     def download(self, fortify_user, fortify_password, application, version):
         fortify_config = FortifyConfig()
