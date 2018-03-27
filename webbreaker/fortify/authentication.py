@@ -15,12 +15,12 @@ class FortifyAuth:
 
     def authenticate(self, username, password):
 
-        config = FortifyConfig()
-
+        # creds passed from cli
         if username and password:
             Logger.app.info("Importing Fortify credentials")
             return username, password
         else:
+            # check config for creds
             Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
 
             if self.has_auth_creds():
@@ -28,6 +28,7 @@ class FortifyAuth:
                 return self.username, self.password
 
             else:
+                # ask user for creds
                 Logger.app.info("Fortify credentials not found in config.ini")
                 username, password = auth_prompt("Fortify")
 

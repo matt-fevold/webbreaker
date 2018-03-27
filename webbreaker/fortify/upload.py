@@ -16,7 +16,15 @@ class FortifyUpload:
         self.upload(username, password, application, version, scan_name)
 
     def upload(self, username, password, application, version, scan_name):
-
+        """
+        Upload WebInspect scan to Fortify
+        :param username:
+        :param password:
+        :param application:
+        :param version:
+        :param scan_name:
+        :return:
+        """
         fortify_auth = FortifyAuth()
         username, password = fortify_auth.authenticate(username, password)
 
