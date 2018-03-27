@@ -4,13 +4,12 @@
 __since__ = "2.1.6"
 # TODO Test
 
-from webbreaker.fortify.fortifyclient import FortifyClient
-from webbreaker.fortify.fortifyconfig import FortifyConfig
+from webbreaker.fortify.common.fortify_helper import FortifyClient
+from webbreaker.fortify.fortify_config import FortifyConfig
 from webbreaker.fortify.authentication import FortifyAuth
 from exitstatus import ExitStatus
 import sys
 from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.common.authorization import auth_prompt
 
 
 class FortifyListApplicationVersions:

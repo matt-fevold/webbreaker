@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from webbreaker.fortify.fortifyclient import FortifyClient
-from webbreaker.fortify.fortifyconfig import FortifyConfig
-from exitstatus import ExitStatus
-import sys
-from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.common.authorization import auth_prompt
+from webbreaker.fortify.fortify_config import FortifyConfig
 
 
 class Fortify:

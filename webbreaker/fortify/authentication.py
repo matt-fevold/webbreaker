@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from webbreaker.fortify.fortifyconfig import FortifyConfig
+from webbreaker.fortify.fortify_config import FortifyConfig
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.authorization import auth_prompt
 from webbreaker.common.secretclient import SecretClient
