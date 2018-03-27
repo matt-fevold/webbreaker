@@ -28,6 +28,7 @@ from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.authentication import WebInspectAuth, auth_prompt
 from webbreaker.fortify.fortifyconfig import FortifyConfig
 from webbreaker.fortify.list_application_versions import FortifyListApplicationVersions
+from webbreaker.fortify.download import FortifyDownload
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.secretclient import SecretClient
 from webbreaker.threadfix.threadfixclient import ThreadFixClient
@@ -300,8 +301,7 @@ def fortify_list_application_versions(fortify_user, fortify_password, applicatio
               help="Specify Fortify app version")
 def fortify_download_scan(fortify_user, fortify_password, application, version):
     # TODO
-    fortify = Fortify()
-    fortify.download(fortify_user, fortify_password, application, version)
+    FortifyDownload(fortify_user, fortify_password, application, version)
 
 
 @fortify.command(name='upload',

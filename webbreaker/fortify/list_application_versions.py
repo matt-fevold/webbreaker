@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 __since__ = "2.1.6"
-
+# TODO Test
 
 from webbreaker.fortify.fortifyclient import FortifyClient
 from webbreaker.fortify.fortifyconfig import FortifyConfig
@@ -15,12 +15,8 @@ from webbreaker.common.authorization import auth_prompt
 
 class FortifyListApplicationVersions:
     def __init__(self, username, password, application):
-        self.config = self._set_config()
+        self.config = FortifyConfig
         self.list(username, password, application)
-
-    @staticmethod
-    def _set_config():
-        return FortifyConfig()
 
     def list(self, username, password, application):
 
