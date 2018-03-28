@@ -14,6 +14,7 @@ from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.confighelper import Config
 
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.webinspect.common.webinspect_loghelper import WebInspect_LogExceptionHelper
 
 try:
     from git.exc import GitCommandError
@@ -33,6 +34,7 @@ except ImportError:  # Python3
 
 runenv = WebBreakerHelper.check_run_env()
 logexceptionhelper = LogExceptionHelper()
+webinspect_logexceptionhelper = WebInspect_LogExceptionHelper()
 
 
 class WebInspectEndpoint(object):
@@ -157,7 +159,7 @@ class WebInspectConfig(object):
                         options['scan_name'] = "webinspect" + "-" + "".join(
                             random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
                 except AttributeError as e:
-                    logexceptionhelper.LogScanError(options['scan_name'], e)
+                    webinspect_logexceptionhelper.LogScanError(options['scan_name'], e)
 
             if options['upload_settings']:
                 if os.path.isfile(options['upload_settings'] + '.xml'):
@@ -170,7 +172,7 @@ class WebInspectConfig(object):
                                                                        'settings',
                                                                        options['upload_settings'] + '.xml')
                     except (AttributeError, TypeError) as e:
-                        logexceptionhelper.LogSettingsError(options['upload_settings'], e)
+                        webinspect_logexceptionhelper.LogSettingsError(options['upload_settings'], e)
 
             else:
                 if os.path.isfile(options['settings'] + '.xml'):
@@ -222,7 +224,7 @@ class WebInspectConfig(object):
                     options['upload_webmacros'] = corrected_paths
 
                 except (AttributeError, TypeError) as e:
-                    logexceptionhelper.LogSettingsError(options['upload_webmacros'], e)
+                    webinspect_logexceptionhelper.LogSettingsError(options['upload_webmacros'], e)
 
             # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
             try:
@@ -245,7 +247,7 @@ class WebInspectConfig(object):
                     options['upload_policy'] = options['scan_policy']
 
             except TypeError as e:
-                logexceptionhelper.LogScanPolicyError(e)
+                webinspect_logexceptionhelper.LogScanPolicyError(e)
 
             # Determine the targets specified in a settings file
             try:
@@ -254,7 +256,7 @@ class WebInspectConfig(object):
                 else:
                     targets = None
             except NameError as e:
-                logexceptionhelper.LogNoSettingsFile(e)
+                webinspect_logexceptionhelper.LogNoSettingsFile(e)
 
             # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
             if not options['allowed_hosts']:
@@ -279,9 +281,9 @@ class WebInspectConfig(object):
                 webinspect_dict['fortify_user'] = options['fortify_user']
 
             except argparse.ArgumentError as e:
-                logexceptionhelper.LogErrorInOptions(e)
+                webinspect_logexceptionhelper.LogErrorInOptions(e)
         except (AttributeError, UnboundLocalError, KeyError):
-            logexceptionhelper.LogConfigurationIncorrect(Logger.app_logfile)
+            webinspect_logexceptionhelper.LogConfigurationIncorrect(Logger.app_logfile)
             raise
 
         Logger.app.debug("Completed webinspect settings parse")
@@ -310,13 +312,13 @@ class WebInspectConfig(object):
                 Logger.app.error(
                     "No GIT Repo was declared in your config.ini, therefore nothing will be cloned!")
         except (CalledProcessError, AttributeError) as e:
-            logexceptionhelper.LogWebInspectConfigIssue(e)
+            webinspect_logexceptionhelper.LogWebInspectConfigIssue(e)
             raise
         except GitCommandError as e:
-            logexceptionhelper.LogGitAccessError(self.webinspect_git, e)
+            webinspect_logexceptionhelper.LogGitAccessError(self.webinspect_git, e)
             raise Exception(logexceptionhelper.fetch_webinspect_configs)
         except IndexError as e:
-            logexceptionhelper.LogConfigFileUnavailable(e)
+            webinspect_logexceptionhelper.LogConfigFileUnavailable(e)
             raise Exception(logexceptionhelper.fetch_webinspect_configs)
 
         Logger.app.debug("Completed webinspect config fetch")

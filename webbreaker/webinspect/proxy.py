@@ -59,7 +59,6 @@ class WebInspectProxy:
                 server = servers[0]
                 self._get_proxy_certificate(server)
                 result = self._start_proxy(server)
-                print(result)
                 if result and len(result):
                     Logger.app.info("Proxy successfully started")
                     print("Server\t\t:\t'{}'".format(server))
@@ -73,7 +72,6 @@ class WebInspectProxy:
             elif list:
                 for server in servers:
                     results = self._list_proxy(server)
-                    print(results)
                     if results and len(results):
                         print("Proxies found on {}".format(server))
                         print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))

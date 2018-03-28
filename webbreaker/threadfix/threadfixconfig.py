@@ -4,6 +4,7 @@
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.confighelper import Config
 from subprocess import CalledProcessError
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 
 try:
     import ConfigParser as configparser
@@ -14,6 +15,7 @@ except ImportError:  # Python3
 
     config = configparser.ConfigParser()
 
+logexceptionhelper = LogExceptionHelper()
 
 class ThreadFixConfig(object):
     def __init__(self):
@@ -28,4 +30,5 @@ class ThreadFixConfig(object):
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
         except (configparser.Error) as e:
-            Logger.app.error("Error reading {} {}".format(config_file, e))
+            logexceptionhelper.LogErrorReading(config_file, e)
+            # Logger.app.error("Error reading {} {}".format(config_file, e))

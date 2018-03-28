@@ -6,7 +6,12 @@ from webbreaker.fortify.fortifyconfig import FortifyConfig
 from exitstatus import ExitStatus
 import sys
 from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.common.authorization import auth_prompt
+from webbreaker.common.auth import auth_prompt
+from webbreaker.common.logexceptionhelper import LogInfoHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+
+logexceptionhelper = LogExceptionHelper()
+loginfohelper = LogInfoHelper()
 
 
 class Fortify:
@@ -20,36 +25,40 @@ class Fortify:
         self.config = FortifyConfig()
         try:
             if fortify_user and fortify_password:
-                Logger.app.info("Importing Fortify credentials")
+                loginfohelper.LogInfoFortifyImportCredentials()
+
+                # Logger.app.info("Importing Fortify credentials")
                 fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                                fortify_username=fortify_user,
                                                fortify_password=fortify_password)
                 self.config.write_username(fortify_user)
                 self.config.write_password(fortify_password)
-                Logger.app.info("Fortify credentials stored")
+                loginfohelper.LogInfoFortifyCredentialStored()
             else:
-                Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
+                loginfohelper.LogInfoFortifyCheckConfig()
+
                 if self.config.has_auth_creds():
                     fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                                    fortify_username=self.config.username,
                                                    fortify_password=self.config.password)
-                    Logger.app.info("Fortify username and password successfully found in config.ini")
+                    loginfohelper.LogInfoFortifyCredentialsFound()
                 else:
-                    Logger.app.info("Fortify credentials not found in config.ini")
+                    loginfohelper.LogInfoFortifyCredentialNotFound()
                     fortify_user, fortify_password = auth_prompt("Fortify")
                     fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                                    fortify_username=fortify_user,
                                                    fortify_password=fortify_password)
                     self.config.write_username(fortify_user)
                     self.config.write_password(fortify_password)
-                    Logger.app.info("Fortify credentials stored")
+                    loginfohelper.LogInfoFortifyCredentialStored()
             if application:
                 fortify_client.list_application_versions(application)
             else:
                 fortify_client.list_versions()
-            Logger.app.info("Fortify list has successfully completed")
+            loginfohelper.LogInfoFortifyListSuccess()
         except ValueError:
-            Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
+            logexceptionhelper.LogErrorFortifyAPIToken()
+
             sys.exit(ExitStatus.failure)
         except (AttributeError, UnboundLocalError, TypeError) as e:
             Logger.app.critical("Unable to complete command 'fortify list': {}".format(e))
@@ -61,7 +70,7 @@ class Fortify:
             fortify_config.application_name = application
         try:
             if fortify_user and fortify_password:
-                Logger.app.info("Importing Fortify credentials")
+                loginfohelper.LogInfoFortifyImportCredentials()
                 fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                project_template=fortify_config.project_template,
                                                application_name=fortify_config.application_name,
@@ -69,18 +78,18 @@ class Fortify:
                                                fortify_password=fortify_password)
                 fortify_config.write_username(fortify_user)
                 fortify_config.write_password(fortify_password)
-                Logger.app.info("Fortify credentials stored")
+                loginfohelper.LogInfoFortifyCredentialStored()
             else:
-                Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
+                loginfohelper.LogInfoFortifyCheckConfig()
                 if fortify_config.has_auth_creds():
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    project_template=fortify_config.project_template,
                                                    application_name=fortify_config.application_name,
                                                    fortify_username=fortify_config.username,
                                                    fortify_password=fortify_config.password)
-                    Logger.app.info("Fortify username and password successfully found in config.ini")
+                    loginfohelper.LogInfoFortifyCredentialsFound()
                 else:
-                    Logger.app.info("Fortify credentials not found in config.ini")
+                    loginfohelper.LogInfoFortifyCredentialNotFound()
                     fortify_user, fortify_password = auth_prompt("Fortify")
                     fortify_client = FortifyClient(fortify_url=fortify_config.ssc_url,
                                                    project_template=fortify_config.project_template,
@@ -89,18 +98,18 @@ class Fortify:
                                                    fortify_password=fortify_password)
                     fortify_config.write_username(fortify_user)
                     fortify_config.write_password(fortify_password)
-                    Logger.app.info("Fortify credentials stored")
+                    loginfohelper.LogInfoFortifyCredentialStored()
             version_id = fortify_client.find_version_id(version)
             if version_id:
                 filename = fortify_client.download_scan(version_id)
                 if filename:
-                    Logger.app.info("Scan file for version {} successfully written to {}".format(version_id, filename))
+                    loginfohelper.LogInfoScanFileWrittenSuccess(version_id, filename)
                 else:
-                    Logger.app.error("Scan download for version {} has failed".format(version_id))
+                    logexceptionhelper.LogErrorScanDownloadVersionFail(version_id)
             else:
-                Logger.app.error("No version matching {} found under {} in Fortify".format(version, application))
+                logexceptionhelper.LogErrorNoVersionMatchFound(version, application)
         except ValueError:
-            Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
+            logexceptionhelper.LogErrorFortifyAPIToken()
         except (AttributeError, UnboundLocalError) as e:
             Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
 
@@ -117,14 +126,14 @@ class Fortify:
             if not fortify_user or not fortify_password:
                 Logger.console.info("No Fortify username or password provided. Validating config.ini for secret")
                 if self.config.has_auth_creds():
-                    Logger.console.info("Fortify credentials found in config.ini")
+                    # TODO check logging stuff
                     fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                                    project_template=self.config.project_template,
                                                    application_name=self.config.application_name, scan_name=version,
                                                    extension=x, fortify_username=self.config.username,
                                                    fortify_password=self.config.password)
                 else:
-                    Logger.console.info("Fortify credentials not found in config.ini")
+                    loginfohelper.LogInfoFortifyCredentialNotFound()
                     fortify_user, fortify_password = auth_prompt("Fortify")
                     fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                                    project_template=self.config.project_template,
@@ -134,7 +143,7 @@ class Fortify:
                                                    extension=x)
                     self.config.write_username(fortify_user)
                     self.config.write_password(fortify_password)
-                    Logger.console.info("Fortify credentials stored")
+                    loginfohelper.LogInfoFortifyCredentialStored()
             else:
                 fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                                project_template=self.config.project_template,
@@ -143,7 +152,7 @@ class Fortify:
                                                fortify_password=fortify_password, scan_name=version, extension=x)
                 self.config.write_username(fortify_user)
                 self.config.write_password(fortify_password)
-                Logger.console.info("Fortify credentials stored")
+                loginfohelper.LogInfoFortifyCredentialStored()
 
             reauth = fortify_client.upload_scan(file_name=scan_name)
 
@@ -155,5 +164,5 @@ class Fortify:
         except (IOError, ValueError) as e:
             Logger.console.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
         except (UnboundLocalError):
-            Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")
+            logexceptionhelper.LogErrorDuplicateFortifySSC()
 

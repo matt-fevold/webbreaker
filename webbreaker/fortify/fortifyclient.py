@@ -6,6 +6,9 @@ import socket
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
 from fortifyapi.fortify import FortifyApi
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+
+logexceptionhelper = LogExceptionHelper()
 
 
 class FortifyClient(object):
@@ -281,12 +284,14 @@ class FortifyClient(object):
             if not self.__get_project_id__(self.application_name):
                 version_id = self.__create_new_project_version__()
                 if not version_id:
-                    Logger.console.error("Unable to create new project version, see logs for details.")
+                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
+                    # Logger.console.error("Unable to create new project version, see logs for details.")
                     return None
             if not version_id:
                 version_id = self.__create_project_version__()
                 if not version_id:
-                    Logger.console.error("Unable to create new project version, see logs for details.")
+                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
+                    # Logger.console.error("Unable to create new project version, see logs for details.")
                     return None
             if self.ssc_server[-1] == '/':
                 self.ssc_server = self.ssc_server[:-1]

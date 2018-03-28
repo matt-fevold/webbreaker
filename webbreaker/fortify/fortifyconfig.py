@@ -4,6 +4,9 @@ from webbreaker.common.webbreakerlogger import Logger
 from subprocess import CalledProcessError
 from webbreaker.common.secretclient import SecretClient
 from webbreaker.common.confighelper import Config
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+
+logexceptionhelper = LogExceptionHelper()
 
 try:
     import ConfigParser as configparser
@@ -32,7 +35,8 @@ class FortifyConfig(object):
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
         except configparser.Error as e:
-            Logger.app.error("Error reading {} {}".format(config_file, e))
+            logexceptionhelper.LogErrorReading(config_file, e)
+            # Logger.app.error("Error reading {} {}".format(config_file, e))
 
     def clear_credentials(self):
         secret_client = SecretClient()
