@@ -31,7 +31,7 @@ class ClassHelper(object):
         self.success = success
         self.cert = '/test/cert/path'
         self.message = 'Test api message'
-        self.data = {'uri': '/webinspect/proxy/webinspect-K431H', 'port': 51158, 'address': '10.65.169.167',
+        self.data = {'uri': '/webinspect/proxy/webinspect-K431H', 'port': 51158, 'address': '10.10.100.100',
                      'instanceId': 'webinspect-K431H'}
 
     def get_endpoint(self):
@@ -85,7 +85,6 @@ def test_config_init_variables(auth_mock, api_mock, config_mock):
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._start_proxy')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._get_proxy_certificate')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectConfig')
-
 @mock.patch('webbreaker.webinspect.proxy.WebInspectAuth')
 def test_proxy_start_success(auth_mock, config_mock, get_proxy_cert_mock, start_proxy_mock):
 
