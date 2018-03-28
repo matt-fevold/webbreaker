@@ -8,6 +8,7 @@ from webbreaker.common.webbreakerlogger import Logger
 from fortifyapi.fortify import FortifyApi
 from webbreaker.common.api_response_helper import APIHelper
 
+
 class FortifyClient(object):
     def __init__(self, fortify_url, project_template=None, application_name=None, fortify_username=None,
                  fortify_password=None, scan_name=None, extension=None, token=None):
@@ -184,76 +185,58 @@ class FortifyClient(object):
     def upload_scan(self, file_name):
         try:
             file_name = self.trim_ext(file_name)
-            api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
+
             project_version_id = self.__get_project_version__()
             # If our project doesn't exist, exit upload_scan
             if project_version_id == -1:
                 return -1
             project_id = self.__get_project_id__(self.application_name)
+
             if not project_id:
                 project_version_id = self.__create_new_project_version__()
             if not project_version_id:
                 project_version_id = self.__create_project_version__()
             if project_version_id:
-                response = api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
-                                                    project_version_id=project_version_id)
+                response = self.api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
+                                                         project_version_id=project_version_id)
 
-            if response.success:
-                Logger.console.info(
-                    "Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name,
-                                                                                            self.extension,
-                                                                                            self.ssc_server))
-            elif not response.success and "401" in response.message:
-                return response.response_code
-            else:
-                Logger.app.error("Error uploading {0}.{1}!!!".format(self.fortify_version, self.extension))
+            APIHelper().check_for_response_errors(response)
+
+            Logger.console.info("Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name,
+                                                                                                        self.extension,
+                                                                                                        self.ssc_server))
 
         except UnboundLocalError as e:
             Logger.app.critical("Exception trying to create SSC project version: {}".format(e.message))
 
         return response
 
-    def list_projects(self):
-        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        response = api.get_projects()
-        if response.success:
-            Logger.console.info("{0:^5} {1:30}".format('ID', 'Name'))
-            Logger.console.info("{0:5} {1:30}".format('-' * 5, '-' * 30))
-            for proj in response.data['data']:
-                Logger.console.info("{0:^5} {1:30}".format(proj['id'], proj['name']))
-        return None
-
     def list_versions(self):
-        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        Logger.app.debug("API: {}".format(api))
-        response = api.get_all_project_versions()
-        if response.success:
-            Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
-            Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
-            for version in response.data['data']:
-                Logger.console.info(
-                    "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
-        elif not response.success and "401" in response.message:
-            return response.response_code
-        return None
+        response = self.api.get_all_project_versions()
+
+        APIHelper().check_for_response_errors(response)
+
+        Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
+        Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
+        for version in response.data['data']:
+            Logger.console.info(
+                "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
 
     def list_application_versions(self, application):
-        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        response = api.get_all_project_versions()
-        if response.success:
-            Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
-            Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
-            for version in response.data['data']:
-                if version['project']['name'] == application:
-                    Logger.console.info(
-                        "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
-        elif not response.success and "401" in response.message:
-            return response.response_code
-        return None
+        response = self.api.get_all_project_versions()
+
+        APIHelper().check_for_response_errors(response)
+
+        Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
+        Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
+        for version in response.data['data']:
+            if version['project']['name'] == application:
+                Logger.console.info(
+                    "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
 
     def find_version_id(self, version_name):
-        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        response = api.get_all_project_versions()
+        response = self.api.get_all_project_versions()
+
         if response.success:
             for version in response.data['data']:
                 if version['project']['name'] == self.application_name:
@@ -263,8 +246,8 @@ class FortifyClient(object):
         return False
 
     def download_scan(self, version_id):
-        api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
-        response, file_name = api.download_artifact_scan(version_id)
+        response, file_name = self.api.download_artifact_scan(version_id)
+
         if response.success:
             file_content = response.data
             with open(file_name, 'wb') as f:
@@ -299,14 +282,9 @@ class FortifyClient(object):
 
         return self.ssc_server + '/ssc/html/ssc/index.jsp#!/version/' + str(version_id)
 
-    def trim_ext(self, file, list=False):
+    @staticmethod
+    def trim_ext(file):
         try:
-            if list:
-                result = []
-                for f in file:
-                    result.append(os.path.splitext(os.path.basename(f))[0])
-                return result
-            else:
-                return os.path.splitext(os.path.basename(file))[0]
+            return os.path.splitext(os.path.basename(file))[0]
         except (TypeError, AttributeError):
             return file
