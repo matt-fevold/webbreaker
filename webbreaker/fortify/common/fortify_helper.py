@@ -162,7 +162,7 @@ class FortifyClient(object):
                             # we have a matching project version
                             Logger.app.debug("Found existing project version {0}".format(project_version['id']))
                             return project_version['id']
-                        
+
                 # Didn't find a matching project version, verify that our project exists
                 for project_version in response.data['data']:
                     if project_version['project']['name'] == self.application_name:
