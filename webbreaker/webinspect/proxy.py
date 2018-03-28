@@ -8,7 +8,7 @@ from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.confighelper import Config
 from exitstatus import ExitStatus
 import sys
-from webbreaker.webinspect.common.api_helper import APIHelper
+from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 
