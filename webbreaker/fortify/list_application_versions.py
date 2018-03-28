@@ -14,7 +14,7 @@ from webbreaker.common.webbreakerlogger import Logger
 
 class FortifyListApplicationVersions:
     def __init__(self, username, password, application):
-        self.config = FortifyConfig
+        self.config = FortifyConfig()
         self.list(username, password, application)
 
     def list(self, username, password, application):

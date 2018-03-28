@@ -21,6 +21,7 @@ class FortifyClient(object):
         self.extension = extension
         self.runenv = WebBreakerHelper.check_run_env()
         self.token = token
+
         if not token:
             self.token = self.get_token()
             self.api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
