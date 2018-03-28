@@ -82,12 +82,12 @@ def cli():
     webbreaker_ascii = WebBreakerHelper.ascii_motd()
     b = WebBreakerHelper.banner(text=(webbreaker_ascii))
 
-    sys.stdout.write(str("{0}{1}\nVersion {2}{3}\n".format(Fore.RED, b, version,Style.RESET_ALL)))
+    sys.stdout.write(str("{0}\nVersion {1}\n".format(b, version)))
     sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
     SecretClient().verify_secret()
 
 
-@cli.group(short_help="Interaction with Webinspect API",
+@cli.group(short_help="Interaction with Webinspect RESTFul API",
            help=WebBreakerHelper().webinspect_desc(),
            )
 def webinspect():
@@ -95,41 +95,31 @@ def webinspect():
 
 
 @webinspect.command(name='scan',
-                    short_help="Launch WebInspect scan",
+                    short_help="Launch a WebInspect scan",
                     help=WebBreakerHelper().webinspect_scan_desc()
                     )
 @click.option('--username',
-              required=False,
-              help="Specify WebInspect username")
+              help="Specify the username for your WebInspect Basic Authentication to the Sensor")
 @click.option('--password',
-              required=False,
-              help="Specify WebInspect password")
+              help="Specify the password for your WebInspect Basic Authentication to the Sensor")
 @click.option('--allowed_hosts',
-              required=False,
               multiple=True,
               help="Override host(s) from start_urls option")
 @click.option('--fortify_user',
-              required=False,
-              help="Auth Fortify user to upload WebInspect scan")
+              help="Authenticate Fortify user to upload WebInspect scan")
 @click.option('--login_macro',
-              required=False,
-              help="Assign login macro to auth app")
+              help="Assign an override for a login webmacro for application authentication")
 @click.option('--scan_name',
               type=str,
-              required=False,
-              help="Assign name of scan")
+              help="Assign a name for the WebInspect scan")
 @click.option('--scan_mode',
-              required=False,
               type=click.Choice(['crawl', 'scan', 'all']),
-              help="Override setting scan mode value")
+              help="Assign an override setting scan mode value")
 @click.option('--scan_policy',
-              required=False,
-              help="Assign WebInspect policies,")
+              help="Assign an override for a WebInspect policy,")
 @click.option('--scan_scope',
-              required=False,
-              help="Assign all, strict, children, OR ancestors")
+              help="Assign an override of either all, strict, children, OR ancestors")
 @click.option('--scan_start',
-              required=False,
               type=click.Choice(['url', 'macro']),
               help="Assign type of scan to be performed")
 @click.option('--settings',
@@ -138,24 +128,18 @@ def webinspect():
               required=True,
               help="Specify setting file")
 @click.option('--size',
-              required=False,
               type=click.Choice(['medium', 'large']),
               help="Specify scanner size")
 @click.option('--start_urls',
-              required=False,
               multiple=True,
               help="Assign starting url(s)")
 @click.option('--upload_policy',
-              required=False,
               help="Upload policy file to WebInspect")
 @click.option('--upload_settings',
-              required=False,
               help="Upload .xml settings file")
 @click.option('--upload_webmacros',
-              required=False,
               help="Upload webmacro to WebInspect")
 @click.option('--workflow_macros',
-              required=False,
               multiple=True,
               help="Assign workflow macro(s)")
 def webinspect_scan(**kwargs):
@@ -163,50 +147,46 @@ def webinspect_scan(**kwargs):
 
 
 @webinspect.command(name='list',
-                    short_help="List WebInspect scans",
+                    short_help="List current and past WebInspect scans",
                     help=WebBreakerHelper().webinspect_list_desc())
 @click.option('--scan_name',
-              help="Specify WebInspect scan name")
+              help="The WebInspect scan name")
 @click.option('--server',
               multiple=True,
-              help="Specify WebInspect server URL(S)")
+              help="Assign WebInspect server URL(S)")
 @click.option('--username',
-              help="Specify WebInspect username")
+              help="WebInspect Sensor username, if not configured in config.ini")
 @click.option('--password',
-              help="Specify WebInspect password")
+              help="WebInspect Sensor password, if not configured in config.ini")
 def webinspect_list_scans(scan_name, server, username, password):
     WebInspectListScans(scan_name, server, username, password)
 
 
 @webinspect.command(name='servers',
-                    short_help="List all WebInspect servers",
+                    short_help="List all WebInspect Sensors configured in config.ini",
                     help=WebBreakerHelper().webinspect_servers_desc())
 def webinspect_list_servers():
     WebInspectListServers()
 
 
 @webinspect.command(name='download',
-                    short_help="Download WebInspect scan",
+                    short_help="Download a WebInspect scan",
                     help=WebBreakerHelper().webinspect_download_desc())
 @click.option('--server',
               required=True,
-              help="Specify WebInspect server URL")
+              help="Specify WebInspect Sensor URL with port")
 @click.option('--scan_name',
               required=True,
               help="WebInspect scan name to download")
 @click.option('--scan_id',
-              required=False,
               help="WebInspect scan ID to download")
 @click.option('-x',
-              required=False,
               default="fpr",
-              help="Assign scan extension")
+              help="Assign scan extension, default is .fpr")
 @click.option('--username',
-              required=False,
-              help="Specify WebInspect username")
+              help="WebInspect Sensor username, if not configured in config.ini")
 @click.option('--password',
-              required=False,
-              help="Specify WebInspect password")
+              help="WebInspect Sensor password, if not configured in config.ini")
 def webinspect_download_scan(server, scan_name, scan_id, x, username, password):
     WebInspectDownload(server, scan_name, scan_id, x, username, password)
 
@@ -215,46 +195,34 @@ def webinspect_download_scan(server, scan_name, scan_id, x, username, password):
                     short_help="Interact with WebInspect proxy",
                     help=WebBreakerHelper().webinspect_proxy_desc())
 @click.option('--download',
-              required=False,
               is_flag=True,
               help="Flag to specify download")
 @click.option('--list',
-              required=False,
               is_flag=True,
               help="List WebInspect proxies currently available")
 @click.option('--port',
-              required=False,
               help="Assign WebInspect proxy port")
 @click.option('--proxy_name',
-              required=False,
               help="Assign WebInspect proxy ID")
 @click.option('--setting',
-              required=False,
               is_flag=True,
               help="Flag to download setting file from proxy_name")
 @click.option('--server',
-              required=False,
               help="Optional URL of specific WebInspect server(s)")
 @click.option('--start',
-              required=False,
               is_flag=True,
               help="Start a WebInspect proxy service")
 @click.option('--stop',
-              required=False,
               is_flag=True,
               help="Stop & delete a WebInspect proxy service")
 @click.option('--upload',
-              required=False,
               help="Webmacro file path to upload")
 @click.option('--webmacro',
-              required=False,
               is_flag=True,
               help="Flag to download webmacro file from proxy_name")
 @click.option('--username',
-              required=False,
               help="Specify WebInspect username")
 @click.option('--password',
-              required=False,
               help="Specify WebInspect password")
 def webinspect_proxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username,
                      password):
@@ -273,13 +241,10 @@ def fortify():
                  short_help="List Fortify application versions",
                  help=WebBreakerHelper().fortify_list_desc())
 @click.option('--fortify_user',
-              required=False,
-              help="Specify Fortify username")
+              help="Specify Fortify SSC username, if not configured in the config.ini")
 @click.option('--fortify_password',
-              required=False,
-              help="Specify Fortify password")
+              help="Specify Fortify SSC password, if not configured in the config.ini")
 @click.option('--application',
-              required=False,
               help="Specify Fortify app name"
               )
 def fortify_list_application_versions(fortify_user, fortify_password, application):
@@ -290,14 +255,11 @@ def fortify_list_application_versions(fortify_user, fortify_password, applicatio
                  short_help="Download Fortify .fpr scan",
                  help=WebBreakerHelper().fortify_download_desc())
 @click.option('--fortify_user',
-              required=False,
-              help="Specify Fortify username")
+              help="Specify Fortify SSC username, if not configured in the config.ini")
 @click.option('--fortify_password',
-              required=False,
-              help="Specify Fortify password")
+              help="Specify Fortify SSC password, if not configured in the config.ini")
 @click.option('--application',
-              required=False,
-              help="Specify Fortify app name"
+              help="Override the Fortify SSC Application or Project name specified in the config.ini"
               )
 @click.option('--version',
               required=True,
@@ -311,13 +273,10 @@ def fortify_download_scan(fortify_user, fortify_password, application, version):
                  short_help="Upload WebInspect scan to Fortify",
                  help=WebBreakerHelper().fortify_upload_desc())
 @click.option('--fortify_user',
-              required=False,
               help="Specify Fortify username")
 @click.option('--fortify_password',
-              required=False,
               help="Specify Fortify password")
 @click.option('--application',
-              required=False,
               help="Assign Fortify app name"
               )
 @click.option('--version',
@@ -325,10 +284,8 @@ def fortify_download_scan(fortify_user, fortify_password, application, version):
               help="Assign Fortify app version"
               )
 @click.option('--scan_name',
-              required=False,
               help="Specify name if file name is different than version")
 def fortify_upload_scan(fortify_user, fortify_password, application, version, scan_name):
-    # TODO
     FortifyUpload(fortify_user, fortify_password, application, version, scan_name)
 
 
@@ -344,22 +301,17 @@ def admin():
                help=WebBreakerHelper().admin_credentials_desc()
                )
 @click.option('--fortify',
-              required=False,
               is_flag=True,
               help="Flag used to designate options as Fortify credentials")
 @click.option('--webinspect',
-              required=False,
               is_flag=True,
               help="Flag used to designate options as WebInspect credentials")
 @click.option('--clear',
-              required=False,
               is_flag=True,
               help="Flag to clear credentials of Fortify OR WebInspect")
 @click.option('--username',
-              required=False,
               help="Specify username")
 @click.option('--password',
-              required=False,
               help="Specify username")
 def admin_credentials(fortify, webinspect, clear, username, password):
     if fortify:
@@ -495,16 +447,13 @@ def threadfix_list_applications(team_id, team):
                    help=WebBreakerHelper().threadfix_create_desc()
                    )
 @click.option('--team_id',
-              required=False,
               help="Assign ThreadFix team ID")
 @click.option('--team',
-              required=False,
               help="Assign ThreadFix team name")
 @click.option('--application',
               required=True,
               help="Assign a name")
 @click.option('--url',
-              required=False,
               default=None,
               help="Assign an Option URL")
 def threadfix_create_application(team_id, team, application, url):
@@ -552,10 +501,8 @@ def threadfix_list_scans(app_id):
                    help=WebBreakerHelper().threadfix_upload_desc()
                    )
 @click.option('--app_id',
-              required=False,
               help="Assign ThreadFix Application ID")
 @click.option('--application',
-              required=False,
               help="Assign ThreadFix Application name")
 @click.option('--scan_file',
               required=True,
@@ -606,11 +553,9 @@ def threadfix_upload_scan(app_id, application, scan_file):
                    help=WebBreakerHelper().threadfix_list_desc()
                    )
 @click.option('--team',
-              required=False,
               default=None,
               help="Specify team name to list")
 @click.option('--application',
-              required=False,
               default=None,
               help="Specify application name to list")
 def threadfix_list_applications(team, application):
