@@ -19,8 +19,7 @@ class FortifyListApplicationVersions:
 
     def list(self, username, password, application):
 
-        fortify_auth = FortifyAuth()
-        username, password = fortify_auth.authenticate(username, password)
+        username, password = FortifyAuth().authenticate(username, password)
 
         fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                        fortify_username=username,

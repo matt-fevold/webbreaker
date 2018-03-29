@@ -12,7 +12,6 @@ from webbreaker.common.logexceptionhelper import LogExceptionHelper
 logexceptionhelper = LogExceptionHelper()
 
 
-
 class FortifyClient(object):
     def __init__(self, fortify_url, project_template=None, application_name=None, fortify_username=None,
                  fortify_password=None, scan_name=None, extension=None, token=None):
@@ -43,6 +42,7 @@ class FortifyClient(object):
             token = response.data['data']['token']
             return token
 
+        # TODO: Remove general exception handling
         except Exception as e:
             if hasattr(e, 'message'):
                 Logger.app.critical("Exception while getting Fortify token: {0}".format(e.message))
@@ -85,10 +85,10 @@ class FortifyClient(object):
 
             # At Target, only one attribute is required
             response = self.api.add_project_version_attribute(project_version_id=project_version_id,
-                                                         attribute_definition_id=self.__get_attribute_definition_id__(
-                                                             search_expression='name:"CI Number"'),
-                                                         value='New WebBreaker Application',
-                                                         values=[])
+                                                              attribute_definition_id=self.__get_attribute_definition_id__(
+                                                                  search_expression='name:"CI Number"'),
+                                                              value='New WebBreaker Application',
+                                                              values=[])
             if not response.success:
                 raise ValueError("Failed to create required project version attribute")
 
@@ -119,7 +119,7 @@ class FortifyClient(object):
 
             """
             At Target, only one attribute is required
-            TODO: Treatment of all required attributes development_strategy, accessability, custom_attribute, etc. 
+            TODO: Treatment of all required attributes development_strategy, accessibility, custom_attribute, etc. 
             may accept null values (unconfirmed?), additional conditions need to be placed here to successfully complete this response.
             For example default SSC installations require attributeDefinitionId 1, 5, 6, and 7, however other deployments may have a single
             custom_attribute as is implemented below.  See also 
@@ -127,10 +127,10 @@ class FortifyClient(object):
             search_expression='name:"CI Number"'
             """
             response = self.api.add_project_version_attribute(project_version_id=project_version_id,
-                                                         attribute_definition_id=self.__get_attribute_definition_id__(
-                                                             search_expression='name:"CI Number"'),
-                                                         value='New WebBreaker Application',
-                                                         values=[])
+                                                              attribute_definition_id=self.__get_attribute_definition_id__(
+                                                                  search_expression='name:"CI Number"'),
+                                                              value='New WebBreaker Application',
+                                                              values=[])
             if not response.success:
                 raise ValueError("Failed to create required project version attribute")
 

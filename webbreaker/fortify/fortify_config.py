@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from webbreaker.common.webbreakerlogger import Logger
 from subprocess import CalledProcessError
-from webbreaker.common.secretclient import SecretClient
 from webbreaker.common.confighelper import Config
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
 
@@ -33,4 +33,3 @@ class FortifyConfig(object):
         except configparser.Error as e:
             logexceptionhelper.LogErrorReading(config_file, e)
             # Logger.app.error("Error reading {} {}".format(config_file, e))
-

@@ -50,5 +50,5 @@ class FortifyUpload:
 
         except (IOError, ValueError) as e:
             Logger.console.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
-        except (UnboundLocalError):
+        except UnboundLocalError:
             Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")
