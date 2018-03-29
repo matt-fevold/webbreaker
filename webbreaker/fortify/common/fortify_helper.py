@@ -91,7 +91,6 @@ class FortifyClient(object):
             Logger.app.error("No version matching {} found under {} in Fortify".format(version_name, self.application_name))
             sys.exit(ExitStatus.failure)
 
-    # TODO: Make Private in download_scan
     def _find_version_id(self, version_name):
         response = self.api.get_all_project_versions()
 
@@ -102,34 +101,6 @@ class FortifyClient(object):
                         return version['id']
 
         return False
-
-    # TODO: Remove
-    def build_pv_url(self):
-        try:
-            version_id = self._get_project_version()
-
-            if version_id == -1:
-                # This signals that an auth error occurred, CLI will attempt to reauth
-                return -1
-            if not self._get_project_id(self.application_name):
-                version_id = self._create_new_project_version()
-                if not version_id:
-                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
-                    # Logger.console.error("Unable to create new project version, see logs for details.")
-                    return None
-            if not version_id:
-                version_id = self._create_new_project_version()
-                if not version_id:
-                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
-                    # Logger.console.error("Unable to create new project version, see logs for details.")
-                    return None
-            if self.ssc_server[-1] == '/':
-                self.ssc_server = self.ssc_server[:-1]
-
-        except UnboundLocalError as e:
-            Logger.app.critical("Exception trying to build Project Version URL. {0}".format(e))
-
-        return self.ssc_server + '/ssc/html/ssc/index.jsp#!/version/' + str(version_id)
 
     def _get_token(self):
         try:

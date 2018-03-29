@@ -34,6 +34,17 @@ class FortifyAuth:
 
                 return username, password
 
+    @staticmethod
+    def write_credentials(username, password):
+        secret_client = SecretClient()
+        secret_client.set('fortify', 'username', username)
+        secret_client.set('fortify', 'password', password)
+
+    @staticmethod
+    def clear_credentials():
+        secret_client = SecretClient()
+        secret_client.clear_credentials('fortify', 'username', 'password')
+
     def _has_auth_creds(self):
         if self.username and self.password:
             return True
