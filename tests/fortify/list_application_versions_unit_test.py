@@ -17,12 +17,31 @@ class ClassHelper(object):
         self.data = 'Test Data! Will likely need to change this later! '
         self.headers = 'Test Header!'
 
+    def get_token(self):
+        return 'a valid'
 
-# @mock.patch('webbreaker.fortify.list_application_versions.FortifyApi')
+
+@mock.patch('webbreaker.fortify.list_application_versions.FortifyHelper.get_token')
+@mock.patch('webbreaker.fortify.list_application_versions.FortifyHelper.list_versions')
 @mock.patch('webbreaker.fortify.list_application_versions.FortifyAuth')
-def test_fortify_list_success(auth_mock):
+def test_fortify_list_success(auth_mock, list_all_mock, get_token_mock):
     auth_mock.return_value.authenticate.return_value = ('user', 'pass')
-    
-    #    FortifyListApplicationVersions(None, None, None)
-    assert 1   
+    get_token_mock.return_value.get_token.return_value = 'a valid token'
+
+    FortifyListApplicationVersions(None, None, None)
+
+    assert list_all_mock.call_count == 1
+
+
+@mock.patch('webbreaker.fortify.list_application_versions.FortifyHelper.get_token')
+@mock.patch('webbreaker.fortify.list_application_versions.FortifyHelper.list_application_versions')
+@mock.patch('webbreaker.fortify.list_application_versions.FortifyAuth')
+def test_fortify_list_application_success(auth_mock, list_application_mock, get_token_mock):
+    auth_mock.return_value.authenticate.return_value = ('user', 'pass')
+    get_token_mock.return_value.get_token.return_value = 'a valid token'
+
+    FortifyListApplicationVersions(None, None, "Some Application")
+
+    assert list_application_mock.call_count == 1
+
 

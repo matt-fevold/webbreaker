@@ -4,7 +4,7 @@
 __since__ = "2.1.6"
 # TODO Test
 
-from webbreaker.fortify.common.fortify_helper import FortifyClient
+from webbreaker.fortify.common.fortify_helper import FortifyHelper
 from webbreaker.fortify.fortify_config import FortifyConfig
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.common.webbreakerlogger import Logger
@@ -23,7 +23,7 @@ class FortifyDownload:
             fortify_auth = FortifyAuth()
             username, password = fortify_auth.authenticate(username, password)
 
-            fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
+            fortify_client = FortifyHelper(fortify_url=self.config.ssc_url,
                                            project_template=self.config.project_template,
                                            application_name=self.config.application_name,
                                            fortify_username=username,

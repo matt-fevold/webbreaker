@@ -13,7 +13,7 @@ logexceptionhelper = LogExceptionHelper()
 
 
 
-class FortifyClient(object):
+class FortifyHelper(object):
     def __init__(self, fortify_url, project_template=None, application_name=None, fortify_username=None,
                  fortify_password=None, scan_name=None, extension=None, token=None):
         self.ssc_server = fortify_url
