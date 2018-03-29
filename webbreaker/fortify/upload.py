@@ -18,15 +18,12 @@ class FortifyUpload:
     def upload(self, username, password, application, version, scan_name):
         """
         Upload WebInspect scan to Fortify
-        :param username:
-        :param password:
-        :param application:
-        :param version:
-        :param scan_name:
-        :return:
+        :param username: Username passed from click parameters
+        :param password: Password passed from click parameters
+        :param application: Fortify application name to upload
+        :param version: Fortify application version to upload
+        :param scan_name: Specified name if file name is different than version
         """
-        fortify_auth = FortifyAuth()
-        username, password = fortify_auth.authenticate(username, password)
 
         # Fortify only accepts fpr scan files
         extension = 'fpr'
@@ -34,13 +31,15 @@ class FortifyUpload:
             self.config.application_name = application
         if not scan_name:
             scan_name = version
+
         try:
+            username, password = FortifyAuth().authenticate(username, password)
+
             fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                            project_template=self.config.project_template,
                                            application_name=self.config.application_name,
                                            fortify_username=username,
                                            fortify_password=password, scan_name=version, extension=extension)
-
             reauth = fortify_client.upload_scan(file_name=scan_name)
 
             if reauth == -2:

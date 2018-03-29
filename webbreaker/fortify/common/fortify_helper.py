@@ -3,6 +3,9 @@
 
 import os
 import socket
+import sys
+
+from exitstatus import ExitStatus
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
 from fortifyapi.fortify import FortifyApi
@@ -14,7 +17,7 @@ logexceptionhelper = LogExceptionHelper()
 
 class FortifyClient(object):
     def __init__(self, fortify_url, project_template=None, application_name=None, fortify_username=None,
-                 fortify_password=None, scan_name=None, extension=None, token=None):
+                 fortify_password=None, scan_name=None, extension=None):
         self.ssc_server = fortify_url
         self.project_template = project_template
         self.application_name = application_name
@@ -23,16 +26,112 @@ class FortifyClient(object):
         self.fortify_version = scan_name
         self.extension = extension
         self.runenv = WebBreakerHelper.check_run_env()
-        self.token = token
-
-        if not token:
-            self.token = self.get_token()
-            self.api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
+        self.token = self._get_token()
+        self.api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
 
         if not self.token:
             raise ValueError("Unable to obtain a Fortify API token.")
 
-    def get_token(self):
+    def upload_scan(self, file_name):
+        try:
+            file_name = self._trim_ext(file_name)
+
+            project_version_id = self._get_project_version()
+            # If our project doesn't exist, exit upload_scan
+            if project_version_id == -1:
+                return -1
+            project_id = self._get_project_id(self.application_name)
+
+            if not project_id:
+                project_version_id = self._create_new_project_version()
+            if not project_version_id:
+                project_version_id = self._create_new_project_version()
+            if project_version_id:
+                response = self.api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
+                                                         project_version_id=project_version_id)
+
+            APIHelper().check_for_response_errors(response)
+
+            Logger.console.info("Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name,
+                                                                                                        self.extension,
+                                                                                                        self.ssc_server))
+
+        except UnboundLocalError as e:
+            Logger.app.critical("Exception trying to create SSC project version: {}".format(e))
+
+        return response
+
+    def list_application_versions(self, application=None):
+        response = self.api.get_all_project_versions()
+        APIHelper().check_for_response_errors(response)
+
+        print("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
+        print("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
+        for version in response.data['data']:
+            if application is None or version['project']['name'] == application:
+                print("{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
+        Logger.app.info("Fortify list has successfully completed")
+
+    def download_scan(self, version_name):
+        version_id = self._find_version_id(version_name)
+
+        if version_id:
+            response, file_name = self.api.download_artifact_scan(version_id)
+
+            if response.success:
+                file_content = response.data
+                with open(file_name, 'wb') as f:
+                    f.write(file_content)
+                Logger.app.info("Scan file for version {} successfully written to {}".format(version_id, file_name))
+            else:
+                Logger.app.error("Error downloading scan file: {}".format(response.message))
+                sys.exit(ExitStatus.failure)
+
+        else:
+            Logger.app.error("No version matching {} found under {} in Fortify".format(version_name, self.application_name))
+            sys.exit(ExitStatus.failure)
+
+    # TODO: Make Private in download_scan
+    def _find_version_id(self, version_name):
+        response = self.api.get_all_project_versions()
+
+        if response.success:
+            for version in response.data['data']:
+                if version['project']['name'] == self.application_name:
+                    if version['name'] == version_name:
+                        return version['id']
+
+        return False
+
+    # TODO: Remove
+    def build_pv_url(self):
+        try:
+            version_id = self._get_project_version()
+
+            if version_id == -1:
+                # This signals that an auth error occurred, CLI will attempt to reauth
+                return -1
+            if not self._get_project_id(self.application_name):
+                version_id = self._create_new_project_version()
+                if not version_id:
+                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
+                    # Logger.console.error("Unable to create new project version, see logs for details.")
+                    return None
+            if not version_id:
+                version_id = self._create_new_project_version()
+                if not version_id:
+                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
+                    # Logger.console.error("Unable to create new project version, see logs for details.")
+                    return None
+            if self.ssc_server[-1] == '/':
+                self.ssc_server = self.ssc_server[:-1]
+
+        except UnboundLocalError as e:
+            Logger.app.critical("Exception trying to build Project Version URL. {0}".format(e))
+
+        return self.ssc_server + '/ssc/html/ssc/index.jsp#!/version/' + str(version_id)
+
+    def _get_token(self):
         try:
             api = FortifyApi(self.ssc_server, username=self.user, password=self.password, verify_ssl=False)
             response = api.get_token()
@@ -49,7 +148,7 @@ class FortifyClient(object):
 
         return None
 
-    def __get_project_id__(self, project_name):
+    def _get_project_id(self, project_name):
 
         response = self.api.get_projects()
 
@@ -60,23 +159,23 @@ class FortifyClient(object):
                     return project['id']
         return None
 
-    def __project_version_description__(self):
+    def _project_version_description(self):
         if self.runenv == "jenkins":
             return "WebInspect scan from WebBreaker " + os.getenv('JOB_URL', "jenkins server")
         else:
             return "WebBreaker scan from WebBreaker host " + socket.getfqdn()
 
-    def __create_project_version__(self):
+    def _create_new_project_version(self):
         """
         Create, add required attributes to, and commit a new project version
         :return: The new project_version_id if successful. Otherwise, None.
         """
         try:
             response = self.api.create_project_version(project_name=self.application_name,
-                                                       project_id=self.__get_project_id__(self.application_name),
+                                                       project_id=self._get_project_id(self.application_name),
                                                        project_template=self.project_template,
                                                        version_name=self.fortify_version,
-                                                       description=self.__project_version_description__())
+                                                       description=self._project_version_description())
 
             if not response.success:
                 raise ValueError("Failed to create a new project version")
@@ -85,7 +184,7 @@ class FortifyClient(object):
 
             # At Target, only one attribute is required
             response = self.api.add_project_version_attribute(project_version_id=project_version_id,
-                                                              attribute_definition_id=self.__get_attribute_definition_id__(
+                                                              attribute_definition_id=self._get_attribute_definition_id(
                                                                   search_expression='name:"CI Number"'),
                                                               value='New WebBreaker Application',
                                                               values=[])
@@ -103,13 +202,13 @@ class FortifyClient(object):
 
         return None
 
-    def __create_new_project_version__(self):
+    def _create_new_project_version(self):
         try:
             # It's kinda dumb for this api call to require both project name and id?
             response = self.api.create_new_project_version(project_name=self.application_name,
                                                            project_template=self.project_template,
                                                            version_name=self.fortify_version,
-                                                           description=self.__project_version_description__())
+                                                           description=self._project_version_description())
 
             if not response.success:
                 raise ValueError("Failed to create a new project version")
@@ -127,7 +226,7 @@ class FortifyClient(object):
             search_expression='name:"CI Number"'
             """
             response = self.api.add_project_version_attribute(project_version_id=project_version_id,
-                                                              attribute_definition_id=self.__get_attribute_definition_id__(
+                                                              attribute_definition_id=self._get_attribute_definition_id(
                                                                   search_expression='name:"CI Number"'),
                                                               value='New WebBreaker Application',
                                                               values=[])
@@ -143,14 +242,14 @@ class FortifyClient(object):
 
         return project_version_id
 
-    def __get_attribute_definition_id__(self, search_expression):
+    def _get_attribute_definition_id(self, search_expression):
         response = self.api.get_attribute_definition(search_expression=search_expression)
         if response.success:
             return response.data['data'][0]['id']
         else:
             return None
 
-    def __get_project_version__(self):
+    def _get_project_version(self):
         """
         If a project version already exists, return it's project_version_id
         If a project version does NOT exist, create it and return it's project_version_id
@@ -173,7 +272,7 @@ class FortifyClient(object):
                 for project_version in response.data['data']:
                     if project_version['project']['name'] == self.application_name:
                         # Our project exists, so create a new version
-                        return self.__create_project_version__()
+                        return self._create_new_project_version()
 
                 # Let upload_scan know that our project doesn't exist
                 return -2
@@ -187,110 +286,8 @@ class FortifyClient(object):
 
         return None
 
-    def upload_scan(self, file_name):
-        try:
-            file_name = self.trim_ext(file_name)
-
-            project_version_id = self.__get_project_version__()
-            # If our project doesn't exist, exit upload_scan
-            if project_version_id == -1:
-                return -1
-            project_id = self.__get_project_id__(self.application_name)
-
-            if not project_id:
-                project_version_id = self.__create_new_project_version__()
-            if not project_version_id:
-                project_version_id = self.__create_project_version__()
-            if project_version_id:
-                response = self.api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
-                                                         project_version_id=project_version_id)
-
-            APIHelper().check_for_response_errors(response)
-
-            Logger.console.info("Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name,
-                                                                                                        self.extension,
-                                                                                                        self.ssc_server))
-
-        except UnboundLocalError as e:
-            Logger.app.critical("Exception trying to create SSC project version: {}".format(e.message))
-
-        return response
-
-    def list_versions(self):
-        response = self.api.get_all_project_versions()
-
-        APIHelper().check_for_response_errors(response)
-
-        Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
-        Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
-        for version in response.data['data']:
-            Logger.console.info(
-                "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
-
-    def list_application_versions(self, application):
-        response = self.api.get_all_project_versions()
-
-        APIHelper().check_for_response_errors(response)
-
-        Logger.console.info("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
-        Logger.console.info("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
-        for version in response.data['data']:
-            if version['project']['name'] == application:
-                Logger.console.info(
-                    "{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
-
-    def find_version_id(self, version_name):
-        response = self.api.get_all_project_versions()
-
-        if response.success:
-            for version in response.data['data']:
-                if version['project']['name'] == self.application_name:
-                    if version['name'] == version_name:
-                        return version['id']
-
-        return False
-
-    def download_scan(self, version_id):
-        response, file_name = self.api.download_artifact_scan(version_id)
-
-        if response.success:
-            file_content = response.data
-            with open(file_name, 'wb') as f:
-                f.write(file_content)
-            return file_name
-        else:
-            Logger.app.error("Error downloading scan file: {}".format(response.message))
-            return False
-
-    def build_pv_url(self):
-        try:
-            version_id = self.__get_project_version__()
-
-            if version_id == -1:
-                # This signals that an auth error occurred, CLI will attempt to reauth
-                return -1
-            if not self.__get_project_id__(self.application_name):
-                version_id = self.__create_new_project_version__()
-                if not version_id:
-                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
-                    # Logger.console.error("Unable to create new project version, see logs for details.")
-                    return None
-            if not version_id:
-                version_id = self.__create_project_version__()
-                if not version_id:
-                    logexceptionhelper.LogErrorUnableToCreateProjectVersion()
-                    # Logger.console.error("Unable to create new project version, see logs for details.")
-                    return None
-            if self.ssc_server[-1] == '/':
-                self.ssc_server = self.ssc_server[:-1]
-
-        except UnboundLocalError as e:
-            Logger.app.critical("Exception trying to build Project Version URL. {0}".format(e))
-
-        return self.ssc_server + '/ssc/html/ssc/index.jsp#!/version/' + str(version_id)
-
     @staticmethod
-    def trim_ext(file):
+    def _trim_ext(file):
         try:
             return os.path.splitext(os.path.basename(file))[0]
         except (TypeError, AttributeError):

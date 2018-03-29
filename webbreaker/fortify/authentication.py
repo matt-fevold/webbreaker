@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from webbreaker.fortify.fortify_config import FortifyConfig
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.authorization import auth_prompt
 from webbreaker.common.secretclient import SecretClient
 
 
+# TODO: Convert to general `webbreaker/common/authenticate`
 class FortifyAuth:
     def __init__(self):
         secret_client = SecretClient()
@@ -23,7 +23,7 @@ class FortifyAuth:
             # check config for creds
             Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
 
-            if self.has_auth_creds():
+            if self._has_auth_creds():
                 Logger.app.info("Fortify username and password successfully found in config.ini")
                 return self.username, self.password
 
@@ -34,19 +34,7 @@ class FortifyAuth:
 
                 return username, password
 
-    @staticmethod
-    def write_credentials(username, password):
-        secret_client = SecretClient()
-        secret_client.set('fortify', 'username', username)
-        secret_client.set('fortify', 'password', password)
-
-    @staticmethod
-    def clear_credentials():
-        secret_client = SecretClient()
-        secret_client.clear_credentials('fortify', 'username', 'password')
-
-    def has_auth_creds(self):
+    def _has_auth_creds(self):
         if self.username and self.password:
             return True
-        else:
-            return False
+        return False

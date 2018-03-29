@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from webbreaker.common.webbreakerlogger import Logger
 import sys
+
+from webbreaker.common.webbreakerlogger import Logger
 from exitstatus import ExitStatus
 
 
@@ -16,23 +17,20 @@ class APIHelper:
         :param response:
         :return:
         """
-        self._check_for_authorization_error_(response)
-        self.check_for_response_fail_(response)
+        self._check_for_authorization_error(response)
+        self._check_for_response_fail(response)
 
     @staticmethod
-    def _check_for_authorization_error_(response):
+    def _check_for_authorization_error(response):
         # Check for 401 response and break if it occurs.
         if response.response_code == 401:
             Logger.app.critical("An Authorization Error Occurred.")
             sys.exit(ExitStatus.failure)
 
     @staticmethod
-    def check_for_response_fail_(response):
+    def _check_for_response_fail(response):
         if response.success:
             pass
         else:
             Logger.app.error("The call to the API was not successful: {}".format(response.message))
             sys.exit(ExitStatus.failure)
-
-
-

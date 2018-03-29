@@ -265,9 +265,9 @@ def fortify_list_application_versions(fortify_user, fortify_password, applicatio
 @click.option('--version',
               required=True,
               help="Specify Fortify app version")
-def fortify_download_scan(fortify_user, fortify_password, application, version):
+def fortify_download_scan(fortify_user, fortify_password, application, version_name):
     # TODO
-    FortifyDownload(fortify_user, fortify_password, application, version)
+    FortifyDownload(fortify_user, fortify_password, application, version_name)
 
 
 @fortify.command(name='upload',
