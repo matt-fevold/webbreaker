@@ -32,4 +32,3 @@ class FortifyConfig(object):
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
         except configparser.Error as e:
             logexceptionhelper.LogErrorReading(config_file, e)
-            # Logger.app.error("Error reading {} {}".format(config_file, e))
