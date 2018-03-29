@@ -12,41 +12,28 @@ from webbreaker.common.webbreakerlogger import Logger
 
 class FortifyUpload:
     def __init__(self, username, password, application, version, scan_name):
+        self.version = version
+        self.extension = "fpr"
         self.config = FortifyConfig()
-        self.upload(username, password, application, version, scan_name)
 
-    def upload(self, username, password, application, version, scan_name):
-        """
-        Upload WebInspect scan to Fortify
-        :param username: Username passed from click parameters
-        :param password: Password passed from click parameters
-        :param application: Fortify application name to upload
-        :param version: Fortify application version to upload
-        :param scan_name: Specified name if file name is different than version
-        """
-
-        # Fortify only accepts fpr scan files
-        extension = 'fpr'
         if application:
             self.config.application_name = application
         if not scan_name:
             scan_name = version
 
-        try:
-            username, password = FortifyAuth().authenticate(username, password)
+        self.username, self.password = FortifyAuth().authenticate(username, password)
+        self.upload(scan_name)
 
+    def upload(self, scan_name):
+        try:
             fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                            project_template=self.config.project_template,
                                            application_name=self.config.application_name,
-                                           fortify_username=username,
-                                           fortify_password=password, scan_name=version, extension=extension)
-            reauth = fortify_client.upload_scan(file_name=scan_name)
-
-            if reauth == -2:
-                # The given application doesn't exist
-                Logger.console.critical(
-                    "Fortify Application {} does not exist. Unable to upload scan.".format(application))
-
+                                           fortify_username=self.username,
+                                           fortify_password=self.password,
+                                           scan_name=self.version,
+                                           extension=self.extension)
+            fortify_client.upload_scan(scan_name)
         except (IOError, ValueError) as e:
             Logger.console.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
         except UnboundLocalError:

@@ -13,19 +13,20 @@ from webbreaker.common.webbreakerlogger import Logger
 class FortifyDownload:
     def __init__(self, username, password, application, version_name):
         self.config = FortifyConfig()
-        self.download(username, password, application, version_name)
 
-    def download(self, username, password, application, version_name):
         if application:
             self.config.application_name = application
-        try:
-            username, password = FortifyAuth().authenticate(username, password)
 
+        self.username, self.password = FortifyAuth().authenticate(username, password)
+        self.download(version_name)
+
+    def download(self, version_name):
+        try:
             fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                            project_template=self.config.project_template,
                                            application_name=self.config.application_name,
-                                           fortify_username=username,
-                                           fortify_password=password)
+                                           fortify_username=self.username,
+                                           fortify_password=self.password)
             fortify_client.download_scan(version_name)
         except (AttributeError, UnboundLocalError) as e:
             Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))

@@ -33,6 +33,10 @@ class FortifyClient(object):
             raise ValueError("Unable to obtain a Fortify API token.")
 
     def upload_scan(self, file_name):
+        # if reauth == -2:
+        #     # The given application doesn't exist
+        #     Logger.console.critical(
+        #         "Fortify Application {} does not exist. Unable to upload scan.".format(application))
         try:
             file_name = self._trim_ext(file_name)
 
