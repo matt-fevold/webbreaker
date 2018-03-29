@@ -135,7 +135,7 @@ def test_threadfix_scans(test_mock, runner, caplog):
     result = runner.invoke(webbreaker, ['threadfix', 'scans', '--app_id', 321])
 
     caplog.check(
-        ('__webbreaker__', 'INFO', 'Successfully listed threadfix scans'),
+        ('__webbreaker__', 'INFO', 'Successfully listed Threadfix scans'),
     )
     caplog.uninstall()
 

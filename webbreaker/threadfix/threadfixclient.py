@@ -3,6 +3,11 @@
 
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.threadfixproapi.threadfixpro import ThreadFixProAPI
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.logexceptionhelper import LogInfoHelper
+
+logexceptionhelper = LogExceptionHelper()
+loginfohelper = LogInfoHelper()
 
 
 class ThreadFixClient(object):
@@ -16,7 +21,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            Logger.app.error(response.message)
+            logexceptionhelper.LogErrorThreadfixResponse(response.message)
             return False
 
     def list_teams(self):
@@ -25,7 +30,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            Logger.app.error(response.message)
+            logexceptionhelper.LogErrorThreadfixResponse(response.message)
             return False
 
     def get_team_id_by_name(self, team_name):
@@ -41,7 +46,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            Logger.app.error(response.message)
+            logexceptionhelper.LogErrorThreadfixResponse(response.message)
             return False
 
     def list_all_apps(self, team_name=None, app_name=None):
@@ -55,7 +60,7 @@ class ThreadFixClient(object):
                 elif team_name is None:
                     team_ids.append({'id': team['id'], 'name': team['name']})
             if not len(team_ids):
-                Logger.app.info("No teams containing {} were found".format(team_name))
+                logexceptionhelper.LogErrorNoTeamWithName(team_name)
             for team in team_ids:
                 app_response = self.list_apps_by_team(team['id'])
                 if app_response:
@@ -72,7 +77,8 @@ class ThreadFixClient(object):
                                                  'app_name': app['name']})
 
                 else:
-                    Logger.app.error("Error retrieving applications for team {}".format(team['name']))
+
+                    logexceptionhelper.LogErrorRetrievingApplication(team['name'])
             return applications
 
         else:
@@ -94,7 +100,7 @@ class ThreadFixClient(object):
                     scan['filename'] = 'Error'
             return master_data
         else:
-            Logger.app.error(response.message)
+            logexceptionhelper.LogErrorThreadfixResponse(response.message)
             return False
 
     def create_application(self, team_id, name, url):
@@ -103,7 +109,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            Logger.app.error(response.message)
+            logexceptionhelper.LogErrorThreadfixResponse(response.message)
             return False
 
     # TODO verify this works. Unable to test due to ThreadFix configurations
@@ -119,7 +125,7 @@ class ThreadFixClient(object):
                         scan_file.write(response.data)
                         return filename
                 else:
-                    Logger.app.error("Error requesting download: {}".format(response.message))
+                    logexceptionhelper.LogErrorRequestDownlaod(response.message)
                     return None
             else:
                 return -1
