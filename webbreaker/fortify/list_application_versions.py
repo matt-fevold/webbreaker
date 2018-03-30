@@ -3,7 +3,6 @@
 
 __since__ = "2.1.6"
 
-# TODO Test
 import sys
 
 from exitstatus import ExitStatus
@@ -21,6 +20,12 @@ class FortifyListApplicationVersions:
         self.list(application)
 
     def list(self, application):
+        """
+        List all Versions of an Application if an Application was specified. If it was not, it will list all
+        Applications & Versions.
+        :param application: Application Name to list all Versions of. If it is None, it will list all Applications.
+        :return: None
+        """
         try:
             fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
                                            fortify_username=self.username,

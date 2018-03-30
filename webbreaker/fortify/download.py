@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 __since__ = "2.1.6"
-# TODO Test
 
 from webbreaker.fortify.common.fortify_helper import FortifyClient
 from webbreaker.fortify.fortify_config import FortifyConfig
@@ -14,20 +13,24 @@ class FortifyDownload:
     def __init__(self, username, password, application, version_name):
         self.config = FortifyConfig()
 
-        if application:
-            self.config.application_name = application
+        if application is None:
+            application = self.config.application_name
 
         self.username, self.password = FortifyAuth().authenticate(username, password)
-        self.download(version_name)
+        self.download(application, version_name)
 
-    def download(self, version_name):
+    def download(self, application_name, version_name):
+        """
+        Downloads a specific Version from an Application.
+        :param application_name: Application to search for Version in
+        :param version_name: Version to download
+        :return: None
+        """
         try:
             fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
-                                           project_template=self.config.project_template,
-                                           application_name=self.config.application_name,
                                            fortify_username=self.username,
                                            fortify_password=self.password)
-            fortify_client.download_scan(version_name)
+            fortify_client.download_scan(application_name, version_name)
         except (AttributeError, UnboundLocalError) as e:
             Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
         except IOError as e:

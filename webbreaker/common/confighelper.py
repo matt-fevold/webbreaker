@@ -94,6 +94,7 @@ class Config(object):
 
     def set_config(self):
         # SSC URL exclude the /ssc context
+        # TODO: Change ssc_url -> fortify_url or vice versa. Just standardize
         self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
 
         # Default & a custom Fortify SSC Application Version attribute values and
