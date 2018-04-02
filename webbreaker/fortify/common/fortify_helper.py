@@ -8,6 +8,7 @@ from webbreaker.common.webbreakerlogger import Logger
 from fortifyapi.fortify import FortifyApi
 from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.fortify.fortify_config import FortifyConfig
 
 logexceptionhelper = LogExceptionHelper()
 
@@ -28,10 +29,15 @@ class FortifyHelper(object):
 
         if not token:
             self.token = self.get_token()
-            self.api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=False)
+            self._set_api()
 
         if not self.token:
             raise ValueError("Unable to obtain a Fortify API token.")
+
+    def _set_api(self):
+        config = FortifyConfig()
+        ssl = config.verify_ssl
+        self.api = FortifyApi(self.ssc_server, token=self.token, verify_ssl=ssl)
 
     def get_token(self):
         try:

@@ -27,6 +27,7 @@ class FortifyConfig(object):
             self.ssc_url = config.get("fortify", "ssc_url")
             self.project_template = config.get("fortify", "project_template")
             self.application_name = config.get("fortify", "application_name")
+            self.verify_ssl = config.get("fortify", "verify_ssl")
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))

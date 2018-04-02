@@ -108,6 +108,9 @@ class Config(object):
         # Default Fortify SSC Application
         self.conf_get('fortify', 'application_name', 'WEBINSPECT')
 
+        # Default verify_ssl value
+        self.conf_get('fortify', 'verify_ssl', 'False')
+
         # Fortify SSC authentication execute, webbreaker admin credentials --fortify
         self.conf_get('fortify', 'username', '')
         self.conf_get('fortify', 'password', '')
@@ -125,6 +128,9 @@ class Config(object):
         self.conf_get('webinspect', 'server_01', 'https://webinspect-server-1.example.com:8083')
         self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(size_large)s')
         self.conf_get('webinspect', 'git_repo', 'https://github.com/webbreaker/webinspect.git')
+
+        # Default verify ssl value.
+        self.conf_get('webinspect', 'verify_ssl', 'False')
 
         # API authentication set to true execute, webbreaker admin credentials --webinspect
         self.conf_get('webinspect', 'authenticate', 'false')
