@@ -98,13 +98,19 @@ class Config(object):
         self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
 
         # Default & a custom Fortify SSC Application Version attribute values and
-        # Project or Application Template associated to the Application Version
+        # Application (Project) Template associated to the Application Version
         self.conf_get('fortify', 'business_risk_ranking', 'High')
         self.conf_get('fortify', 'development_phase', 'Active')
         self.conf_get('fortify', 'development_strategy', 'Internal')
         self.conf_get('fortify', 'accessibility', 'externalpublicnetwork')
-        self.conf_get('fortify', 'custom_attribute', '')
         self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
+        self.conf_get('fortify', 'custom_attribute', '')
+
+        # Application Version Attribute Configuration
+        self.conf_get('fortify', 'search_expression', '')
+        self.conf_get('fortify', 'attribute_definition_id', '')
+        self.conf_get('fortify', 'version_attribute_value', 'New WebBreaker Application')
+        self.conf_get('fortify', 'version_attribute_values', '')
 
         # Default Fortify SSC Application
         self.conf_get('fortify', 'application_name', 'WEBINSPECT')

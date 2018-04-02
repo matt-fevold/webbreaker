@@ -28,6 +28,11 @@ class FortifyConfig(object):
             self.project_template = config.get("fortify", "project_template")
             self.application_name = config.get("fortify", "application_name")
 
+            self.search_expression = config.get("fortify", "search_expression")
+            self.version_attribute_value = config.get("fortify", "version_attribute_value")
+            self.version_attribute_values = config.get("fortify", "version_attribute_values")
+            self.attribute_definition_id = config.get("fortify", "attribute_definition_id")
+
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
         except configparser.Error as e:
