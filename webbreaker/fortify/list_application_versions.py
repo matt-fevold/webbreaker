@@ -26,11 +26,6 @@ class FortifyListApplicationVersions:
                                        fortify_username=username,
                                        fortify_password=password)
 
-        if application:
-            fortify_client.list_application_versions(application)
-        else:
-            fortify_client.list_versions()
-        Logger.app.info("Fortify list has successfully completed")
 
         try:
             if application:
