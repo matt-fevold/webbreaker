@@ -111,7 +111,7 @@ def test_fortify_download_download_throws_attribute_error(log_mock, config_mock,
                         application_name=expected_application,
                         version_name=expected_version)
 
-    log_mock.called_once()
+    log_mock.assert_called_once()
 
 
 @mock.patch('webbreaker.fortify.download.FortifyClient')
@@ -133,7 +133,7 @@ def test_fortify_download_download_throws_unbound_local_error(log_mock, config_m
                         application_name=expected_application,
                         version_name=expected_version)
 
-    log_mock.called_once()
+    log_mock.assert_called_once()
 
 
 @mock.patch('webbreaker.fortify.download.FortifyClient')
@@ -155,4 +155,4 @@ def test_fortify_download_download_throws_io_error(log_mock, config_mock, auth_m
                         application_name=expected_application,
                         version_name=expected_version)
 
-    log_mock.called_once()
+    log_mock.assert_called_once()

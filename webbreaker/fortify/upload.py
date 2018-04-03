@@ -40,7 +40,7 @@ class FortifyUpload:
                                            fortify_password=self.password)
             fortify_client.upload_scan(application_name, version_name, application_template, scan_name)
         except (IOError, ValueError) as e:
-            Logger.console.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
+            Logger.app.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
             sys.exit(ExitStatus.failure)
         except UnboundLocalError:
             Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")

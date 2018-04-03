@@ -96,7 +96,7 @@ def test_fortify_list_list_throws_attribute_error(log_mock, config_mock, auth_mo
         FortifyList(username=expected_username,
                     password=expected_password,
                     application_name=expected_application)
-    log_mock.called_once()
+    log_mock.assert_called_once()
 
 
 @mock.patch('webbreaker.fortify.list.FortifyClient')
@@ -114,7 +114,7 @@ def test_fortify_list_list_throws_unbound_local_error(log_mock, config_mock, aut
         FortifyList(username=expected_username,
                     password=expected_password,
                     application_name=expected_application)
-    log_mock.called_once()
+    log_mock.assert_called_once()
 
 
 @mock.patch('webbreaker.fortify.list.FortifyClient')
@@ -132,4 +132,4 @@ def test_fortify_list_list_throws_type_error(log_mock, config_mock, auth_mock, c
         FortifyList(username=expected_username,
                     password=expected_password,
                     application_name=expected_application)
-    log_mock.called_once()
+    log_mock.assert_called_once()
