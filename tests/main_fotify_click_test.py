@@ -13,7 +13,7 @@ def runner():
     return CliRunner()
 
 
-@mock.patch('webbreaker.__main__.FortifyListApplicationVersions.__init__')
+@mock.patch('webbreaker.__main__.FortifyList.__init__')
 def test_fortify_list_with_config_credentials_success(list_app_version_mock, runner):
     list_app_version_mock.return_value = None
 
@@ -22,7 +22,7 @@ def test_fortify_list_with_config_credentials_success(list_app_version_mock, run
     list_app_version_mock.assert_called_once_with(None, None, None)
 
 
-@mock.patch('webbreaker.__main__.FortifyListApplicationVersions.__init__')
+@mock.patch('webbreaker.__main__.FortifyList.__init__')
 def test_fortify_list_with_cli_creds_success(list_app_version_mock, runner):
     list_app_version_mock.return_value = None
 

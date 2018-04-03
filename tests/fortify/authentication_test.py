@@ -1,8 +1,8 @@
-
 import pytest
 import mock
 
 from webbreaker.fortify.authentication import FortifyAuth
+
 
 # fixture for passing in creds and not passing in creds via cli
 @pytest.fixture(params=[

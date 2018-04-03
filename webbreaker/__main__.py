@@ -36,7 +36,7 @@ from webbreaker.common.webbreakerhelper import WebBreakerHelper
 
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.fortify.download import FortifyDownload
-from webbreaker.fortify.list_application_versions import FortifyListApplicationVersions
+from webbreaker.fortify.list import FortifyList
 from webbreaker.fortify.upload import FortifyUpload
 
 from webbreaker.threadfix.threadfixclient import ThreadFixClient
@@ -249,7 +249,7 @@ def fortify():
               help="Specify Fortify app name"
               )
 def fortify_list_application_versions(fortify_user, fortify_password, application):
-    FortifyListApplicationVersions(fortify_user, fortify_password, application)
+    FortifyList(fortify_user, fortify_password, application)
 
 
 @fortify.command(name='download',
