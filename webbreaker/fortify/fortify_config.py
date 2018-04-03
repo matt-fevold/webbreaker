@@ -27,6 +27,7 @@ class FortifyConfig(object):
             self.ssc_url = config.get("fortify", "ssc_url")
             self.project_template = config.get("fortify", "project_template")
             self.application_name = config.get("fortify", "application_name")
+            self.verify_ssl = config.get("fortify", "verify_ssl")
 
             self.search_expression = config.get("fortify", "search_expression")
             self.version_attribute_value = config.get("fortify", "version_attribute_value")
