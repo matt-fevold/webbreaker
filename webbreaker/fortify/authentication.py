@@ -32,6 +32,7 @@ class FortifyAuth:
                 Logger.app.info("Fortify credentials not found in config.ini")
                 username, password = auth_prompt("Fortify")
 
+                self.write_credentials(username, password)
                 return username, password
 
     @staticmethod
