@@ -5,16 +5,12 @@ import os
 import socket
 import sys
 
+from fortifyapi.fortify import FortifyApi
 from exitstatus import ExitStatus
+from webbreaker.common.api_response_helper import APIHelper
+from webbreaker.fortify.fortify_config import FortifyConfig
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
-from fortifyapi.fortify import FortifyApi
-from webbreaker.fortify.fortify_config import FortifyConfig
-from webbreaker.common.api_response_helper import APIHelper
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from webbreaker.fortify.fortify_config import FortifyConfig
-
-logexceptionhelper = LogExceptionHelper()
 
 
 class FortifyClient(object):

@@ -3,7 +3,7 @@
 
 __since__ = "2.1.6"
 
-from webbreaker.fortify.common.fortify_helper import FortifyHelper
+from webbreaker.fortify.common.fortify_helper import FortifyClient
 from webbreaker.fortify.fortify_config import FortifyConfig
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.common.webbreakerlogger import Logger
