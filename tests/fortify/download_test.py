@@ -67,7 +67,7 @@ def test_fortify_download_successful_init_application_name_is_none(config_mock, 
     assert download_mock.call_count == 1
 
 
-@mock.patch('webbreaker.fortify.download.FortifyClient')
+@mock.patch('webbreaker.fortify.download.FortifyHelper')
 @mock.patch('webbreaker.fortify.download.FortifyAuth')
 @mock.patch('webbreaker.fortify.download.FortifyConfig')
 def test_fortify_download_download_successful_download(config_mock, auth_mock, client_mock):
@@ -92,7 +92,7 @@ def test_fortify_download_download_successful_download(config_mock, auth_mock, c
     assert client_mock.call_count == 1
 
 
-@mock.patch('webbreaker.fortify.download.FortifyClient')
+@mock.patch('webbreaker.fortify.download.FortifyHelper')
 @mock.patch('webbreaker.fortify.download.FortifyAuth')
 @mock.patch('webbreaker.fortify.download.FortifyConfig')
 @mock.patch('webbreaker.fortify.download.Logger.app.critical')
@@ -114,7 +114,7 @@ def test_fortify_download_download_throws_attribute_error(log_mock, config_mock,
     log_mock.assert_called_once()
 
 
-@mock.patch('webbreaker.fortify.download.FortifyClient')
+@mock.patch('webbreaker.fortify.download.FortifyHelper')
 @mock.patch('webbreaker.fortify.download.FortifyAuth')
 @mock.patch('webbreaker.fortify.download.FortifyConfig')
 @mock.patch('webbreaker.fortify.download.Logger.app.critical')
@@ -136,7 +136,7 @@ def test_fortify_download_download_throws_unbound_local_error(log_mock, config_m
     log_mock.assert_called_once()
 
 
-@mock.patch('webbreaker.fortify.download.FortifyClient')
+@mock.patch('webbreaker.fortify.download.FortifyHelper')
 @mock.patch('webbreaker.fortify.download.FortifyAuth')
 @mock.patch('webbreaker.fortify.download.FortifyConfig')
 @mock.patch('webbreaker.fortify.download.Logger.app.error')

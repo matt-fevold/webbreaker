@@ -6,7 +6,7 @@ __since__ = "2.1.6"
 import sys
 
 from exitstatus import ExitStatus
-from webbreaker.fortify.common.helper import FortifyClient
+from webbreaker.fortify.common.helper import FortifyHelper
 from webbreaker.fortify.config import FortifyConfig
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.common.webbreakerlogger import Logger
@@ -30,10 +30,10 @@ class FortifyDownload:
         :return: None
         """
         try:
-            fortify_client = FortifyClient(fortify_url=self.config.ssc_url,
+            fortify_helper = FortifyHelper(fortify_url=self.config.ssc_url,
                                            fortify_username=self.username,
                                            fortify_password=self.password)
-            fortify_client.download_scan(application_name, version_name)
+            fortify_helper.download_scan(application_name, version_name)
         except (AttributeError, UnboundLocalError) as e:
             Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
             sys.exit(ExitStatus.failure)

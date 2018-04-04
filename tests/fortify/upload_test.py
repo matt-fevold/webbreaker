@@ -80,7 +80,7 @@ def test_fortify_upload_successful_init_application_name_is_none(config_mock, au
     assert upload_mock.call_count == 1
 
 
-@mock.patch('webbreaker.fortify.upload.FortifyClient')
+@mock.patch('webbreaker.fortify.upload.FortifyHelper')
 @mock.patch('webbreaker.fortify.upload.FortifyAuth')
 @mock.patch('webbreaker.fortify.upload.FortifyConfig')
 def test_fortify_upload_upload_successful_upload(config_mock, auth_mock, client_mock):
@@ -110,7 +110,7 @@ def test_fortify_upload_upload_successful_upload(config_mock, auth_mock, client_
     assert client_mock.call_count == 1
 
 
-@mock.patch('webbreaker.fortify.upload.FortifyClient')
+@mock.patch('webbreaker.fortify.upload.FortifyHelper')
 @mock.patch('webbreaker.fortify.upload.FortifyAuth')
 @mock.patch('webbreaker.fortify.upload.FortifyConfig')
 @mock.patch('webbreaker.fortify.upload.Logger.app.critical')
@@ -137,7 +137,7 @@ def test_fortify_upload_upload_throws_value_error(log_mock, config_mock, auth_mo
     log_mock.assert_called_once()
 
 
-@mock.patch('webbreaker.fortify.upload.FortifyClient')
+@mock.patch('webbreaker.fortify.upload.FortifyHelper')
 @mock.patch('webbreaker.fortify.upload.FortifyAuth')
 @mock.patch('webbreaker.fortify.upload.FortifyConfig')
 @mock.patch('webbreaker.fortify.upload.Logger.app.error')
@@ -164,7 +164,7 @@ def test_fortify_upload_upload_throws_unbound_local_error(log_mock, config_mock,
     log_mock.assert_called_once()
 
 
-@mock.patch('webbreaker.fortify.upload.FortifyClient')
+@mock.patch('webbreaker.fortify.upload.FortifyHelper')
 @mock.patch('webbreaker.fortify.upload.FortifyAuth')
 @mock.patch('webbreaker.fortify.upload.FortifyConfig')
 @mock.patch('webbreaker.fortify.upload.Logger.app.critical')

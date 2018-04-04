@@ -58,7 +58,7 @@ def test_fortify_list_successful_init_no_application_name(config_mock, auth_mock
     assert auth_mock.call_count == 1
 
 
-@mock.patch('webbreaker.fortify.list.FortifyClient')
+@mock.patch('webbreaker.fortify.list.FortifyHelper')
 @mock.patch('webbreaker.fortify.list.FortifyAuth')
 @mock.patch('webbreaker.fortify.list.FortifyConfig')
 def test_fortify_list_list_successful_list(config_mock, auth_mock, client_mock):
@@ -81,7 +81,7 @@ def test_fortify_list_list_successful_list(config_mock, auth_mock, client_mock):
     assert client_mock.call_count == 1
 
 
-@mock.patch('webbreaker.fortify.list.FortifyClient')
+@mock.patch('webbreaker.fortify.list.FortifyHelper')
 @mock.patch('webbreaker.fortify.list.FortifyAuth')
 @mock.patch('webbreaker.fortify.list.FortifyConfig')
 @mock.patch('webbreaker.fortify.list.Logger.app.critical')
@@ -99,7 +99,7 @@ def test_fortify_list_list_throws_attribute_error(log_mock, config_mock, auth_mo
     log_mock.assert_called_once()
 
 
-@mock.patch('webbreaker.fortify.list.FortifyClient')
+@mock.patch('webbreaker.fortify.list.FortifyHelper')
 @mock.patch('webbreaker.fortify.list.FortifyAuth')
 @mock.patch('webbreaker.fortify.list.FortifyConfig')
 @mock.patch('webbreaker.fortify.list.Logger.app.critical')
@@ -117,7 +117,7 @@ def test_fortify_list_list_throws_unbound_local_error(log_mock, config_mock, aut
     log_mock.assert_called_once()
 
 
-@mock.patch('webbreaker.fortify.list.FortifyClient')
+@mock.patch('webbreaker.fortify.list.FortifyHelper')
 @mock.patch('webbreaker.fortify.list.FortifyAuth')
 @mock.patch('webbreaker.fortify.list.FortifyConfig')
 @mock.patch('webbreaker.fortify.list.Logger.app.critical')

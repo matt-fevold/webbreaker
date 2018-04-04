@@ -13,7 +13,7 @@ from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
 
 
-class FortifyClient(object):
+class FortifyHelper(object):
     def __init__(self, fortify_url, fortify_username, fortify_password):
         # Static
         self.extension = 'fpr'
