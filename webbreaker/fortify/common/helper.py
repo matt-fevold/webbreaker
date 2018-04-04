@@ -17,14 +17,15 @@ class FortifyClient(object):
     def __init__(self, fortify_url, fortify_username, fortify_password):
         # Static
         self.extension = 'fpr'
-        self.config = FortifyConfig()
 
         # Required Globals
         self.fortify_url = fortify_url
         self.username = fortify_username
         self.password = fortify_password
+
         self.runenv = WebBreakerHelper.check_run_env()
         self.api = self._setup_fortify_ssc_api()
+        self.config = FortifyConfig()
 
     def download_scan(self, application_name, version_name):
         """
@@ -96,7 +97,6 @@ class FortifyClient(object):
         :return: ID of the Application
         """
 
-        # TODO: Create FortifyAPI call to find Application ID OR return None 'get_application_id(application_id)'
         response = self.api.get_projects()
         APIHelper().check_for_response_errors(response)
 
@@ -138,28 +138,39 @@ class FortifyClient(object):
         APIHelper().check_for_response_errors(response)
         return response.data, file_name
 
-    def _create_application_version(self, application_name, application_id, version_name, project_template):
+    def _create_application_version(self, application_name, application_id, version_name, application_template):
         """
         Creates a new Version, and if the Application ID is missing (None), it will create that along with the Version.
         :param application_name: Name of the Application to put the Version under.
         :param application_id: ID of the Application. If None, creates a new Application with the application_name.
         :param version_name: Name of the Version to create.
-        :param project_template: Brought in from the config.ini during the FortifyUpload Class __init__
+        :param application_template: Brought in from the config.ini during the FortifyUpload Class __init__
         :return: Version ID of the newly created Version.
         """
 
         version_description = self._project_version_description()
 
-        # TODO: Combine both calls in API with project_id default to None. Basically already doing that.
         if application_id is None:
-            response = self.api.create_new_project_version(project_name=application_name,
-                                                           project_template=project_template,
+            # Initial call to create a new Project Version
+            response = self.api.create_new_project_version(application_name=application_name,
+                                                           application_template=application_template,
                                                            version_name=version_name,
                                                            description=version_description)
+            APIHelper().check_for_response_errors(response)
+
+            # Second call to create a new Project Version
+            response = \
+                self.api.bulk_create_new_application_request(version_id=response.data['data']['id'],
+                                                             development_phase=self.config.development_phase,
+                                                             development_strategy=self.config.development_strategy,
+                                                             accessibility=self.config.accessibility,
+                                                             business_risk_ranking=self.config.business_risk_ranking
+                                                             )
+
         else:
             response = self.api.create_project_version(project_name=application_name,
                                                        project_id=application_id,
-                                                       project_template=project_template,
+                                                       project_template=application_template,
                                                        version_name=version_name,
                                                        description=version_description)
         APIHelper().check_for_response_errors(response)
@@ -219,7 +230,7 @@ class FortifyClient(object):
             response = FortifyApi(host=self.fortify_url,
                                   username=self.username,
                                   password=self.password,
-                                  verify_ssl=False)\
+                                  verify_ssl=False) \
                 .get_token()
             APIHelper().check_for_response_errors(response)
 

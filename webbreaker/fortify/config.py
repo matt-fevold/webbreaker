@@ -29,6 +29,14 @@ class FortifyConfig(object):
             self.application_name = config.get("fortify", "application_name")
             self.verify_ssl = config.get("fortify", "verify_ssl")
 
+            # Bulk API Application Values
+            self.business_risk_ranking = config.get("fortify", "business_risk_ranking")
+            self.development_phase = config.get("fortify", "development_phase")
+            self.development_strategy = config.get("fortify", "development_strategy")
+            self.accessibility = config.get("fortify", "accessibility")
+            self.custom_attribute = config.get("fortify", "custom_attribute")
+
+            # REST API Version Attribute Values
             self.search_expression = config.get("fortify", "search_expression")
             self.version_attribute_value = config.get("fortify", "version_attribute_value")
             self.version_attribute_values = config.get("fortify", "version_attribute_values")
