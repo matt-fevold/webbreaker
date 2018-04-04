@@ -136,9 +136,6 @@ class Config(object):
         self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(size_large)s')
         self.conf_get('webinspect', 'git_repo', 'https://github.com/webbreaker/webinspect.git')
 
-        # Default verify ssl value.
-        self.conf_get('webinspect', 'verify_ssl', 'False')
-
         # API authentication set to true execute, webbreaker admin credentials --webinspect
         self.conf_get('webinspect', 'authenticate', 'false')
         self.conf_get('webinspect', 'username', '')
