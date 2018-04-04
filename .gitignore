@@ -67,6 +67,3 @@ target/
 # Graffle
 *.graffle
 .idea
-
-# Development of API
-fortifyapi/
