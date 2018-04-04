@@ -5,7 +5,7 @@ import os
 import socket
 import sys
 
-from webbreaker.fortifyapi.fortifyapi.fortify import FortifyApi
+from fortifyapi.fortify import FortifyApi
 from exitstatus import ExitStatus
 from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.fortify.config import FortifyConfig
