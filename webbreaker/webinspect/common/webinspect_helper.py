@@ -19,7 +19,7 @@ from webinspectapi.webinspect import WebInspectApi
 
 import ntpath
 
-from webbreaker.webinspect.common.api_helper import APIHelper
+from webbreaker.common.api_response_helper import APIHelper
 
 import sys
 from exitstatus import ExitStatus
@@ -41,10 +41,13 @@ class WebInspectAPIHelper(object):
             # set the host to be the available endpoint
             self.host = self.setting_overrides.endpoint
 
-        # TODO add verify_ssl to config and read from it here?
-        self.api = WebInspectApi(self.host, verify_ssl=False, username=username, password=password)
+        self._set_api()
 
         Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
+
+    def _set_api(self):
+        self.api = WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
+
 
     @staticmethod
     def _trim_ext(file):

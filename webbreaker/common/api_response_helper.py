@@ -17,7 +17,7 @@ class APIHelper:
         :return:
         """
         self._check_for_authorization_error_(response)
-        self._check_for_response_fail_(response)
+        self.check_for_response_fail_(response)
 
     @staticmethod
     def _check_for_authorization_error_(response):
@@ -27,11 +27,11 @@ class APIHelper:
             sys.exit(ExitStatus.failure)
 
     @staticmethod
-    def _check_for_response_fail_(response):
+    def check_for_response_fail_(response):
         if response.success:
             pass
         else:
-            Logger.app.error("The call to the WebInspectAPI was not successful: {}".format(response.message))
+            Logger.app.error("The call to the API was not successful: {}".format(response.message))
             sys.exit(ExitStatus.failure)
 
 

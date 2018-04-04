@@ -59,6 +59,7 @@ class WebInspectConfig(object):
             self.default_size = webinspect_dict['default_size']
             self.webinspect_git = webinspect_dict['git']
             self.mapped_policies = webinspect_dict['mapped_policies']
+            self.verify_ssl = webinspect_dict['verify_ssl']
         except KeyError as e:
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
@@ -92,6 +93,8 @@ class WebInspectConfig(object):
 
             webinspect_dict['mapped_policies'] = [[option, config.get('webinspect_policy', option)] for option in
                                                   config.options('webinspect_policy')]
+
+            webinspect_dict['verify_ssl'] = wb_config.conf_get('webinspect', 'verify_ssl')
 
         except (configparser.NoOptionError, CalledProcessError) as e:
             Logger.app.error("{} has incorrect or missing values {}".format(webinspect_setting, e))

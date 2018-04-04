@@ -22,27 +22,35 @@ import requests.exceptions
 from colorama import Fore
 from colorama import Style
 import click
+
+import re
+import sys
+
 from webbreaker import __version__ as version
-from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.webinspect.authentication import WebInspectAuth, auth_prompt
-from webbreaker.fortify.fortifyconfig import FortifyConfig
-from webbreaker.common.webbreakerhelper import WebBreakerHelper
+
+from webbreaker.common.authorization import auth_prompt
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.common.secretclient import SecretClient
+from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+
+from webbreaker.fortify.authentication import FortifyAuth
+from webbreaker.fortify.download import FortifyDownload
+from webbreaker.fortify.list_application_versions import FortifyListApplicationVersions
+from webbreaker.fortify.upload import FortifyUpload
+
 from webbreaker.threadfix.threadfixclient import ThreadFixClient
 from webbreaker.threadfix.threadfixconfig import ThreadFixConfig
+
 from webbreaker.common.logexceptionhelper import LogExceptionHelper, LogInfoHelper
 
+from webbreaker.webinspect.authentication import WebInspectAuth
+from webbreaker.webinspect.download import WebInspectDownload
+from webbreaker.webinspect.list_scans import WebInspectListScans
+from webbreaker.webinspect.list_servers import WebInspectListServers
 from webbreaker.webinspect.proxy import WebInspectProxy
 from webbreaker.webinspect.scan import WebInspectScan
-from webbreaker.webinspect.list_scans import WebInspectListScans
-from webbreaker.webinspect.download import WebInspectDownload
 
-from webbreaker.webinspect.list_servers import WebInspectListServers
-from webbreaker.fortify.fortify import Fortify
-import re
-
-import sys
-from exitstatus import ExitStatus
 
 logexceptionhelper = LogExceptionHelper()
 loginfohelper = LogInfoHelper()
@@ -241,9 +249,7 @@ def fortify():
               help="Specify Fortify app name"
               )
 def fortify_list_application_versions(fortify_user, fortify_password, application):
-    # TODO
-    fortify = Fortify()
-    fortify.list(fortify_user, fortify_password, application)
+    FortifyListApplicationVersions(fortify_user, fortify_password, application)
 
 
 @fortify.command(name='download',
@@ -261,8 +267,7 @@ def fortify_list_application_versions(fortify_user, fortify_password, applicatio
               help="Specify Fortify app version")
 def fortify_download_scan(fortify_user, fortify_password, application, version):
     # TODO
-    fortify = Fortify()
-    fortify.download(fortify_user, fortify_password, application, version)
+    FortifyDownload(fortify_user, fortify_password, application, version)
 
 
 @fortify.command(name='upload',
@@ -282,8 +287,7 @@ def fortify_download_scan(fortify_user, fortify_password, application, version):
 @click.option('--scan_name',
               help="Specify name if file name is different than version")
 def fortify_upload_scan(fortify_user, fortify_password, application, version, scan_name):
-    fortify = Fortify()
-    fortify.upload(fortify_user, fortify_password, application, version, scan_name)
+    FortifyUpload(fortify_user, fortify_password, application, version, scan_name)
 
 
 @cli.group(short_help="Manage credentials & notifiers",
@@ -312,45 +316,47 @@ def admin():
               help="Specify username")
 def admin_credentials(fortify, webinspect, clear, username, password):
     if fortify:
-        fortify_config = FortifyConfig()
+        fortify_auth = FortifyAuth()
         if clear:
-            fortify_config.clear_credentials()
+            fortify_auth.clear_credentials()
             loginfohelper.LogInfoFortifyCredentialsClearSuccess()
         else:
             if username and password:
                 try:
-                    fortify_config.write_username(username)
-                    fortify_config.write_password(password)
+                    fortify_auth.write_credentials(username, password)
                     loginfohelper.LogInfoCredentialsStoreSuccess()
+
                 except ValueError:
                     logexceptionhelper.LogErrorFortifyCredentialsNotStored()
 
             else:
-                username, password = fortify_prompt()
+                username, password = auth_prompt("Fortify")
                 try:
-                    fortify_config.write_username(username)
-                    fortify_config.write_password(password)
+                    fortify_auth.write_credentials(username, password)
                     loginfohelper.LogInfoCredentialsStoreSuccess()
                 except ValueError:
                     logexceptionhelper.LogErrorFortifyCredentialsNotStored()
+
     elif webinspect:
-        webinspect_config = WebInspectAuth()
+        webinspect_auth = WebInspectAuth()
         if clear:
-            webinspect_config.clear_credentials()
+            webinspect_auth.clear_credentials()
             loginfohelper.LogInfoWebInspectCredentialClearSuccess()
         else:
             if username and password:
                 try:
-                    webinspect_config.write_credentials(username, password)
+                    webinspect_auth.write_credentials(username, password)
                     loginfohelper.LogInfoCredentialsStoreSuccess()
+
                 except ValueError:
                     logexceptionhelper.LogErrorFortifyCredentialsNotStored()
 
             else:
                 username, password = auth_prompt("webinspect")
                 try:
-                    webinspect_config.write_credentials(username, password)
+                    webinspect_auth.write_credentials(username, password)
                     loginfohelper.LogInfoCredentialsStoreSuccess()
+
                 except ValueError:
                     logexceptionhelper.LogErrorFortifyCredentialsNotStored()
     else:
