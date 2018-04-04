@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.threadfixproapi.threadfixpro import ThreadFixProAPI
+from threadfixproapi.threadfixpro import ThreadFixProAPI
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.common.logexceptionhelper import LogInfoHelper
 

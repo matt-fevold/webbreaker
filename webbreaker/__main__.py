@@ -37,7 +37,6 @@ from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.fortify.download import FortifyDownload
 from webbreaker.fortify.list import FortifyList
-from webbreaker.fortify.upload import FortifyUpload
 
 from webbreaker.threadfix.threadfixclient import ThreadFixClient
 from webbreaker.threadfix.threadfixconfig import ThreadFixConfig

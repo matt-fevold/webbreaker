@@ -122,7 +122,6 @@ class Config(object):
         self.conf_get('fortify', 'version_attribute_value', 'New WebBreaker Application')
         self.conf_get('fortify', 'version_attribute_values', '')
 
-
         # ThreadFix URL and ThreadFix API Key')
         self.conf_get('threadfix', 'host', 'https://threadfix.example.com:8443/threadfix')
         self.conf_get('threadfix', 'api_key', 'ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX')
