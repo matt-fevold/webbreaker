@@ -4,4 +4,4 @@ mock
 pytest
 pytest-runner
 testfixtures
-tox
+tox>=2.9.0,<3.0.0
