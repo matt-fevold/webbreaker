@@ -95,7 +95,16 @@ class Config(object):
     def set_config(self):
         # SSC URL exclude the /ssc context
         # TODO: Change ssc_url -> fortify_url or vice versa. Just standardize
+        # Default Fortify SSC Application
+        self.conf_get('fortify', 'application_name', 'WEBINSPECT')
+
+        # Default verify_ssl value
+        self.conf_get('fortify', 'verify_ssl', 'False')
         self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
+
+        # Fortify SSC authentication execute, webbreaker admin credentials --fortify
+        self.conf_get('fortify', 'username', '')
+        self.conf_get('fortify', 'password', '')
 
         # Default & a custom Fortify SSC Application Version attribute values and
         # Application (Project) Template associated to the Application Version
@@ -104,7 +113,8 @@ class Config(object):
         self.conf_get('fortify', 'development_strategy', 'Internal')
         self.conf_get('fortify', 'accessibility', 'externalpublicnetwork')
         self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
-        self.conf_get('fortify', 'custom_attribute', '')
+        self.conf_get('fortify', 'custom_attribute_id', '')
+        self.conf_get('fortify', 'custom_attribute_value', '')
 
         # Application Version Attribute Configuration
         self.conf_get('fortify', 'search_expression', '')
@@ -112,15 +122,6 @@ class Config(object):
         self.conf_get('fortify', 'version_attribute_value', 'New WebBreaker Application')
         self.conf_get('fortify', 'version_attribute_values', '')
 
-        # Default Fortify SSC Application
-        self.conf_get('fortify', 'application_name', 'WEBINSPECT')
-
-        # Default verify_ssl value
-        self.conf_get('fortify', 'verify_ssl', 'False')
-
-        # Fortify SSC authentication execute, webbreaker admin credentials --fortify
-        self.conf_get('fortify', 'username', '')
-        self.conf_get('fortify', 'password', '')
 
         # ThreadFix URL and ThreadFix API Key')
         self.conf_get('threadfix', 'host', 'https://threadfix.example.com:8443/threadfix')

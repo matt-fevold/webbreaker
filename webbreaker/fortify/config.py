@@ -34,7 +34,8 @@ class FortifyConfig(object):
             self.development_phase = config.get("fortify", "development_phase")
             self.development_strategy = config.get("fortify", "development_strategy")
             self.accessibility = config.get("fortify", "accessibility")
-            self.custom_attribute = config.get("fortify", "custom_attribute")
+            self.custom_attribute = (config.get("fortify", "custom_attribute_id"),
+                                     config.get("fortify", "custom_attribute_value"))
 
             # REST API Version Attribute Values
             self.search_expression = config.get("fortify", "search_expression")

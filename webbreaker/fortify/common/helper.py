@@ -197,7 +197,8 @@ class FortifyClient(object):
                                                          development_phase=self.config.development_phase,
                                                          development_strategy=self.config.development_strategy,
                                                          accessibility=self.config.accessibility,
-                                                         business_risk_ranking=self.config.business_risk_ranking
+                                                         business_risk_ranking=self.config.business_risk_ranking,
+                                                         custom_attribute=self.config.custom_attribute
                                                          )
         APIHelper().check_for_response_errors(response)
         return version_id
