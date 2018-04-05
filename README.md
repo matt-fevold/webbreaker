@@ -103,3 +103,4 @@ Found something that doesn't seem right or have a feature request? [Please open 
 [![license](https://img.shields.io/github/license/target/webbreaker.svg?style=flat-square)](https://github.com/target/webbreaker/blob/master/LICENSE.txt)
 
 Copyright 2018 Target Brands, Inc.
+
