@@ -67,3 +67,6 @@ target/
 # Graffle
 *.graffle
 .idea
+
+# FortifyAPI Dev
+webbreaker/fortifyapi

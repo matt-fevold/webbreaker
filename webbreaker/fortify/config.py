@@ -34,14 +34,8 @@ class FortifyConfig(object):
             self.development_phase = config.get("fortify", "development_phase")
             self.development_strategy = config.get("fortify", "development_strategy")
             self.accessibility = config.get("fortify", "accessibility")
-            self.custom_attribute = (config.get("fortify", "custom_attribute_id"),
-                                     config.get("fortify", "custom_attribute_value"))
-
-            # REST API Version Attribute Values
-            self.search_expression = config.get("fortify", "search_expression")
-            self.version_attribute_value = config.get("fortify", "version_attribute_value")
-            self.version_attribute_values = config.get("fortify", "version_attribute_values")
-            self.attribute_definition_id = config.get("fortify", "attribute_definition_id")
+            self.custom_attribute_name = config.get("fortify", "custom_attribute_name")
+            self.custom_attribute_value = config.get("fortify", "custom_attribute_value")
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))

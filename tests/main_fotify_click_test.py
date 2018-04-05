@@ -54,7 +54,7 @@ def test_fortify_upload_scan_success(upload_mock, runner):
 
     runner.invoke(webbreaker, ['fortify', 'upload', '--version', 'some_version'])
 
-    upload_mock.assert_called_once_with(None, None, None, 'some_version', None)
+    upload_mock.assert_called_once_with(None, None, None, 'some_version', None, None)
 
 
 @mock.patch('webbreaker.__main__.FortifyUpload.__init__')
@@ -63,7 +63,7 @@ def test_fortify_upload_scan_with_application_success(upload_mock, runner):
 
     runner.invoke(webbreaker, ['fortify', 'upload', '--version', 'some_version', '--application', 'some_application'])
 
-    upload_mock.assert_called_once_with(None, None, 'some_application', 'some_version', None)
+    upload_mock.assert_called_once_with(None, None, 'some_application', 'some_version', None, None)
 
 
 @mock.patch('webbreaker.__main__.FortifyUpload.__init__')
@@ -72,4 +72,4 @@ def test_fortify_upload_scan_with_scan_name_success(upload_mock, runner):
 
     runner.invoke(webbreaker, ['fortify', 'upload', '--version', 'some_version', '--scan_name', 'some_scan_name'])
 
-    upload_mock.assert_called_once_with(None, None, None, 'some_version', 'some_scan_name')
+    upload_mock.assert_called_once_with(None, None, None, 'some_version', 'some_scan_name', None)

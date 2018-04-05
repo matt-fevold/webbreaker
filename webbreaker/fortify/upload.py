@@ -13,7 +13,7 @@ from webbreaker.common.webbreakerlogger import Logger
 
 
 class FortifyUpload:
-    def __init__(self, username, password, application_name, version_name, scan_name):
+    def __init__(self, username, password, application_name, version_name, scan_name, custom_value):
         self.config = FortifyConfig()
 
         if application_name is None:
@@ -22,9 +22,9 @@ class FortifyUpload:
             scan_name = version_name
 
         self.username, self.password = FortifyAuth().authenticate(username, password)
-        self.upload(application_name, version_name, self.config.project_template, scan_name)
+        self.upload(application_name, version_name, self.config.project_template, scan_name, custom_value)
 
-    def upload(self, application_name, version_name, application_template, scan_name):
+    def upload(self, application_name, version_name, application_template, scan_name, custom_value):
         """
         Uploads a file to Fortify SSC. The scan_name matches the name of the file to upload with a '.fpr' extension
         :param application_name: Application to upload Version to
@@ -32,13 +32,13 @@ class FortifyUpload:
         :param application_template: Template to use for Version upload
         :param scan_name: Name of the scan to upload. Also the name of the file without the '.fpr' extension. Usually
         the same as the version_name
-        :return: None
+        :param custom_value: Custom value to be used while uploading new attributes to Application Version.
         """
         try:
             fortify_helper = FortifyHelper(fortify_url=self.config.ssc_url,
                                            fortify_username=self.username,
                                            fortify_password=self.password)
-            fortify_helper.upload_scan(application_name, version_name, application_template, scan_name)
+            fortify_helper.upload_scan(application_name, version_name, application_template, scan_name, custom_value)
         except (IOError, ValueError) as e:
             Logger.app.critical("Unable to complete command 'fortify upload'\n Error: {}".format(e))
             sys.exit(ExitStatus.failure)

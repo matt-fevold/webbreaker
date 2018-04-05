@@ -35,13 +35,14 @@ def test_fortify_upload_successful_init_application_name_scan_name_not_none(conf
                                    password=None,
                                    application_name=expected_application,
                                    version_name=expected_version,
-                                   scan_name=expected_scan_name)
+                                   scan_name=expected_scan_name,
+                                   custom_value=None)
 
     assert fortify_upload.username == expected_username
     assert fortify_upload.password == expected_password
 
     upload_mock.assert_called_once_with(expected_application, expected_version, expected_project_template,
-                                        expected_scan_name)
+                                        expected_scan_name, None)
     assert config_mock.call_count == 1
     assert auth_mock.call_count == 1
     assert upload_mock.call_count == 1
@@ -67,14 +68,15 @@ def test_fortify_upload_successful_init_application_name_is_none(config_mock, au
                                    password=None,
                                    application_name=expected_application,
                                    version_name=expected_version,
-                                   scan_name=None)
+                                   scan_name=None,
+                                   custom_value=None)
 
     assert fortify_upload.username == expected_username
     assert fortify_upload.password == expected_password
 
     # If scan_name is None, scan_name will equal version_name
     upload_mock.assert_called_once_with(expected_application, expected_version, expected_project_template,
-                                        expected_version)
+                                        expected_version, None)
     assert config_mock.call_count == 1
     assert auth_mock.call_count == 1
     assert upload_mock.call_count == 1
@@ -99,7 +101,8 @@ def test_fortify_upload_upload_successful_upload(config_mock, auth_mock, client_
                                    password=expected_password,
                                    application_name=expected_application,
                                    version_name=expected_version,
-                                   scan_name=expected_scan_name)
+                                   scan_name=expected_scan_name,
+                                   custom_value=None)
 
     assert fortify_upload.username == expected_username
     assert fortify_upload.password == expected_password
@@ -132,7 +135,8 @@ def test_fortify_upload_upload_throws_value_error(log_mock, config_mock, auth_mo
                       password=expected_password,
                       application_name=expected_application,
                       version_name=expected_version,
-                      scan_name=expected_scan_name)
+                      scan_name=expected_scan_name,
+                      custom_value=None)
 
     log_mock.assert_called_once()
 
@@ -159,7 +163,8 @@ def test_fortify_upload_upload_throws_unbound_local_error(log_mock, config_mock,
                       password=expected_password,
                       application_name=expected_application,
                       version_name=expected_version,
-                      scan_name=expected_scan_name)
+                      scan_name=expected_scan_name,
+                      custom_value=None)
 
     log_mock.assert_called_once()
 
@@ -186,6 +191,7 @@ def test_fortify_upload_upload_throws_io_error(log_mock, config_mock, auth_mock,
                       password=expected_password,
                       application_name=expected_application,
                       version_name=expected_version,
-                      scan_name=expected_scan_name)
+                      scan_name=expected_scan_name,
+                      custom_value=None)
 
     log_mock.assert_called_once()

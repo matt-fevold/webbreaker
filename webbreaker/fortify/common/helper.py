@@ -5,7 +5,7 @@ import os
 import socket
 import sys
 
-from fortifyapi.fortify import FortifyApi
+from webbreaker.fortifyapi.fortifyapi.fortify import FortifyApi
 from exitstatus import ExitStatus
 from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.fortify.config import FortifyConfig
@@ -23,9 +23,9 @@ class FortifyHelper(object):
         self.username = fortify_username
         self.password = fortify_password
 
+        self.config = FortifyConfig()
         self.runenv = WebBreakerHelper.check_run_env()
         self.api = self._setup_fortify_ssc_api()
-        self.config = FortifyConfig()
 
     def download_scan(self, application_name, version_name):
         """
@@ -60,109 +60,60 @@ class FortifyHelper(object):
 
         Logger.app.info("Fortify list has successfully completed")
 
-    def upload_scan(self, application_name, version_name, project_template, file_name):
+    def upload_scan(self, application_name, version_name, project_template, file_name, custom_value):
         """
         If the Application & Version already exists, log and exit with error.
-        Else upload (create) a new Version. If Application doesn't exist, create it.
-        Then upload file to Application Version.
+        Create a new Version and create Application if doesn't exist.
+        Finalize Application Version
+        Upload file to Application Version.
         :param application_name: Name of the Application for Upload.
         :param version_name: Name of the Version for Upload
         :param project_template: Project Template GUID from config.ini
         :param file_name: Scan name to upload. It will be appended with '.fpr' to create the filename
         """
         file_name = self._trim_ext(file_name)
-        version_description = self._project_version_description()
+        description = self._project_version_description()
         application_id = self._get_application_id(application_name)
 
+        # Check if Application Version Already Exists
         if application_id is not None:
             if self._get_version_id(application_name, version_name):
                 Logger.app.error(
                     "Found existing Application Version '{} : {}'. Unable to upload.".format(application_name,
                                                                                              version_name))
                 sys.exit(ExitStatus.failure)
-            # Application exists but not Version
-            else:
-                version_id = self._create_version(application_name=application_name,
-                                                  application_id=application_id,
-                                                  version_name=version_name,
-                                                  application_template=project_template,
-                                                  version_description=version_description)
-        # Application & Version do not exist
-        else:
-            version_id = self._create_application_and_version(application_name=application_name,
-                                                              version_name=version_name,
-                                                              application_template=project_template,
-                                                              version_description=version_description)
-        # Upload File to Application Version
+
+        version_id = self._create_application_version(application_name=application_name,
+                                                      application_id=application_id,
+                                                      version_name=version_name,
+                                                      application_template=project_template,
+                                                      description=description)
+        self._finalize_application_version_creation(version_id, custom_value)
         self._upload_application_version_file(version_id=version_id,
                                               file_name=file_name)
         Logger.app.info(
             "Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name, self.extension,
                                                                                     self.fortify_url))
 
-    def _commit_version(self, version_id):
-        """
-        Commit a Version to Fortify. Necessary step when creating new Versions OR uploading new attributes.
-        :param version_id: Version ID to commit.
-        """
-        response = self.api.commit_project_version(project_version_id=version_id)
-        APIHelper().check_for_response_errors(response)
-
-    def _create_application_and_version(self, application_name, version_name,
-                                        application_template, version_description):
-        """
-        Creates a new Application Version.
-        :param application_name: Name of the Application to put the Version under.
-        :param version_name: Name of the Version to create.
-        :param application_template: Brought in from the config.ini during the FortifyUpload Class __init__
-        :param version_description: Version description for Application Version
-        :return: Version ID of the newly created Version.
-        """
-
-        # Initial call to create a new Project Version
-        response = self.api.create_new_project_version(application_name=application_name,
-                                                       application_template=application_template,
-                                                       version_name=version_name,
-                                                       description=version_description)
-        APIHelper().check_for_response_errors(response)
-        version_id = response.data['data']['id']
-
-        # Second call to create a new Project Version
-        response = \
-            self.api.bulk_create_new_application_request(version_id=version_id,
-                                                         development_phase=self.config.development_phase,
-                                                         development_strategy=self.config.development_strategy,
-                                                         accessibility=self.config.accessibility,
-                                                         business_risk_ranking=self.config.business_risk_ranking,
-                                                         custom_attribute=self.config.custom_attribute
-                                                         )
-        APIHelper().check_for_response_errors(response)
-        return version_id
-
-    def _create_version(self, application_name, application_id,
-                        version_name, application_template, version_description):
+    def _create_application_version(self, application_name, version_name, application_template, description,
+                                    application_id=None):
         """
         Creates a new Version under the specified Application ID.
         :param application_name: Name of the Application to put the Version under.
         :param application_id: ID of the Application. If None, creates a new Application with the application_name.
         :param version_name: Name of the Version to create.
         :param application_template: Brought in from the config.ini during the FortifyUpload Class __init__
-        :param version_description: Version description for Application Version
+        :param description: Description for Application Version
         :return: Version ID of the newly created Version.
         """
 
-        response = self.api.create_project_version(project_name=application_name,
-                                                   project_id=application_id,
-                                                   project_template=application_template,
-                                                   version_name=version_name,
-                                                   description=version_description)
+        response = self.api.create_application_version(application_name=application_name,
+                                                       application_id=application_id,
+                                                       application_template=application_template,
+                                                       version_name=version_name,
+                                                       description=description)
         APIHelper().check_for_response_errors(response)
-        version_id = response.data['data']['id']
-
-        self._upload_version_attributes(version_id)
-        self._commit_version(version_id)
-
-        return version_id
+        return response.data['data']['id']
 
     def _download_version(self, version_id):
         """
@@ -173,6 +124,28 @@ class FortifyHelper(object):
         response, file_name = self.api.download_artifact_scan(version_id)
         APIHelper().check_for_response_errors(response)
         return response.data, file_name
+
+    def _finalize_application_version_creation(self, version_id, custom_value):
+
+        custom_attribute = self._get_custom_attribute(custom_value)
+
+        response = \
+            self.api.bulk_create_new_application_version_request(version_id=version_id,
+                                                                 development_phase=self.config.development_phase,
+                                                                 development_strategy=self.config.development_strategy,
+                                                                 accessibility=self.config.accessibility,
+                                                                 business_risk_ranking=self.config.business_risk_ranking,
+                                                                 custom_attribute=custom_attribute
+                                                                 )
+        APIHelper().check_for_response_errors(response)
+
+    def _get_custom_attribute(self, custom_value=None):
+        custom_attribute_id = self._get_attribute_definition_id(search_expression=self.config.custom_attribute_name)
+
+        if custom_value:
+            return custom_attribute_id, custom_value
+        else:
+            return custom_attribute_id, self.config.custom_attribute_value
 
     def _get_application_id(self, application_name):
         """
@@ -202,7 +175,7 @@ class FortifyHelper(object):
         if response.success:
             if response.data['data'] is not []:
                 return response.data['data'][0]['id']
-        return None
+        return ''
 
     def _get_version_id(self, application_name, version_name):
         """
@@ -234,11 +207,14 @@ class FortifyHelper(object):
             response = FortifyApi(host=self.fortify_url,
                                   username=self.username,
                                   password=self.password,
-                                  verify_ssl=False) \
+                                  verify_ssl=self.config.verify_ssl) \
                 .get_token()
+
+            # print(response.message)
+            # print(response.data)
             APIHelper().check_for_response_errors(response)
 
-            return FortifyApi(self.fortify_url, token=response.data['data']['token'], verify_ssl=False)
+            return FortifyApi(self.fortify_url, token=response.data['data']['token'], verify_ssl=self.config.verify_ssl)
 
         # TODO: Remove general exception handling
         except Exception as e:
@@ -250,29 +226,6 @@ class FortifyHelper(object):
     def _upload_application_version_file(self, version_id, file_name):
         response = self.api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
                                                  project_version_id=version_id)
-        APIHelper().check_for_response_errors(response)
-
-    def _upload_version_attributes(self, version_id):
-        """
-        Uploads attributes to the specified version_id. Will grab all attributes to upload from config.ini
-        :param version_id: Version to upload attributes to.
-        """
-        search_expression = self.config.search_expression
-        attribute_definition_id = self.config.attribute_definition_id
-
-        version_attribute_value = self.config.version_attribute_value
-        version_attribute_values = self.config.version_attribute_values
-
-        if search_expression is not '':
-            attribute_definition_id = self._get_attribute_definition_id(search_expression=search_expression)
-        if version_attribute_values is '':
-            version_attribute_values = []
-
-        response = self.api.add_project_version_attribute(project_version_id=version_id,
-                                                          attribute_definition_id=attribute_definition_id,
-                                                          value=version_attribute_value,
-                                                          values=version_attribute_values)
-
         APIHelper().check_for_response_errors(response)
 
     @staticmethod

@@ -286,8 +286,10 @@ def fortify_download_scan(fortify_user, fortify_password, application, version):
               )
 @click.option('--scan_name',
               help="Specify name if file name is different than version")
-def fortify_upload_scan(fortify_user, fortify_password, application, version, scan_name):
-    FortifyUpload(fortify_user, fortify_password, application, version, scan_name)
+@click.option('--custom_value',
+              help="Specify custom value for creating a new Application Version.")
+def fortify_upload_scan(fortify_user, fortify_password, application, version, scan_name, custom_value):
+    FortifyUpload(fortify_user, fortify_password, application, version, scan_name, custom_value)
 
 
 @cli.group(short_help="Manage credentials & notifiers",

@@ -108,19 +108,13 @@ class Config(object):
 
         # Default & a custom Fortify SSC Application Version attribute values and
         # Application (Project) Template associated to the Application Version
+        self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
         self.conf_get('fortify', 'business_risk_ranking', 'High')
         self.conf_get('fortify', 'development_phase', 'Active')
         self.conf_get('fortify', 'development_strategy', 'Internal')
         self.conf_get('fortify', 'accessibility', 'externalpublicnetwork')
-        self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
-        self.conf_get('fortify', 'custom_attribute_id', '')
+        self.conf_get('fortify', 'custom_attribute_name', '')
         self.conf_get('fortify', 'custom_attribute_value', '')
-
-        # Application Version Attribute Configuration
-        self.conf_get('fortify', 'search_expression', '')
-        self.conf_get('fortify', 'attribute_definition_id', '')
-        self.conf_get('fortify', 'version_attribute_value', 'New WebBreaker Application')
-        self.conf_get('fortify', 'version_attribute_values', '')
 
         # ThreadFix URL and ThreadFix API Key')
         self.conf_get('threadfix', 'host', 'https://threadfix.example.com:8443/threadfix')
