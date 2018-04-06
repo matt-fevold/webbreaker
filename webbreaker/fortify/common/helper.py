@@ -75,22 +75,28 @@ class FortifyHelper(object):
         description = self._project_version_description()
         application_id = self._get_application_id(application_name)
 
-        # Check if Application Version Already Exists
-        if application_id is not None:
-            if self._get_version_id(application_name, version_name):
-                Logger.app.error(
-                    "Found existing Application Version '{} : {}'. Unable to upload.".format(application_name,
-                                                                                             version_name))
-                sys.exit(ExitStatus.failure)
+        if application_id:
+            version_id = self._get_version_id(application_name, version_name)
+            if version_id:
+                Logger.app.info(
+                    "Found existing Application Version '{} : {}'.".format(application_name,
+                                                                           version_name))
+            else:
+                version_id = self._create_application_version(application_name=application_name,
+                                                              application_id=application_id,
+                                                              version_name=version_name,
+                                                              application_template=project_template,
+                                                              description=description)
+                self._finalize_application_version_creation(version_id, custom_value)
+        else:
+            version_id = self._create_application_version(application_name=application_name,
+                                                          application_id=application_id,
+                                                          version_name=version_name,
+                                                          application_template=project_template,
+                                                          description=description)
+            self._finalize_application_version_creation(version_id, custom_value)
 
-        version_id = self._create_application_version(application_name=application_name,
-                                                      application_id=application_id,
-                                                      version_name=version_name,
-                                                      application_template=project_template,
-                                                      description=description)
-        self._finalize_application_version_creation(version_id, custom_value)
-        self._upload_application_version_file(version_id=version_id,
-                                              file_name=file_name)
+        self._upload_application_version_file(version_id=version_id, file_name=file_name)
         Logger.app.info(
             "Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name, self.extension,
                                                                                     self.fortify_url))
