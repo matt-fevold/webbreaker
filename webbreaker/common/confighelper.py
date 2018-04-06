@@ -134,6 +134,7 @@ class Config(object):
         self.conf_get('webinspect', 'authenticate', 'false')
         self.conf_get('webinspect', 'username', '')
         self.conf_get('webinspect', 'password', '')
+        self.conf_get('webinspect', 'verify_ssl', 'False')
 
         # Built-in WebInspect policies, other policies may be appended
         self.conf_get('webinspect_policy', 'aggressivesqlinjection', '032b1266-294d-42e9-b5f0-2a4239b23941')
