@@ -163,16 +163,22 @@ Below is the default config.ini that is set at first time install, once you exec
 ### Default 
 ````
 [fortify]
+application_name = WEBINSPECT
+verify_ssl = False
 ssc_url = https://fortify.example.com
+username =
+password =
 business_risk_ranking = High
 development_phase = Active
 development_strategy = Internal
 accessibility = externalpublicnetwork
-custom_attribute =
 project_template = Prioritized High Risk Issue Template
-application_name = WEBINSPECT
-username =
-password =
+custom_attribute_id =
+custom_attribute_value =
+search_expression =
+attribute_definition_id =
+version_attribute_value = New WebBreaker Application
+version_attribute_values =
 
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
@@ -261,14 +267,14 @@ This api_key to authenticate ThreadFix actions
 ### [fortify]
 Fortify SSC settings can be found under [fortify]
 
-##### ssc_url
-URL of the fortify server to contact
-
-##### project_template
-Static value of the Fortify SSC Project Template you wish to set as a default for each Application Version you create.
-
 ##### application_name
 Static Value of the default Fortify SSC Application you wish to use without stating it on the command line.
+
+##### verify_ssl
+Option to verify ssl or not while communicating with Fortify. The default option is 'False'.
+
+##### ssc_url
+URL of the fortify server to contact.
 
 ##### username
 Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use 
@@ -277,6 +283,40 @@ Fortify username that will be used for authentication with ssc_url. It is stored
 ##### password
 Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use 
 `webbreaker admin credentials --fortify` to set your username & password.
+
+##### business_risk_ranking
+Fortify defaults this to `High`. Other valid inputs are `Medium` & `Low`.
+
+##### development_phase
+Current development phase of Fortify Version. Default is `Active`.
+
+##### development_strategy
+Development staffing strategy used for this Application. Default is `Internal`.
+
+##### accessibility
+The level of recommended access required to interact with this Application. Default is `externalpublicnetwork`.
+
+##### project_template
+Static value of the Fortify SSC Project Template you wish to set as a default for each Application Version you create.
+
+##### custom_attribute_id
+If you would like to set another attribute definition with a custom id number for creation of a new Application Version.
+
+##### custom_attribute_value
+If you would like to set another attribute definition with a custom value for creation of a new Application Version.
+
+##### search_expression
+If this is set, it will attempt to retrieve the Application Attribute Definition and use that ID in setting Version Attributes.
+The format for creating a search_expression is `name:"Search Example"`
+
+##### attribute_definition_id
+Instead of using the search expression to retrieve the Application Attribute Definition, you may set it here and the search_expression will be ignored.
+
+##### version_attribute_value
+Attribute value that is set when setting Version Attributes. The default is `New WebBreaker Application`
+
+##### version_attribute_values
+List of Version attribute values to set while setting Version Attributes.
 
 ### [webinspect]
 

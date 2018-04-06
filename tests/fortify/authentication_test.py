@@ -1,8 +1,8 @@
-
 import pytest
 import mock
 
 from webbreaker.fortify.authentication import FortifyAuth
+
 
 # fixture for passing in creds and not passing in creds via cli
 @pytest.fixture(params=[
@@ -86,7 +86,7 @@ def test_authenticate_has_credentials_success(secret_mock):
     secret_mock.return_value.get.side_effect = ["config_username", "config_password"]
 
     fortify_auth = FortifyAuth()
-    result = fortify_auth.has_auth_creds()
+    result = fortify_auth._has_auth_creds()
 
     assert result is True
 
@@ -97,6 +97,6 @@ def test_authenticate_has_credentials_fail(secret_mock):
     secret_mock.return_value.get.side_effect = [None, None]
 
     fortify_auth = FortifyAuth()
-    result = fortify_auth.has_auth_creds()
+    result = fortify_auth._has_auth_creds()
 
     assert result is False

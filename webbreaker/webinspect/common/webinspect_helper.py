@@ -327,6 +327,7 @@ class Overrides:
 
             self.endpoint = self.get_endpoint()
 
+
             self.runenv = WebBreakerHelper.check_run_env()
 
             Logger.app.debug("Completed webinspect client initialization")

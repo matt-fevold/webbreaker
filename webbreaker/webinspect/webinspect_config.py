@@ -8,6 +8,7 @@ import random
 import string
 import re
 import xml.etree.ElementTree as ElementTree
+from exitstatus import ExitStatus
 from subprocess import CalledProcessError, check_output
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
@@ -59,7 +60,7 @@ class WebInspectConfig(object):
             self.default_size = webinspect_dict['default_size']
             self.webinspect_git = webinspect_dict['git']
             self.mapped_policies = webinspect_dict['mapped_policies']
-            self.verify_ssl = webinspect_dict['verify_ssl']
+            self.verify_ssl = self._convert_verify_ssl_config(webinspect_dict['verify_ssl'])
         except KeyError as e:
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
@@ -325,6 +326,22 @@ class WebInspectConfig(object):
             raise Exception(logexceptionhelper.fetch_webinspect_configs)
 
         Logger.app.debug("Completed webinspect config fetch")
+
+    @staticmethod
+    def _convert_verify_ssl_config(verify_ssl):
+        """
+        if config ssl value is False return False, otherwise it should be a valid path to the cert to be used for ssl
+        :param verify_ssl:
+        :return: either False or the path to the CA cert
+        """
+        path = os.path.abspath(os.path.realpath(verify_ssl))
+        if os.path.exists(path):
+            return path
+        elif verify_ssl.upper() == 'FALSE':
+            return False
+        else:
+            logexceptionhelper.LogErrorFortifyInvalidSSLCredentials()
+            sys.exit(ExitStatus.failure)
 
     def trim_ext(self, file):
         if type(file) is list:

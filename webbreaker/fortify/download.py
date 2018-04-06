@@ -2,41 +2,41 @@
 # -*- coding: utf-8 -*-
 
 __since__ = "2.1.6"
-# TODO Test
 
-from webbreaker.fortify.common.fortify_helper import FortifyHelper
-from webbreaker.fortify.fortify_config import FortifyConfig
+import sys
+
+from exitstatus import ExitStatus
+from webbreaker.fortify.common.helper import FortifyHelper
+from webbreaker.fortify.config import FortifyConfig
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.common.webbreakerlogger import Logger
 
 
 class FortifyDownload:
-    def __init__(self, username, password, application, version):
+    def __init__(self, username, password, application_name, version_name):
         self.config = FortifyConfig()
-        self.download(username, password, application, version)
 
-    def download(self, username, password, application, version):
-        if application:
-            self.config.application_name = application
+        if application_name is None:
+            application_name = self.config.application_name
+
+        self.username, self.password = FortifyAuth().authenticate(username, password)
+        self.download(application_name, version_name)
+
+    def download(self, application_name, version_name):
+        """
+        Downloads a specific Version from an Application.
+        :param application_name: Application to search for Version in
+        :param version_name: Version to download
+        :return: None
+        """
         try:
-
-            fortify_auth = FortifyAuth()
-            username, password = fortify_auth.authenticate(username, password)
-
-            fortify_client = FortifyHelper(fortify_url=self.config.ssc_url,
-                                           project_template=self.config.project_template,
-                                           application_name=self.config.application_name,
-                                           fortify_username=username,
-                                           fortify_password=password)
-
-            version_id = fortify_client.find_version_id(version)
-            if version_id:
-                filename = fortify_client.download_scan(version_id)
-                if filename:
-                    Logger.app.info("Scan file for version {} successfully written to {}".format(version_id, filename))
-                else:
-                    Logger.app.error("Scan download for version {} has failed".format(version_id))
-            else:
-                Logger.app.error("No version matching {} found under {} in Fortify".format(version, application))
+            fortify_helper = FortifyHelper(fortify_url=self.config.ssc_url,
+                                           fortify_username=self.username,
+                                           fortify_password=self.password)
+            fortify_helper.download_scan(application_name, version_name)
         except (AttributeError, UnboundLocalError) as e:
             Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
+            sys.exit(ExitStatus.failure)
+        except IOError as e:
+            Logger.app.error("Couldn't open or write to file {}.".format(e))
+            sys.exit(ExitStatus.failure)

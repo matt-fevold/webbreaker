@@ -94,26 +94,27 @@ class Config(object):
 
     def set_config(self):
         # SSC URL exclude the /ssc context
-        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
-
-        # Default & a custom Fortify SSC Application Version attribute values and
-        # Project or Application Template associated to the Application Version
-        self.conf_get('fortify', 'business_risk_ranking', 'High')
-        self.conf_get('fortify', 'development_phase', 'Active')
-        self.conf_get('fortify', 'development_strategy', 'Internal')
-        self.conf_get('fortify', 'accessibility', 'externalpublicnetwork')
-        self.conf_get('fortify', 'custom_attribute', '')
-        self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
-
+        # TODO: Change ssc_url -> fortify_url or vice versa. Just standardize
         # Default Fortify SSC Application
         self.conf_get('fortify', 'application_name', 'WEBINSPECT')
 
         # Default verify_ssl value
         self.conf_get('fortify', 'verify_ssl', 'False')
+        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
 
         # Fortify SSC authentication execute, webbreaker admin credentials --fortify
         self.conf_get('fortify', 'username', '')
         self.conf_get('fortify', 'password', '')
+
+        # Default & a custom Fortify SSC Application Version attribute values and
+        # Application (Project) Template associated to the Application Version
+        self.conf_get('fortify', 'project_template', 'Prioritized High Risk Issue Template')
+        self.conf_get('fortify', 'business_risk_ranking', 'High')
+        self.conf_get('fortify', 'development_phase', 'Active')
+        self.conf_get('fortify', 'development_strategy', 'Internal')
+        self.conf_get('fortify', 'accessibility', 'externalpublicnetwork')
+        self.conf_get('fortify', 'custom_attribute_name', '')
+        self.conf_get('fortify', 'custom_attribute_value', '')
 
         # ThreadFix URL and ThreadFix API Key')
         self.conf_get('threadfix', 'host', 'https://threadfix.example.com:8443/threadfix')
@@ -129,13 +130,11 @@ class Config(object):
         self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(size_large)s')
         self.conf_get('webinspect', 'git_repo', 'https://github.com/webbreaker/webinspect.git')
 
-        # Default verify ssl value.
-        self.conf_get('webinspect', 'verify_ssl', 'False')
-
         # API authentication set to true execute, webbreaker admin credentials --webinspect
         self.conf_get('webinspect', 'authenticate', 'false')
         self.conf_get('webinspect', 'username', '')
         self.conf_get('webinspect', 'password', '')
+        self.conf_get('webinspect', 'verify_ssl', 'False')
 
         # Built-in WebInspect policies, other policies may be appended
         self.conf_get('webinspect_policy', 'aggressivesqlinjection', '032b1266-294d-42e9-b5f0-2a4239b23941')
