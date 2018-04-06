@@ -203,25 +203,16 @@ class FortifyHelper(object):
         to initialize the API client.
         :return: API client class that can interact with Fortify SSC API.
         """
-        try:
-            response = FortifyApi(host=self.fortify_url,
-                                  username=self.username,
-                                  password=self.password,
-                                  verify_ssl=self.config.verify_ssl) \
-                .get_token()
+        api = FortifyApi(host=self.fortify_url,
+                         username=self.username,
+                         password=self.password,
+                         verify_ssl=self.config.verify_ssl)
 
-            # print(response.message)
-            # print(response.data)
-            APIHelper().check_for_response_errors(response)
+        response_token = api.get_token()
+        APIHelper().check_for_response_errors(response_token)
 
-            return FortifyApi(self.fortify_url, token=response.data['data']['token'], verify_ssl=self.config.verify_ssl)
-
-        # TODO: Remove general exception handling
-        except Exception as e:
-            if hasattr(e, 'message'):
-                Logger.app.critical("Exception while getting Fortify token: {0}".format(e.message))
-
-        return None
+        return FortifyApi(self.fortify_url, token=response_token.data['data']['token'],
+                          verify_ssl=self.config.verify_ssl)
 
     def _upload_application_version_file(self, version_id, file_name):
         response = self.api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
