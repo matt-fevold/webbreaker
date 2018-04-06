@@ -4,13 +4,13 @@ configparser>=3.5.0
 cryptography>=1.8.0
 dpath>=1.4.0
 exitstatus
-fortifyapi==1.0.16
+fortifyapi==1.0.*
 GitPython
 httplib2
 ndg-httpsclient
 pyasn1
 pyOpenSSL
 requests>=2.18.4
-threadfixproapi>=1.0.2
+threadfixproapi>=1.0.*
 validators
 webinspectapi==1.0.*
