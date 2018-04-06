@@ -326,7 +326,7 @@ class Overrides:
             self.scan_size = override_dict['webinspect_scan_size']
 
             self.endpoint = self.get_endpoint()
-            self.url = self.endpoint
+
 
             self.runenv = WebBreakerHelper.check_run_env()
 
