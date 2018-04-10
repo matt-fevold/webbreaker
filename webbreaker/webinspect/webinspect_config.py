@@ -17,6 +17,8 @@ from webbreaker.common.confighelper import Config
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.webinspect.common.webinspect_loghelper import WebInspect_LogExceptionHelper
 
+
+
 try:
     from git.exc import GitCommandError
 except (ImportError, AttributeError) as e:  # module will fail if git is not installed
@@ -32,6 +34,11 @@ except ImportError:  # Python3
     import configparser
 
     config = configparser.ConfigParser()
+
+try:
+   FileNotFoundError  # Python 3
+except NameError:  # Python 2
+   FileNotFoundError = IOError
 
 runenv = WebBreakerHelper.check_run_env()
 logexceptionhelper = LogExceptionHelper()
@@ -126,11 +133,11 @@ class WebInspectConfig(object):
                                        namespaces={'xmlns': 'http://spidynamics.com/schemas/scanner/1.0'}):
                 targets.add(target.text)
         except FileNotFoundError:
-            Logger.app.error("Unable to read the config file {0}".format(settings_file_path))
-            exit(1)
+            Logger.app.error("Unable to read the settings file {0}".format(settings_file_path))
+            sys.exit(1)
         except ElementTree.ParseError:
             Logger.app.error("Settings file is not configured properly")
-            exit(1)
+            sys.exit(1)
         return targets
 
     def parse_webinspect_options(self, options):
@@ -181,6 +188,7 @@ class WebInspectConfig(object):
             else:
                 if os.path.isfile(options['settings'] + '.xml'):
                     options['settings'] = options['settings'] + '.xml'
+
                 if not os.path.isfile(options['settings']) and options['settings'] != 'Default':
                     options['upload_settings'] = os.path.join(webinspect_dir,
                                                               'settings',
@@ -190,7 +198,12 @@ class WebInspectConfig(object):
                     options['upload_settings'] = None
                 else:
                     options['upload_settings'] = options['settings']
-                    options['settings'] = re.search('.*/(.*)\.xml', options['settings']).group(1)
+                    try:
+
+                        options['settings'] = re.search('(.*)\.xml', options['settings']).group(1)
+                    except AttributeError as e:
+                        Logger.app.error("There was an issue finding you settings file {}, verify it exists and make "
+                                         "sure you pass in the path to the file (relative path okay): {}".format(options['settings'], e))
 
             # if login macro has been specified, ensure it's uploaded.
             if options['login_macro']:

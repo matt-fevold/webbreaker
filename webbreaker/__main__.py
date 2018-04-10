@@ -136,6 +136,7 @@ def webinspect():
 @click.option('--start_urls',
               multiple=True,
               help="Assign starting url(s)")
+# Deprecated as of 2.1.9, these options are set from scan via git repo. ^.^
 @click.option('--upload_policy',
               help="Upload policy file to WebInspect")
 @click.option('--upload_settings',

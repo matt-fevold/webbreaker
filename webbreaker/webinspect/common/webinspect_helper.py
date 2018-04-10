@@ -353,10 +353,15 @@ class Overrides:
                                     size_needed=self.scan_size, username=self.username,
                                     password=self.password)
         Logger.app.info("Querying WebInspect scan engines for availability.")
-        endpoint = lb.get_endpoint()
-
-        if not endpoint:
-            raise EnvironmentError("Scheduler found no available endpoints.")
+        try:
+            endpoint = lb.get_endpoint()
+        except (OSError, EnvironmentError) as e:
+            if self.scan_size is None:
+                Logger.app.error("No available endpoints were found ")
+                sys.exit(ExitStatus.failure)
+            else:
+                Logger.app.error("There are no webinspect servers of this size available. Please check your config.ini")
+                sys.exit(ExitStatus.failure)
 
         return endpoint
 

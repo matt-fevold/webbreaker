@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import random
+import sys
+from exitstatus import ExitStatus
 import webinspectapi.webinspect as webinspectapi
 from webbreaker.common.webbreakerlogger import Logger
 
@@ -30,8 +32,10 @@ class WebInspectJitScheduler(object):
             if endpoint:
                 Logger.app.info("WebBreaker has selected: {} as your WebInspect Server.".format(endpoint[0]))
             else:
-                Logger.app.error("No available WebInspect servers are available, due to misconfigation or "
-                                 "all scan engines are fully utilized!")
+                Logger.app.error("There are no WebInspect servers available, due to misconfigation or all servers "
+                                 "are busy!")
+                sys.exit(ExitStatus.failure)
+
             return endpoint[0]
         except Exception as e:  # Ugly. Not sure what to expect for problems, so Pokemon handling, catch'em all :(
             Logger.app.error("Error has occured with identifying an appropriate WebInspect scan engine. {}".format(e))
