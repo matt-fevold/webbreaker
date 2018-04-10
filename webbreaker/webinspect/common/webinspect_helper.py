@@ -147,7 +147,7 @@ class WebInspectAPIHelper(object):
 
         response = self.api.get_scan_by_name(scan_name)
 
-        APIHelper.check_for_response_errors(response)
+        APIHelper().check_for_response_errors(response)
 
         return response.data
 

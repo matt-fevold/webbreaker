@@ -12,7 +12,7 @@ class WebInspectListScans:
         self.list_scans(scan_name, server, username, password)
 
     @staticmethod
-    def list_scans(server, scan_name, username, password):
+    def list_scans(scan_name, server, username, password):
         if server:  # if any cli servers were passed.
             servers = []
             for s in server:
