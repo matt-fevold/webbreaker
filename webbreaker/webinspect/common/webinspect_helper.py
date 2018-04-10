@@ -4,19 +4,17 @@
 import os
 import json
 
+import os
+import json
+from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
-
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.webinspect.common.webinspect_loghelper import WebInspect_LogExceptionHelper
-
 from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler
 import webbreaker.webinspect.webinspect_json as webinspectjson
-
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
-
 from webinspectapi.webinspect import WebInspectApi
-
 import ntpath
 
 from webbreaker.common.api_response_helper import APIHelper
@@ -326,8 +324,6 @@ class Overrides:
             self.scan_size = override_dict['webinspect_scan_size']
 
             self.endpoint = self.get_endpoint()
-
-
             self.runenv = WebBreakerHelper.check_run_env()
 
             Logger.app.debug("Completed webinspect client initialization")
@@ -345,8 +341,9 @@ class Overrides:
             Logger.app.debug("scan_policy: {}".format(self.scan_policy))
             Logger.app.debug("scan_start: {}".format(self.scan_start))
             Logger.app.debug("start_urls: {}".format(self.start_urls))
-        except (UnboundLocalError, EnvironmentError, NameError, TypeError) as e:
-            logexceptionhelper.LogIncorrectWebInspectConfigs(e)
+            # Breakour exception handling into better messages
+        except (EnvironmentError, UnboundLocalError, NameError, TypeError, AttributeError) as e:
+            webinspect_logexceptionhelp.LogSettingsError(self.settings, e)
             raise
 
     def get_endpoint(self):

@@ -106,6 +106,11 @@ class WebBreakerHelper(object):
         {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
+    def webinspect_wiswag_desc(cls):
+        return ("""
+        Launch a swagger scan""".format(Fore.RED,Style.RESET_ALL))
+
+    @classmethod
     def fortify_desc(cls):
         return """
         Fortify's  Software Security Center (SSC) is a centralized management repository for both WebInspect and

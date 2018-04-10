@@ -5,9 +5,10 @@ from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.webinspect_helper import WebInspectAPIHelper
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.webinspect.common.webinspect_loghelper import WebInspect_LogExceptionHelper
 
 logexceptionhelper = LogExceptionHelper()
-
+webinspect_logexceptionhelper = WebInspect_LogExceptionHelper()
 
 class WebInspectDownload:
     def __init__(self, server, scan_name, scan_id, extension, username, password):
@@ -48,7 +49,7 @@ class WebInspectDownload:
 
         except (UnboundLocalError, TypeError, UnboundLocalError) as e:
             # except (ValueError, UnboundLocalError, TypeError, NameError) as e:
-            logexceptionhelper.LogErrorWebInspectDownload(e)
+            webinspect_logexceptionhelper.LogErrorWebInspectDownload(e)
 
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():

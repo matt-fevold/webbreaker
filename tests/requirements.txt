@@ -2,6 +2,7 @@ coverage
 detox
 mock
 pytest
+pytest-cov
 pytest-runner
 testfixtures
 tox>=2.9.0,<3.0.0

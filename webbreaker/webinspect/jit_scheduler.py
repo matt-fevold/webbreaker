@@ -28,7 +28,7 @@ class WebInspectJitScheduler(object):
         try:
             endpoint = self.__get_available_endpoints__()
             if endpoint:
-                Logger.app.info("WebBreaker has selected: {} for your WebInspect scan.".format(endpoint[0]))
+                Logger.app.info("WebBreaker has selected: {} as your WebInspect Server.".format(endpoint[0]))
             else:
                 Logger.app.error("No available WebInspect servers are available, due to misconfigation or "
                                  "all scan engines are fully utilized!")

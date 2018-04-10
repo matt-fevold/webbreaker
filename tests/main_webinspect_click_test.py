@@ -341,3 +341,12 @@ def test_webinspect_proxy_stop(proxy_mock, runner):
 
     proxy_mock.assert_called_once_with(False, False, None, 'test', False, None, False, True, None, False,
                                        None, None)
+
+
+@mock.patch('webbreaker.__main__.WebInspectWiswag.__init__')
+def test_webinspect_wiswag(wiswag_mock, runner):
+    wiswag_mock.return_value = None
+
+    runner.invoke(webbreaker, ['webinspect', 'wiswag', '--url', 'http://petstore.swagger.io/v2/swagger.json', '--wiswag_name', 'Petstore'])
+
+    wiswag_mock.assert_called_once_with('http://petstore.swagger.io/v2/swagger.json', 'Petstore', None, None, None)

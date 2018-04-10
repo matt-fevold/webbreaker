@@ -161,7 +161,7 @@ def create_scan_event_handler(webinspect_client, scan_id, webinspect_settings):
             if external_termination:
                 webinspect_client.stop_scan(scan_id)
         except Exception as e:
-            Logger.console.error("Oh no: {}".format(e.message))
+            Logger.console.error("Oh no: {}".format(e))
 
     return scan_event_handler
 

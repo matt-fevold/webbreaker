@@ -25,7 +25,7 @@ def main():
 
     except (NameError, OSError, AttributeError) as e:
         # Every other OS use this
-        print("No python executable was found: {}".format(e.message))
+        print("No python executable was found: {}".format(e))
 
     # Declare exe and install deps
     requirements_install = ['pip', "install", "--user", "-r", requirements_file]
@@ -86,7 +86,7 @@ def main():
                         except (NameError, AttributeError, OSError) as e:
                             print("No pyinstaller was found: {0} or an error occured with your pyinstaller command"
                                   " -> {1}!!"
-                                  .format(e.message, 'pyinstaller'))
+                                  .format(e, 'pyinstaller'))
 
                     else:
                         sys.stderr.write("{} does not exist\n".format(requirements_file))

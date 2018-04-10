@@ -46,6 +46,8 @@ from webbreaker.common.logexceptionhelper import LogExceptionHelper, LogInfoHelp
 
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.download import WebInspectDownload
+
+from webbreaker.webinspect.wiswag import WebInspectWiswag
 from webbreaker.webinspect.list_scans import WebInspectListScans
 from webbreaker.webinspect.list_servers import WebInspectListServers
 from webbreaker.webinspect.proxy import WebInspectProxy
@@ -229,6 +231,24 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
                      password):
     WebInspectProxy(download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username,
                     password)
+
+
+@webinspect.command(name='wiswag',
+                    short_help="Launch swagger scan",
+                    help=WebBreakerHelper().webinspect_wiswag_desc())
+@click.option('--url',
+              required=True,
+              help="Json file path")
+@click.option('--wiswag_name',
+              help="Name of wiswag")
+@click.option('--username',
+              help="Specify WebInspect username")
+@click.option('--password',
+              help="Specify WebInspect password")
+@click.option('--server',
+              help="Optional URL of specific WebInspect server(s)")
+def webinspect_wiswag(url, wiswag_name, username, password, server):
+    WebInspectWiswag(url, wiswag_name, username, password, server)
 
 
 @cli.group(short_help="Interaction with Fortify API",

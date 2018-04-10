@@ -63,6 +63,15 @@ class ZeroBankDriver(object):
                 [str(WEBBREAKER_EXE), "fortify", "upload", "--fortify_user", str(FORTIFY_USER), "--fortify_password",
                  str(FORTIFY_PASSWORD), "--version", str(PROXY_NAME), "--scan_name", str(PROXY_NAME)],
                  stdout=PIPE).stdout.read())
+            
+        # added from run.py, declare the explicit webbreaker that is being tested  
+        if sys.argv[-1] == 'wiswag':
+            os.system('webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json')
+            sys.exit(0)
+
+        if sys.argv[-1] == 'settings':
+            os.system('webbreaker webinspect scan --settings mispelled_settings_file')
+            sys.exit(0)
 
 if __name__ == '__main__':
     ZeroBankDriver.zero_bank_tests()

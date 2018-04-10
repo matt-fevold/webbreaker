@@ -91,6 +91,9 @@ class LogExceptionHelper(object):
     def LogErrorFortifyCredentialsNotStored(self):
         Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
 
+    def LogIncorrectWebInspectConfigs(self, args):
+        Logger.app.error("Incorrect webinspect config values: {}".format(args))
+
     def LogErrorFortifyInvalidSSLCredentials(self):
         Logger.app.error("'verify_ssl' must be either 'False' or a full valid CA Path.")
 

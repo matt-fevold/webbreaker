@@ -64,8 +64,17 @@
     # Upload a WebInspect webmacro proxy for a scan override called
     webbreaker webinspect proxy --upload test-proxy.webmacro --proxy_name test
 
+    # Stop and download webmacro workflow and WebInspect setting file for scanning
     webbreaker webinspect proxy --stop --proxy_name test
+    
+## WebInspect WISwag (Swagger API scanning)
 
+    # Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json specification
+    webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
+     
+    # Ingest, create, and download a named WebInspect setting file from a OpenAPI swagger.json specification
+    webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json --wiswag_name petstore-swagger-test
+  
 ## Fortify SSC
 
     # List Fortify SSC Applications/Projects (NOTE: credentials need to be set from the admin commands)
@@ -74,11 +83,14 @@
     # List Fortify SSC versions by application (case sensitive):
     webbreaker fortify list --application WEBINSPECT
 
-    # Upload scan to Fortify SSC with command-line authentication (NOTE: Application or Project is taken from config.ini):
-    webbreaker fortify upload --version important_site_auth --scan_name example_scan
+    # Upload a scan to Fortify SSC with Application from config.ini and new or existing Version:
+    webbreaker fortify upload --version important_site_auth --scan_name example_scan.fpr
 
-    # Upload scan to Fortify SSC with application/project & version name:
+    # Upload a scan to Fortify SSC with application/project & version name:
     webbreaker fortify upload --application my_other_app --version important_site_auth --scan_name auth_scan
+    
+    # Upload a scan to a new Fortify SSC Application & Version, with a custom attribute:
+    webbreaker fortify upload --application my_other_app --version important_site_auth --scan_name auth_scan --custom_value ABC1234567
 
     # Download lastest .fpr scan from Fortify SSC from a specific application/project & version name:
     webbreaker fortify download --application my_other_app --version important_site_auth
