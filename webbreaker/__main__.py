@@ -27,32 +27,25 @@ import re
 import sys
 
 from webbreaker import __version__ as version
-
 from webbreaker.common.authorization import auth_prompt
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.common.secretclient import SecretClient
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
-
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.fortify.download import FortifyDownload
 from webbreaker.fortify.list import FortifyList
 from webbreaker.fortify.upload import FortifyUpload
-
 from webbreaker.threadfix.threadfixclient import ThreadFixClient
 from webbreaker.threadfix.threadfixconfig import ThreadFixConfig
-
 from webbreaker.common.logexceptionhelper import LogExceptionHelper, LogInfoHelper
-
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.download import WebInspectDownload
-
 from webbreaker.webinspect.wiswag import WebInspectWiswag
 from webbreaker.webinspect.list_scans import WebInspectListScans
 from webbreaker.webinspect.list_servers import WebInspectListServers
 from webbreaker.webinspect.proxy import WebInspectProxy
 from webbreaker.webinspect.scan import WebInspectScan
-
 
 logexceptionhelper = LogExceptionHelper()
 loginfohelper = LogInfoHelper()
@@ -85,7 +78,7 @@ def cli():
     webbreaker_ascii = WebBreakerHelper.ascii_motd()
     b = WebBreakerHelper.banner(text=(webbreaker_ascii))
 
-    sys.stdout.write(str("{0}{1}\nVersion {2}{3}\n".format(Fore.RED, b, version,Style.RESET_ALL)))
+    sys.stdout.write(str("{0}\nVersion {1}\n".format(b, version)))
     sys.stdout.write(str("Logging to files: {}\n".format(Logger.app_logfile)))
     SecretClient().verify_secret()
 
