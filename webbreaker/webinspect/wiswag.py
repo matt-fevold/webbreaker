@@ -33,7 +33,9 @@ class WebInspectWiswag:
         if self.wiswag_name is None:
             self._generate_random_wiswag_name()
 
-        self.api.create_wiswag(url, self.wiswag_name)
+        response = self.api.create_wiswag(url, self.wiswag_name)
+        APIHelper().check_for_response_errors(response, "There was an error with ingesting your swagger json file or url "
+                                                        "validate your swagger ends with a .json!")
 
         # go through the settings list 3 times (~15 secs before timeout)
         for i in range(3):
