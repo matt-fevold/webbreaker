@@ -34,13 +34,13 @@ The commands are organized by product followed by actions you want to take on th
 
 
 ## Configuration
-:white_check_mark: Add your webbreaker executable to your $PATH or %PATH%
+:white_check_mark: If you have downloaded an executable release of [webbreaker](https://github.com/target/webbreaker/releases), add it to your $PATH or %PATH%
 
-:white_check_mark: First time installs, run the `webbreaker` command in your terminal to create the default configurations `$HOME/.webbreaker/config.ini`
+:white_check_mark: First time installs, run the `webbreaker` command in your terminal to create the default configurations, including the `$HOME/.webbreaker/config.ini`
 
 :white_check_mark: Configure the `$HOME/.webbreaker/config.ini` or `%USERPROFILE%\.webbreaker\config.ini`
 
-:white_check_mark: Each supported product Webinspect, Fortify SSC, WebInspect and ThreadFix has a section. Modify the ones you need.
+:white_check_mark: Each supported product, Webinspect, Fortify SSC, WebInspect and ThreadFix has a section. Modify the ones you need.
 
 ```
 # Your Fortify SSC URL exclude /ssc and run `webbreaker admin credentials --fortify` 
@@ -49,10 +49,23 @@ ssc_url = https://ssc.example.com
 username = 
 password = 
 
+# Verify if your SSL cacerts are signed
+verify_ssl = False
+
+# Default Fortify SSC installation application version attributes with default values
+business_risk_ranking = High
+development_phase = Active
+development_strategy = Internal
+accessibility = externalpublicnetwork
+
+# Optional custom Fortify SSC attribute
+custom_attribute_name =
+custom_attribute_value =
+
 # Your ThreadFix URL and ThreadFix API Key
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
-api_key = ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX
+api_key = <put your threadfix api key here>
 
 # API authentication set to `true` and run `webbreaker admin credentials --webinspect`
 [webinspect]

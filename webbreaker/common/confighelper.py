@@ -93,14 +93,14 @@ class Config(object):
             return value
 
     def set_config(self):
-        # SSC URL exclude the /ssc context
+        # Complete SSC URL with the the context of your deployment.
         # TODO: Change ssc_url -> fortify_url or vice versa. Just standardize
         # Default Fortify SSC Application
         self.conf_get('fortify', 'application_name', 'WEBINSPECT')
 
         # Default verify_ssl value
         self.conf_get('fortify', 'verify_ssl', 'False')
-        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
+        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com/ssc')
 
         # Fortify SSC authentication execute, webbreaker admin credentials --fortify
         self.conf_get('fortify', 'username', '')
