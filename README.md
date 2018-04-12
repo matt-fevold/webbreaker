@@ -43,13 +43,14 @@ The commands are organized by product followed by actions you want to take on th
 :white_check_mark: Each supported product, Webinspect, Fortify SSC, WebInspect and ThreadFix has a section. Modify the ones you need.
 
 ```
-# Your Fortify SSC URL exclude /ssc and run `webbreaker admin credentials --fortify` 
+# Your required Fortify SSC URL and run `webbreaker admin credentials --fortify` 
 [fortify]
-ssc_url = https://ssc.example.com
+ssc_url = https://ssc.example.com/ssc
 username = 
 password = 
 
-# Verify if your SSL cacerts are signed
+# Verify if your SSL cacerts have been signed with a known ca
+
 verify_ssl = False
 
 # Default Fortify SSC installation application version attributes with default values
@@ -67,13 +68,17 @@ custom_attribute_value =
 host = https://threadfix.example.com:8443/threadfix
 api_key = <put your threadfix api key here>
 
-# API authentication set to `true` and run `webbreaker admin credentials --webinspect`
+# Enable optional WebInspect basic API authentication and run `webbreaker admin credentials --webinspect`
 [webinspect]
+# Verify if your SSL cacerts have been signed with a known ca
+verify_ssl = False
+
+# Enable WebInspect authentication set it to `true` after it is configured on the server
 authenticate = false
 username = 
 password = 
 
-# Webinspect default port is 8083/tcp. Feel free to add more servers here
+# Webinspect default port is 8083/tcp. Feel free to add more servers here with interpolation
 server_01 = https://webinspect-1.example.com:8083
 server_02 = https://webinspect-2.example.com:8083
 endpoint_01 = %(server_01)s|%(size_large)s

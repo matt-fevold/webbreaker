@@ -163,22 +163,17 @@ Below is the default config.ini that is set at first time install, once you exec
 ### Default 
 ````
 [fortify]
-application_name = WEBINSPECT
 verify_ssl = False
-ssc_url = https://fortify.example.com
+ssc_url = https://fortify.example.com/ssc
 username =
 password =
+application_name = WEBINSPECT
 business_risk_ranking = High
 development_phase = Active
 development_strategy = Internal
 accessibility = externalpublicnetwork
-project_template = Prioritized High Risk Issue Template
-custom_attribute_id =
+custom_attribute_name =
 custom_attribute_value =
-search_expression =
-attribute_definition_id =
-version_attribute_value = New WebBreaker Application
-version_attribute_values =
 
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
@@ -371,4 +366,4 @@ The email notifier merges the provided event data into an HTML email message and
 SMTP-related settings are stored in .emailrc, and read during program startup.
 
 ## WebBreaker Command Usage `webbreaker_cheatsheet`
-See [WebBreaker Cheatsheet](https://github.com/target/webbreaker/blob/feature-main-refactor/docs/cheatsheet.md)
+See [WebBreaker Cheatsheet](https://github.com/target/webbreaker/blob/master/docs/cheatsheet.md)

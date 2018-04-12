@@ -4,7 +4,7 @@ configparser>=3.5.0
 cryptography>=1.8.0
 dpath>=1.4.0
 exitstatus
-fortifyapi==1.0.18
+fortifyapi==1.0.19
 GitPython
 httplib2
 ndg-httpsclient
