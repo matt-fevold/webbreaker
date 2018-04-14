@@ -377,23 +377,23 @@ webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
 
 # Ingest, create, and download a named WebInspect setting file from a OpenAPI swagger.json specification:
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json --wiswag_name petstore-swagger-test</code></pre>
-<h5 id="fortify-ssc">Fortify SSC</h5>
-<pre><code># List Fortify SSC Applications/Projects (NOTE: credentials need to be set from the admin commands):
+<h5 id="fortify-list">Fortify List</h5>
+<pre><code># List Fortify SSC Applications:
 webbreaker fortify list
 
-# List Fortify SSC versions by application (case sensitive):
-webbreaker fortify list --application WEBINSPECT
-
-# Upload a scan to Fortify SSC with Application from config.ini and new or existing Version:
+# List Fortify SSC versions by application, `application` value is case sensitive:
+webbreaker fortify list --application WEBINSPECT</code></pre>
+<h5 id="fortify-upload">Fortify Upload</h5>
+<pre><code># Upload a scan to Fortify SSC with Application from config.ini and new or existing Version:
 webbreaker fortify upload --version zerobank --scan_name zerobank.fpr
 
 # Upload a scan to Fortify SSC with application/project &amp; version name:
 webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan
 
 # Upload a scan to a new Fortify SSC Application &amp; Version, with a custom attribute:
-webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan --custom_value ABC1234567
-
-# Download lastest .fpr scan from Fortify SSC from a specific application/project &amp; version name:
+webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan --custom_value ABC1234567</code></pre>
+<h5 id="fortify-download">Fortify Download</h5>
+<pre><code># Download lastest .fpr scan from Fortify SSC from a specific application/project &amp; version name:
 webbreaker fortify download --application my_other_app --version zerobank
 
 # Download lastest .fpr scan from Fortify SSC with application/project configured in config.ini:
@@ -401,7 +401,7 @@ webbreaker fortify download --version zerobank
 
 # Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication:
 webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version zerobank</code></pre>
-<h5 id="threadfix">ThreadFix</h5>
+<h5 id="threadfix-list">ThreadFix List</h5>
 <pre><code># List all applications for all teams found in ThreadFix:
 webbreaker threadfix list
 
@@ -409,9 +409,9 @@ webbreaker threadfix list
 webbreaker threadfix list --team Marketing --application zerobank
 
 # List all ThreadFix applications for the Marketing team:
-webbreaker threadfix list --team Marketing
-
-# Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345:
+webbreaker threadfix list --team Marketing</code></pre>
+<h5 id="threadfix-upload">ThreadFix Upload</h5>
+<pre><code># Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345:
 webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
 # Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App
@@ -419,7 +419,7 @@ webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
 # Create a new application, with a given name and url, in ThreadFix under the Marketing team
 webbreaker threadfix create --team Marketing --application zero_bank --url http://zero.webappsecurity.com/</code></pre>
-<h4 id="webbreaker-administrative">WebBreaker Administrative</h4>
+<h5 id="webbreaker-administrative">WebBreaker Administrative</h5>
 <pre><code># Encrypt and store new Fortify SSC credentials. User will be prompted for username and password.
 webbreaker admin credentials --fortify
 
