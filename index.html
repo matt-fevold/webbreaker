@@ -311,7 +311,7 @@ email_template =
 <p>A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'</p>
 <h3 id="commands">Commands <code>commands</code></h3>
 <p>Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.  We used WebInspect <a href="http://zero.webappsecurity.com/">Zero Bank</a> for our examples below.</p>
-<h4 id="webinspect-scan">WebInspect Scan</h4>
+<h5 id="webinspect-scan">WebInspect Scan</h5>
 <pre><code># WebInspect scan with settings from a GIT repo or a current working directory, .xml extension is not required, but supported.
 webbreaker webinspect scan --settings zerobank
 
@@ -323,7 +323,7 @@ webbreaker webinspect scan --settings zerobank --allowed_hosts example.com --all
 
 # Scan with absolute path to your local WebInspect settings:
 webbreaker webinspect scan --settings /Users/Matt/Documents/zerobank</code></pre>
-<h4 id="webinspect-list">WebInspect List</h4>
+<h5 id="webinspect-list">WebInspect List</h5>
 <pre><code># List all WebInspect servers configured in config.ini:
 webbreaker webinspect servers
 
@@ -341,7 +341,7 @@ webbreaker webinspect list --scan_name zerobank
 
 # List all WebInspect scans on all servers using command line auth credentials:
 webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD</code></pre>
-<h4 id="webinspect-download">WebInspect Download</h4>
+<h5 id="webinspect-download">WebInspect Download</h5>
 <pre><code># Download WebInspect scan from server or sensor:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank
 
@@ -353,32 +353,32 @@ webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_nam
 
 # Download WebInspect scan by ID:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank --scan_id my_important_scans_id</code></pre>
-<h4 id="webinspect-proxy">WebInspect Proxy</h4>
-<pre><code># Start a WebInspect proxy called test-proxy on port 9001
+<h5 id="webinspect-proxy">WebInspect Proxy</h5>
+<pre><code># Start a WebInspect proxy called test-proxy on port 9001:
 webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
 
-# List all the WebInspect proxies
+# List all the WebInspect proxies:
 webbreaker webinspect proxy --list
 
-# Download the WebInspect proxy webmacro called test-proxy
+# Download the WebInspect proxy webmacro called test-proxy:
 webbreaker webinspect proxy --download --webmacro --proxy_name test-proxy
 
-# Download the WebInspect proxy settings file called test-proxy
+# Download the WebInspect proxy settings file called test-proxy:
 webbreaker webinspect proxy --download --setting --proxy_name test-proxy
 
-# Upload a WebInspect webmacro proxy for a scan override called
+# Upload a WebInspect webmacro proxy for a scan override called:
 webbreaker webinspect proxy --upload test-proxy.webmacro --proxy_name test
 
-# Stop and download webmacro workflow and WebInspect setting file for scanning
+# Stop and download webmacro workflow and WebInspect setting file for scanning:
 webbreaker webinspect proxy --stop --proxy_name test</code></pre>
-<h4 id="webinspect-wiswag-swagger-api-scanning">WebInspect WISwag (Swagger API scanning)</h4>
-<pre><code># Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json specification
+<h5 id="webinspect-wiswag-swagger-api-scanning">WebInspect WISwag (Swagger API scanning)</h5>
+<pre><code># Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json specification:
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
 
-# Ingest, create, and download a named WebInspect setting file from a OpenAPI swagger.json specification
+# Ingest, create, and download a named WebInspect setting file from a OpenAPI swagger.json specification:
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json --wiswag_name petstore-swagger-test</code></pre>
-<h2 id="fortify-ssc">Fortify SSC</h2>
-<pre><code># List Fortify SSC Applications/Projects (NOTE: credentials need to be set from the admin commands)
+<h5 id="fortify-ssc">Fortify SSC</h5>
+<pre><code># List Fortify SSC Applications/Projects (NOTE: credentials need to be set from the admin commands):
 webbreaker fortify list
 
 # List Fortify SSC versions by application (case sensitive):
@@ -401,24 +401,24 @@ webbreaker fortify download --version zerobank
 
 # Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication:
 webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version zerobank</code></pre>
-<h4 id="threadfix">ThreadFix</h4>
-<pre><code># List all applications for all teams found in ThreadFix
+<h5 id="threadfix">ThreadFix</h5>
+<pre><code># List all applications for all teams found in ThreadFix:
 webbreaker threadfix list
 
-# List all applications with names containing 'secret' for all teams with names containing 'Marketing'
-webbreaker threadfix list --team Marketing --application MyApp
+# List all applications with names containing 'secret' for all teams with names containing 'Marketing':
+webbreaker threadfix list --team Marketing --application zerobank
 
-# List all ThreadFix applications for the Marketing team
+# List all ThreadFix applications for the Marketing team:
 webbreaker threadfix list --team Marketing
 
-# Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345
-webbreaker threadfix upload --application MyApp --scan_file my_app_scan.xml
+# Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345:
+webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
 # Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App
-webbreaker threadfix upload --application Marketing_App --scan_file my_app_scan.xml
+webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
 # Create a new application, with a given name and url, in ThreadFix under the Marketing team
-webbreaker threadfix create --team Marketing --application new_marketing_app --url http://marketing.example.com</code></pre>
+webbreaker threadfix create --team Marketing --application zero_bank --url http://zero.webappsecurity.com/</code></pre>
 <h4 id="webbreaker-administrative">WebBreaker Administrative</h4>
 <pre><code># Encrypt and store new Fortify SSC credentials. User will be prompted for username and password.
 webbreaker admin credentials --fortify
