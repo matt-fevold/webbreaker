@@ -43,7 +43,6 @@
 <ul>
 <li><a href="#installation">Installation <code>installation</code></a></li>
 <li><a href="#supported-features">Supported Features <code>supported_features</code></a></li>
-<li><a href="#usage">Usage <code>usage</code></a></li>
 <li><a href="#logging">Logging <code>logging</code></a></li>
 <li><a href="#docker">Docker <code>docker</code></a></li>
 <li><a href="#testing">Testing <code>testing</code></a></li>
@@ -53,9 +52,9 @@
 <ul>
 <li><a href="#webbreaker-config">WebBreaker <code>webbreaker_config</code></a></li>
 </ul>
-<p><a href="#usage">Usage</a></p>
+<p><a href="#usage">Usage </a></p>
 <ul>
-<li><a href="#webbreaker-cheatsheet">WebBreaker Command Usage <code>webbreaker_cheatsheet</code></a></li>
+<li><a href="#commands">Commands <code>commands</code></a></li>
 </ul>
 <h2 id="introduction">Introduction <code>introduction</code></h2>
 <h3 id="description">Description <code>description</code></h3>
@@ -95,50 +94,12 @@
 <li>WebInspect REST API support for v9.30 and above. </li>
 <li>Export both XML and FPR WebInspect formats to Fortify Software Security Center (SSC) or other compatible vulnerability management web applications for vulnerability analysis/triage.</li>
 <li>Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software.</li>
-<li>Centrally administer all configurations required to launch WebInspect scans.</li>
-<li>Remotely query arbitrary policies, settings, webmacros, from any WebInspect deployment.</li>
-<li>Configurable property .ini files to support your <a href=".webbreaker/config.ini">Foritfy</a> and <a href=".webbreaker/config.ini">WebInspect</a> deployments.</li>
-<li>Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater sensors.</li>
+<li>Centrally administer all configurations required to launch WebInspect scans from a GIT repository.</li>
+<li>Configurable ~/.webbreaker/config.ini property file to support your Fortify, WebInspect, and ThreadFix orchestration.</li>
+<li>Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater servers.</li>
 <li>ChatOps extensibility and <a href=".webbreaker/config.ini">email notifications</a> on scan start and completion.</li>
 <li>Local <a href=".webbreaker/log">logging</a> of WebInspect scan state.</li>
 </ul>
-<h3 id="usage">Usage <code>usage</code></h3>
-<p>Webbreaker utilizes a structure of upper-level and lower-level commands to enable interaction with multiple 3rd party platforms. The two platforms currently supported are WebInspect and Fortfiy and they can be accessed using their respective upper-level commands. Webbreaker supports multiple functions for each platform which are accessed via lower-level commands. The current command structure is listed below.</p>
-<ul>
-<li>webbreaker
-<ul>
-<li>webinspect
-<ul>
-<li>scan</li>
-<li>servers</li>
-<li>list</li>
-<li>download</li>
-<li>proxy</li>
-</ul></li>
-<li>fortify
-<ul>
-<li>list</li>
-<li>upload</li>
-<li>scan</li>
-<li>download</li>
-</ul></li>
-<li>admin
-<ul>
-<li>credentials</li>
-<li>clear</li>
-</ul></li>
-<li>threadfix
-<ul>
-<li>list</li>
-<li>teams</li>
-<li>applications</li>
-<li>scans</li>
-<li>upload</li>
-<li>create_app</li>
-</ul></li>
-</ul></li>
-</ul>
-<p>A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'</p>
 <h3 id="logging">Logging <code>logging</code></h3>
 <p>WebBreaker local logs may be found under <code>~/.webbreaker/logs</code> and can be implemented with Elastic Stack for log aggregation. Recommended compenents include Filebeat agents installed on all WebInspect servers, forwarding to Logstash, and visualized in Kibana. General implementation details are <a href="https://qbox.io/blog/welcome-to-the-elk-stack-elasticsearch-logstash-kibana/">here</a>.  A recommended approach is to tag log events and queries with <code>WebInspect</code> and <code>webbreaker</code>, but remember
 queries are case sensitive.</p>
@@ -312,9 +273,45 @@ email_template =
         &lt;/p&gt;
         &lt;/body&gt;
         &lt;/html&gt;</code></pre>
-<h2 id="usage-1">Usage</h2>
+<h2 id="usage">Usage</h2>
+<p>Webbreaker utilizes a structure of upper-level and lower-level commands to enable interaction with multiple 3rd party platforms. The two platforms currently supported are WebInspect and Fortfiy and they can be accessed using their respective upper-level commands. Webbreaker supports multiple functions for each platform which are accessed via lower-level commands. The current command structure is listed below.</p>
+<ul>
+<li>webbreaker
+<ul>
+<li>webinspect
+<ul>
+<li>scan</li>
+<li>servers</li>
+<li>list</li>
+<li>download</li>
+<li>proxy</li>
+<li>wiswag</li>
+</ul></li>
+<li>fortify
+<ul>
+<li>list</li>
+<li>upload</li>
+<li>scan</li>
+<li>download</li>
+</ul></li>
+<li>admin
+<ul>
+<li>credentials</li>
+<li>clear</li>
+</ul></li>
+<li>threadfix
+<ul>
+<li>list</li>
+<li>teams</li>
+<li>applications</li>
+<li>upload</li>
+</ul></li>
+</ul></li>
+</ul>
+<p>A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'</p>
+<h3 id="commands">Commands <code>commands</code></h3>
 <p>Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.</p>
-<h2 id="webinspect-scan">WebInspect Scan</h2>
+<h4 id="webinspect-scan">WebInspect Scan</h4>
 <pre><code>Basic WebInspect scan:
 webbreaker webinspect scan --settings important_site_auth
 
@@ -326,7 +323,7 @@ webbreaker webinspect scan --settings important_site_auth --allowed_hosts exampl
 
 Scan with absolute path to your local WebInspect settings:
 webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth</code></pre>
-<h2 id="webinspect-list">WebInspect List</h2>
+<h4 id="webinspect-list">WebInspect List</h4>
 <pre><code># List all WebInspect servers configured in config.ini:
 webbreaker webinspect servers
 
@@ -344,7 +341,7 @@ webbreaker webinspect list --scan_name important_site
 
 # List all WebInspect scans on all servers using command line auth credentials:
 webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD</code></pre>
-<h2 id="webinspect-download">WebInspect Download</h2>
+<h4 id="webinspect-download">WebInspect Download</h4>
 <pre><code># Download WebInspect scan from server or sensor:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth
 
@@ -356,7 +353,7 @@ webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_nam
 
 # Download WebInspect scan by ID:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --scan_id my_important_scans_id</code></pre>
-<h2 id="webinspect-proxy">WebInspect Proxy</h2>
+<h4 id="webinspect-proxy">WebInspect Proxy</h4>
 <pre><code># Start a WebInspect proxy called test-proxy on port 9001
 webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
 
@@ -374,7 +371,7 @@ webbreaker webinspect proxy --upload test-proxy.webmacro --proxy_name test
 
 # Stop and download webmacro workflow and WebInspect setting file for scanning
 webbreaker webinspect proxy --stop --proxy_name test</code></pre>
-<h2 id="webinspect-wiswag-swagger-api-scanning">WebInspect WISwag (Swagger API scanning)</h2>
+<h4 id="webinspect-wiswag-swagger-api-scanning">WebInspect WISwag (Swagger API scanning)</h4>
 <pre><code># Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json specification
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
 
@@ -404,7 +401,7 @@ webbreaker fortify download --version important_site_auth
 
 # Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication:
 webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version important_site_auth</code></pre>
-<h2 id="threadfix">ThreadFix</h2>
+<h4 id="threadfix">ThreadFix</h4>
 <pre><code># List all applications for all teams found in ThreadFix
 webbreaker threadfix list
 
@@ -422,7 +419,7 @@ webbreaker threadfix upload --application Marketing_App --scan_file my_app_scan.
 
 # Create a new application, with a given name and url, in ThreadFix under the Marketing team
 webbreaker threadfix create --team Marketing --application new_marketing_app --url http://marketing.example.com</code></pre>
-<h2 id="webbreaker-administrative">WebBreaker Administrative</h2>
+<h4 id="webbreaker-administrative">WebBreaker Administrative</h4>
 <pre><code># Encrypt and store new Fortify SSC credentials. User will be prompted for username and password.
 webbreaker admin credentials --fortify
 
