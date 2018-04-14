@@ -310,19 +310,19 @@ email_template =
 </ul>
 <p>A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'</p>
 <h3 id="commands">Commands <code>commands</code></h3>
-<p>Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.</p>
+<p>Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.  We used WebInspect <a href="http://zero.webappsecurity.com/">Zero Bank</a> for our examples below.</p>
 <h4 id="webinspect-scan">WebInspect Scan</h4>
-<pre><code>Basic WebInspect scan:
-webbreaker webinspect scan --settings important_site_auth
+<pre><code># WebInspect scan with settings from a GIT repo or a current working directory, .xml extension is not required, but supported.
+webbreaker webinspect scan --settings zerobank
 
-Basic WebInspect scan using command line auth credentials (only needed if authentication is enable in config.ini):
-webbreaker webinspect scan --settings important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
+# Basic WebInspect scan with credentials (only needed if authentication is enable in config.ini):
+webbreaker webinspect scan --settings zerobank --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
-WebInspect Scan with Scan overrides:
-webbreaker webinspect scan --settings important_site_auth --allowed_hosts example.com --allowed_hosts m.example.com
+# WebInspect Scan with overrides:
+webbreaker webinspect scan --settings zerobank --allowed_hosts example.com --allowed_hosts m.example.com
 
-Scan with absolute path to your local WebInspect settings:
-webbreaker webinspect scan --settings /Users/Matt/Documents/important_site_auth</code></pre>
+# Scan with absolute path to your local WebInspect settings:
+webbreaker webinspect scan --settings /Users/Matt/Documents/zerobank</code></pre>
 <h4 id="webinspect-list">WebInspect List</h4>
 <pre><code># List all WebInspect servers configured in config.ini:
 webbreaker webinspect servers
@@ -330,29 +330,29 @@ webbreaker webinspect servers
 # List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com:
 webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083
 
-# List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com matching "important_site":
-webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083 --scan_name important_site
+# List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com matching "zerobank":
+webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083 --scan_name zerobank
 
 # List all WebInspect scans on all servers:
 webbreaker webinspect list
 
-# List all WebInspect scans on all servers matching "important_site":
-webbreaker webinspect list --scan_name important_site
+# List all WebInspect scans on all servers matching "zerobank":
+webbreaker webinspect list --scan_name zerobank
 
 # List all WebInspect scans on all servers using command line auth credentials:
 webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD</code></pre>
 <h4 id="webinspect-download">WebInspect Download</h4>
 <pre><code># Download WebInspect scan from server or sensor:
-webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank
 
 # Download WebInspect scan from server with credentials (only needed if authentication is enable in config.ini):
-webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
 # Download WebInspect scan as XML:
-webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth -x xml
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank -x xml
 
 # Download WebInspect scan by ID:
-webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name important_site_auth --scan_id my_important_scans_id</code></pre>
+webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank --scan_id my_important_scans_id</code></pre>
 <h4 id="webinspect-proxy">WebInspect Proxy</h4>
 <pre><code># Start a WebInspect proxy called test-proxy on port 9001
 webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
@@ -385,22 +385,22 @@ webbreaker fortify list
 webbreaker fortify list --application WEBINSPECT
 
 # Upload a scan to Fortify SSC with Application from config.ini and new or existing Version:
-webbreaker fortify upload --version important_site_auth --scan_name example_scan.fpr
+webbreaker fortify upload --version zerobank --scan_name zerobank.fpr
 
 # Upload a scan to Fortify SSC with application/project &amp; version name:
-webbreaker fortify upload --application my_other_app --version important_site_auth --scan_name auth_scan
+webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan
 
 # Upload a scan to a new Fortify SSC Application &amp; Version, with a custom attribute:
-webbreaker fortify upload --application my_other_app --version important_site_auth --scan_name auth_scan --custom_value ABC1234567
+webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan --custom_value ABC1234567
 
 # Download lastest .fpr scan from Fortify SSC from a specific application/project &amp; version name:
-webbreaker fortify download --application my_other_app --version important_site_auth
+webbreaker fortify download --application my_other_app --version zerobank
 
 # Download lastest .fpr scan from Fortify SSC with application/project configured in config.ini:
-webbreaker fortify download --version important_site_auth
+webbreaker fortify download --version zerobank
 
 # Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication:
-webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version important_site_auth</code></pre>
+webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version zerobank</code></pre>
 <h4 id="threadfix">ThreadFix</h4>
 <pre><code># List all applications for all teams found in ThreadFix
 webbreaker threadfix list
