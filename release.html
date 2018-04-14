@@ -18,7 +18,7 @@
             <a class="navbar-brand" href="https://target.github.io/webbreaker/">
                 Webbreaker
                 <small class="hidden-xs hidden-sm">
-                    Centrally administer Dynamic Application Security Testing (DAST), as part of your DevOps pipeline
+                    Open source Dynamic Application Security Test Orchestration (DASTO) client, enabling security testing workflows and pipelines!
                 </small>
             </a>
 
@@ -33,7 +33,58 @@
 
                 
                 <section id="content" class="col-sm-12">
-                    <h1 id="release-199">Release 1.99</h1>
+                    <h1 id="release-2110">Release 2.1.10</h1>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Feature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API Support</td>
+<td>WebInspect scanning support for Swagger json spec files</td>
+</tr>
+<tr>
+<td>API Support</td>
+<td>WebInspect Basic auth for all WebInspect Server scanning</td>
+</tr>
+<tr>
+<td>API Support</td>
+<td>Fortify SSC auto creation upon all fortify .fpr uploads to an Application Versions with configurable default attributes, and a single custom attribute</td>
+</tr>
+<tr>
+<td>API Support</td>
+<td>Support for new threadfixproapi PyPi module</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Configuration option with ssl_verify to enforce verification of CA Certificates</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>Command line reset and creation of Fortify and WebInspect authentication schemes.</td>
+</tr>
+<tr>
+<td>Administration</td>
+<td>Improved error handling and logging of failed WebInspect scans.</td>
+</tr>
+<tr>
+<td>Administration</td>
+<td>Extensive re-factoring of complete codebase, introducting several new modules, classes and methods.</td>
+</tr>
+<tr>
+<td>Administration</td>
+<td>New configuration location under $HOME/.webbreaker and consolidated config config.ini file.</td>
+</tr>
+<tr>
+<td>Administration</td>
+<td>New support for three (3) compiled platforms with pyinstaller, Mac, Linux, and Windows.</td>
+</tr>
+</tbody>
+</table>
+<h1 id="release-199">Release 1.99</h1>
 <table>
 <thead>
 <tr>
@@ -71,12 +122,8 @@
 <td><a href="https://pypi.python.org/pypi/fortifyapi">Fortify Software Security Center (SSC) REST API</a> support for v16.10 and later.</td>
 </tr>
 <tr>
-<td>Administratin</td>
-<td>WebInspect scan cluster support between two (2) or greater WebInspect servers/sensors.</td>
-</tr>
-<tr>
 <td>Administration</td>
-<td>Capabilities for extensible scan telemetry with ELK and Splunk.</td>
+<td>WebInspect scan cluster support between two (2) or greater WebInspect servers/sensors.</td>
 </tr>
 <tr>
 <td>Integration</td>

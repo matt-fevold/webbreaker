@@ -18,7 +18,7 @@
             <a class="navbar-brand" href="https://target.github.io/webbreaker/">
                 Webbreaker
                 <small class="hidden-xs hidden-sm">
-                    Centrally administer Dynamic Application Security Testing (DAST), as part of your DevOps pipeline
+                    Open source Dynamic Application Security Test Orchestration (DASTO) client, enabling security testing workflows and pipelines!
                 </small>
             </a>
 
@@ -194,16 +194,17 @@ notifications, the event will be logged, without any interruption of WebBreaker 
 <p>Below is the default config.ini that is set at first time install, once you execute <code>webbreaker</code> for the first time.  All subsequent installs and updates will not update your <code>~/.webbreaker/config.ini</code> unless it is deleted.  You will need to modify the appropriate sections to your environment specifications.</p>
 <h3 id="default">Default</h3>
 <pre><code>[fortify]
-ssc_url = https://fortify.example.com
+verify_ssl = False
+ssc_url = https://fortify.example.com/ssc
+username =
+password =
+application_name = WEBINSPECT
 business_risk_ranking = High
 development_phase = Active
 development_strategy = Internal
 accessibility = externalpublicnetwork
-custom_attribute =
-project_template = Prioritized High Risk Issue Template
-application_name = WEBINSPECT
-username =
-password =
+custom_attribute_name =
+custom_attribute_value =
 
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
@@ -287,18 +288,41 @@ email_template =
 <p>This api_key to authenticate ThreadFix actions</p>
 <h3 id="fortify">[fortify]</h3>
 <p>Fortify SSC settings can be found under [fortify]</p>
-<h5 id="ssc_url">ssc_url</h5>
-<p>URL of the fortify server to contact</p>
-<h5 id="project_template">project_template</h5>
-<p>Static value of the Fortify SSC Project Template you wish to set as a default for each Application Version you create.</p>
 <h5 id="application_name">application_name</h5>
 <p>Static Value of the default Fortify SSC Application you wish to use without stating it on the command line.</p>
+<h5 id="verify_ssl">verify_ssl</h5>
+<p>Option to verify ssl or not while communicating with Fortify. The default option is 'False'.</p>
+<h5 id="ssc_url">ssc_url</h5>
+<p>URL of the fortify server to contact.</p>
 <h5 id="username">username</h5>
 <p>Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use
 <code>webbreaker admin credentials --fortify</code> to set your username &amp; password.</p>
 <h5 id="password">password</h5>
 <p>Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use
 <code>webbreaker admin credentials --fortify</code> to set your username &amp; password.</p>
+<h5 id="business_risk_ranking">business_risk_ranking</h5>
+<p>Fortify defaults this to <code>High</code>. Other valid inputs are <code>Medium</code> &amp; <code>Low</code>.</p>
+<h5 id="development_phase">development_phase</h5>
+<p>Current development phase of Fortify Version. Default is <code>Active</code>.</p>
+<h5 id="development_strategy">development_strategy</h5>
+<p>Development staffing strategy used for this Application. Default is <code>Internal</code>.</p>
+<h5 id="accessibility">accessibility</h5>
+<p>The level of recommended access required to interact with this Application. Default is <code>externalpublicnetwork</code>.</p>
+<h5 id="project_template">project_template</h5>
+<p>Static value of the Fortify SSC Project Template you wish to set as a default for each Application Version you create.</p>
+<h5 id="custom_attribute_id">custom_attribute_id</h5>
+<p>If you would like to set another attribute definition with a custom id number for creation of a new Application Version.</p>
+<h5 id="custom_attribute_value">custom_attribute_value</h5>
+<p>If you would like to set another attribute definition with a custom value for creation of a new Application Version.</p>
+<h5 id="search_expression">search_expression</h5>
+<p>If this is set, it will attempt to retrieve the Application Attribute Definition and use that ID in setting Version Attributes.
+The format for creating a search_expression is <code>name:"Search Example"</code></p>
+<h5 id="attribute_definition_id">attribute_definition_id</h5>
+<p>Instead of using the search expression to retrieve the Application Attribute Definition, you may set it here and the search_expression will be ignored.</p>
+<h5 id="version_attribute_value">version_attribute_value</h5>
+<p>Attribute value that is set when setting Version Attributes. The default is <code>New WebBreaker Application</code></p>
+<h5 id="version_attribute_values">version_attribute_values</h5>
+<p>List of Version attribute values to set while setting Version Attributes.</p>
 <h3 id="webinspect">[webinspect]</h3>
 <p>WebInspect scan configuration files for <code>policies</code> are versioned and hosted from a GIT repository configured
 in <code>~/.webbreaker/config.ini</code>.  Additionally, all WebInspect policies and servers are managed from this
@@ -338,7 +362,7 @@ for creating the desired notification. Currently, two notification types are imp
 <p>The email notifier merges the provided event data into an HTML email message and sends the message. All
 SMTP-related settings are stored in .emailrc, and read during program startup.</p>
 <h2 id="webbreaker-command-usage">WebBreaker Command Usage <code>webbreaker_cheatsheet</code></h2>
-<p>See <a href="https://github.com/target/webbreaker/blob/feature-main-refactor/docs/cheatsheet.html">WebBreaker Cheatsheet</a></p>
+<p>See <a href="https://github.com/target/webbreaker/blob/master/docs/cheatsheet.html">WebBreaker Cheatsheet</a></p>
                 </section>
 
             </div>
