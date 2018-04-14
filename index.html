@@ -90,15 +90,15 @@
 </ul>
 <h3 id="supported-features">Supported Features: <code>supported_features</code></h3>
 <ul>
-<li>Jenkins global environmental variable inheritance with scan options.</li>
-<li>WebInspect REST API support for v9.30 and above. </li>
-<li>Export both XML and FPR WebInspect formats to Fortify Software Security Center (SSC) or other compatible vulnerability management web applications for vulnerability analysis/triage.</li>
-<li>Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software.</li>
-<li>Centrally administer all configurations required to launch WebInspect scans from a GIT repository.</li>
-<li>Configurable ~/.webbreaker/config.ini property file to support your Fortify, WebInspect, and ThreadFix orchestration.</li>
-<li>Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater servers.</li>
-<li>ChatOps extensibility and <a href=".webbreaker/config.ini">email notifications</a> on scan start and completion.</li>
-<li>Local <a href=".webbreaker/log">logging</a> of WebInspect scan state.</li>
+<li><em>Jenkins global environmental variable inheritance with scan options.</em></li>
+<li><em>WebInspect REST API support for v9.30 and above.</em></li>
+<li><em>Export both XML and FPR WebInspect formats to Fortify Software Security Center (SSC) or other compatible vulnerability management web applications for vulnerability analysis/triage.</em></li>
+<li><em>Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software.</em></li>
+<li><em>Centrally administer all configurations required to launch WebInspect scans from a <a href="https://github.com/webbreaker/webinspect">GIT</a> repository.</em></li>
+<li><em>Configurable ~/.webbreaker/config.ini property file to support your Fortify, WebInspect, and ThreadFix orchestration.</em></li>
+<li><em>Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater servers.</em></li>
+<li><em>ChatOps extensibility and <a href=".webbreaker/config.ini">email notifications</a> on scan start and completion.</em></li>
+<li><em>Local <a href=".webbreaker/log">logging</a> of WebInspect scan state.</em></li>
 </ul>
 <h3 id="logging">Logging <code>logging</code></h3>
 <p>WebBreaker local logs may be found under <code>~/.webbreaker/logs</code> and can be implemented with Elastic Stack for log aggregation. Recommended compenents include Filebeat agents installed on all WebInspect servers, forwarding to Logstash, and visualized in Kibana. General implementation details are <a href="https://qbox.io/blog/welcome-to-the-elk-stack-elasticsearch-logstash-kibana/">here</a>.  A recommended approach is to tag log events and queries with <code>WebInspect</code> and <code>webbreaker</code>, but remember
