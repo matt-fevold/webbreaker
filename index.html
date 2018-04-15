@@ -371,8 +371,8 @@ webbreaker webinspect proxy --upload test-proxy.webmacro --proxy_name test
 
 # Stop and download webmacro workflow and WebInspect setting file for scanning:
 webbreaker webinspect proxy --stop --proxy_name test</code></pre>
-<h5 id="webinspect-wiswag-swagger-api-scanning">WebInspect WISwag (Swagger API scanning)</h5>
-<pre><code># Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json specification:
+<h5 id="webinspect-swagger">WebInspect Swagger</h5>
+<pre><code># Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json URL:
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
 
 # Ingest, create, and download a named WebInspect setting file from a OpenAPI swagger.json specification:
@@ -387,20 +387,20 @@ webbreaker fortify list --application WEBINSPECT</code></pre>
 <pre><code># Upload a scan to Fortify SSC with Application from config.ini and new or existing Version:
 webbreaker fortify upload --version zerobank --scan_name zerobank.fpr
 
-# Upload a scan to Fortify SSC with application/project &amp; version name:
-webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan
+# Upload a scan to Fortify SSC with application/project &amp; version name, .fpr is not required:
+webbreaker fortify upload --application my_other_app --version zerobank --scan_name zerobank.fpr
 
 # Upload a scan to a new Fortify SSC Application &amp; Version, with a custom attribute:
 webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan --custom_value ABC1234567</code></pre>
 <h5 id="fortify-download">Fortify Download</h5>
 <pre><code># Download lastest .fpr scan from Fortify SSC from a specific application/project &amp; version name:
-webbreaker fortify download --application my_other_app --version zerobank
+webbreaker fortify download --application ZERO_BANK --version zerobank
 
-# Download lastest .fpr scan from Fortify SSC with application/project configured in config.ini:
+# Download lastest .fpr scan from Fortify SSC with application configured in config.ini (Default is WEBINSPECT):
 webbreaker fortify download --version zerobank
 
-# Download lastest .fpr scan from Fortify SSC with application/project &amp; version name and command-line authentication:
-webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application my_other_app --version zerobank</code></pre>
+# Download lastest .fpr scan from Fortify SSC with application/ version name and command-line authentication:
+webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application ZERO_BANK --version zerobank</code></pre>
 <h5 id="threadfix-list">ThreadFix List</h5>
 <pre><code># List all applications for all teams found in ThreadFix:
 webbreaker threadfix list
@@ -411,25 +411,25 @@ webbreaker threadfix list --team Marketing --application zerobank
 # List all ThreadFix applications for the Marketing team:
 webbreaker threadfix list --team Marketing</code></pre>
 <h5 id="threadfix-upload">ThreadFix Upload</h5>
-<pre><code># Upload the local file 'my_app_scan.xml' as a scan to the application with ID=345:
+<pre><code># Upload the local scan file 'zerobank.xml' to the 'zero_bank' application:
 webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
-# Upload the local file 'my_app_scan.xml' as a scan to the application with name Marketing_App
+# Upload the local file 'zerobank.xml' as a scan to the 'zero_bank' application
 webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
-# Create a new application, with a given name and url, in ThreadFix under the Marketing team
+# Create a new application, with a given name and url, in ThreadFix under the Marketing team:
 webbreaker threadfix create --team Marketing --application zero_bank --url http://zero.webappsecurity.com/</code></pre>
 <h5 id="webbreaker-administrative">WebBreaker Administrative</h5>
-<pre><code># Encrypt and store new Fortify SSC credentials. User will be prompted for username and password.
+<pre><code># Encrypt and store new Fortify SSC credentials. User will be prompted for username and password:
 webbreaker admin credentials --fortify
 
-# Encrypt and store WebInspect credentials. User will be prompted for username and password.
+# Encrypt and store WebInspect credentials. User will be prompted for username and password:
 webbreaker admin credentials --webinspect
 
-# Encrypt and store Fortify credentials as environment variables
+# Encrypt and store Fortify credentials as environment variables:
 webbreaker admin credentials --fortify --username $FORT_USER --password $FORT_PASS
 
-Clear cuurent stored Fortify credentials.
+# Clear cuurent stored Fortify credentials:
 webbreaker admin credentials --fortify --clear</code></pre>
                 </section>
 
