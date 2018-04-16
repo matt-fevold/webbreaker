@@ -5,12 +5,17 @@
 import sys
 import os
 from webbreaker import __version__ as version
-from pip.req import parse_requirements
-from pip.download import PipSession
 
 try:
     from setuptools import setup, find_packages
+    from pip._internal.req import parse_requirements
+    from pip._internal.download import PipSession
+
 except ImportError:
+
+    from pip.req import parse_requirements
+    from pip.download import PipSession
+
     from distutils.core import setup
 
 links = []
