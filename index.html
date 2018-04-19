@@ -18,7 +18,7 @@
             <a class="navbar-brand" href="https://target.github.io/webbreaker/">
                 Webbreaker
                 <small class="hidden-xs hidden-sm">
-                    Open source Dynamic Application Security Test Orchestration (DASTO) client.
+                    Centrally administer Dynamic Application Security Testing (DAST), as part of your DevOps pipeline
                 </small>
             </a>
 
@@ -55,6 +55,17 @@
 <p><a href="#usage">Usage </a></p>
 <ul>
 <li><a href="#commands">Commands <code>commands</code></a></li>
+<li><a href="#webinspect_scan">WebInspect Scan <code>webinspect_scan</code></a></li>
+<li><a href="#webinspect_list">WebInspect List <code>webinspect_list</code></a></li>
+<li><a href="#webinspect_download">WebInspect Download <code>webinspect_download</code></a></li>
+<li><a href="#webinspect_proxy">WebInspect Proxy <code>webinspect_proxy</code></a></li>
+<li><a href="#webinspect_swagger">WebInspect Swagger <code>webinspect_swagger</code></a></li>
+<li><a href="#fortify_list">Fortify List <code>fortify_list</code></a></li>
+<li><a href="#fortify_upload">Fortify Upload <code>fortify_upload</code></a></li>
+<li><a href="#fortify_download">Fortify Download <code>fortify_download</code></a></li>
+<li><a href="#threadfix_list">ThreadFix List <code>threadfix_list</code></a></li>
+<li><a href="#threadfix_upload">ThreadFix Upload <code>threadfix_upload</code></a></li>
+<li><a href="#webbreaker_administrative">WebBreaker Administrative <code>webbreaker_administrative</code></a></li>
 </ul>
 <h2 id="introduction">Introduction <code>introduction</code></h2>
 <h3 id="description">Description <code>description</code></h3>
@@ -187,16 +198,15 @@ host = https://threadfix.example.com:8443/threadfix
 api_key = &lt;Key Required&gt;
 
 [webinspect]
-# WebInspect logical server lanes load balancing between a maximum concurrent scan number.
-size_large = 2
-size_medium = 1
-default_size = size_large
+# WebInspect logical server lanes for load balancing between the maximum concurrent scans per server
+large_server_max_concurrent_scans = 2
+small_server_max_concurrent_scans = 1
 
-# webinspect server(s) hosting RESTFul API endpoints
+# WebInspect server(s) hosting RESTFul API endpoints
 server_01 = https://webinspect-server-1.example.com:8083
 
-# WebInspect servers that are dedicated towards a size or lane. 
-endpoint_01 = %(server_01)s|%(size_large)s
+# WebInspect server interpolated from above, configured to a dedicated large server lane.
+endpoint_01 = %(server_01)s|%(large_server_max_concurrent_scans)s
 
 # GIT repo for centrally managed WebInspect configurations of settings, policies, and webmacros.
 git_repo = https://github.com/webbreaker/webinspect.git
@@ -262,7 +272,7 @@ email_template =
         &lt;/ul&gt;
         &lt;/p&gt;
         &lt;p&gt;
-            Questions? Concerns? Please contact us in our Hipchat room, &amp;quot;WebBreaker Activity&amp;quot;,
+            Questions? Concerns? Please chat us on our channel, &amp;quot;WebBreaker&amp;quot;,
             or &lt;a href="mailto:webbreaker-team@example.com"&gt;email us&lt;/a&gt;.
         &lt;/p&gt;
 
@@ -311,7 +321,7 @@ email_template =
 <p>A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'</p>
 <h3 id="commands">Commands <code>commands</code></h3>
 <p>Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.  We used WebInspect <a href="http://zero.webappsecurity.com/">Zero Bank</a> for our examples below.</p>
-<h5 id="webinspect-scan">WebInspect Scan</h5>
+<h5 id="webinspect-scan">WebInspect Scan <code>webinspect_scan</code></h5>
 <pre><code># WebInspect scan with settings from a GIT repo or a current working directory, .xml extension is not required, but supported.
 webbreaker webinspect scan --settings zerobank
 
@@ -319,11 +329,14 @@ webbreaker webinspect scan --settings zerobank
 webbreaker webinspect scan --settings zerobank --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
 # WebInspect Scan with overrides:
-webbreaker webinspect scan --settings zerobank --allowed_hosts example.com --allowed_hosts m.example.com
+webbreaker webinspect scan --settings zerobank --allowed_hosts zero.webappsecurity.com --allowed_hosts legacy.webappsecurity.com
 
 # Scan with absolute path to your local WebInspect settings:
-webbreaker webinspect scan --settings /Users/Matt/Documents/zerobank</code></pre>
-<h5 id="webinspect-list">WebInspect List</h5>
+webbreaker webinspect scan --settings /Users/Matt/Documents/zerobank
+
+# Scan with load-balancing declared in your ~/.webbreaker/config.ini:
+webbreaker webinspect scan --settings zerobank --size small</code></pre>
+<h5 id="webinspect-list">WebInspect List <code>webinspect_list</code></h5>
 <pre><code># List all WebInspect servers configured in config.ini:
 webbreaker webinspect servers
 
@@ -341,7 +354,7 @@ webbreaker webinspect list --scan_name zerobank
 
 # List all WebInspect scans on all servers using command line auth credentials:
 webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD</code></pre>
-<h5 id="webinspect-download">WebInspect Download</h5>
+<h5 id="webinspect-download">WebInspect Download <code>webinspect_download</code></h5>
 <pre><code># Download WebInspect scan from server or sensor:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank
 
@@ -353,7 +366,7 @@ webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_nam
 
 # Download WebInspect scan by ID:
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank --scan_id my_important_scans_id</code></pre>
-<h5 id="webinspect-proxy">WebInspect Proxy</h5>
+<h5 id="webinspect-proxy">WebInspect Proxy <code>webinspect_proxy</code></h5>
 <pre><code># Start a WebInspect proxy called test-proxy on port 9001:
 webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
 
@@ -361,29 +374,29 @@ webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
 webbreaker webinspect proxy --list
 
 # Download the WebInspect proxy webmacro called test-proxy:
-webbreaker webinspect proxy --download --webmacro --proxy_name test-proxy
+webbreaker webinspect proxy --download --webmacro zerobank-deposit --proxy_name zerobank_proxy
 
 # Download the WebInspect proxy settings file called test-proxy:
-webbreaker webinspect proxy --download --setting --proxy_name test-proxy
+webbreaker webinspect proxy --download --setting zerobank --proxy_name zerobank_proxy
 
 # Upload a WebInspect webmacro proxy for a scan override called:
-webbreaker webinspect proxy --upload test-proxy.webmacro --proxy_name test
+webbreaker webinspect proxy --upload zerobank-deposit.webmacro --proxy_name zerobank_proxy
 
 # Stop and download webmacro workflow and WebInspect setting file for scanning:
-webbreaker webinspect proxy --stop --proxy_name test</code></pre>
-<h5 id="webinspect-swagger">WebInspect Swagger</h5>
+webbreaker webinspect proxy --stop --proxy_name zerobank_proxy</code></pre>
+<h5 id="webinspect-swagger">WebInspect Swagger <code>webinspect_swagger</code></h5>
 <pre><code># Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json URL:
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
 
 # Ingest, create, and download a named WebInspect setting file from a OpenAPI swagger.json specification:
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json --wiswag_name petstore-swagger-test</code></pre>
-<h5 id="fortify-list">Fortify List</h5>
+<h5 id="fortify-list">Fortify List <code>fortify_list</code></h5>
 <pre><code># List Fortify SSC Applications:
 webbreaker fortify list
 
 # List Fortify SSC versions by application, `application` value is case sensitive:
 webbreaker fortify list --application WEBINSPECT</code></pre>
-<h5 id="fortify-upload">Fortify Upload</h5>
+<h5 id="fortify-upload">Fortify Upload <code>fortify_upload</code></h5>
 <pre><code># Upload a scan to Fortify SSC with Application from config.ini and new or existing Version:
 webbreaker fortify upload --version zerobank --scan_name zerobank.fpr
 
@@ -392,7 +405,7 @@ webbreaker fortify upload --application my_other_app --version zerobank --scan_n
 
 # Upload a scan to a new Fortify SSC Application &amp; Version, with a custom attribute:
 webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan --custom_value ABC1234567</code></pre>
-<h5 id="fortify-download">Fortify Download</h5>
+<h5 id="fortify-download">Fortify Download <code>fortify_download</code></h5>
 <pre><code># Download lastest .fpr scan from Fortify SSC from a specific application/project &amp; version name:
 webbreaker fortify download --application ZERO_BANK --version zerobank
 
@@ -401,7 +414,7 @@ webbreaker fortify download --version zerobank
 
 # Download lastest .fpr scan from Fortify SSC with application/ version name and command-line authentication:
 webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application ZERO_BANK --version zerobank</code></pre>
-<h5 id="threadfix-list">ThreadFix List</h5>
+<h5 id="threadfix-list">ThreadFix List <code>threadfix_list</code></h5>
 <pre><code># List all applications for all teams found in ThreadFix:
 webbreaker threadfix list
 
@@ -410,7 +423,7 @@ webbreaker threadfix list --team Marketing --application zerobank
 
 # List all ThreadFix applications for the Marketing team:
 webbreaker threadfix list --team Marketing</code></pre>
-<h5 id="threadfix-upload">ThreadFix Upload</h5>
+<h5 id="threadfix-upload">ThreadFix Upload <code>threadfix_upload</code></h5>
 <pre><code># Upload the local scan file 'zerobank.xml' to the 'zero_bank' application:
 webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
@@ -419,7 +432,7 @@ webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
 
 # Create a new application, with a given name and url, in ThreadFix under the Marketing team:
 webbreaker threadfix create --team Marketing --application zero_bank --url http://zero.webappsecurity.com/</code></pre>
-<h5 id="webbreaker-administrative">WebBreaker Administrative</h5>
+<h5 id="webbreaker-administrative">WebBreaker Administrative <code>webbreaker_administrative</code></h5>
 <pre><code># Encrypt and store new Fortify SSC credentials. User will be prompted for username and password:
 webbreaker admin credentials --fortify
 
