@@ -68,6 +68,7 @@ class FortifyUpload:
         if application_id:
             version_id = fortify_helper.get_version_id(application_name, version_name)
             if version_id:
+
                 fortifyloghelper.log_info_found_existing_application_version(application_name,version_name)
             else:
                 version_id = fortify_helper.create_application_version(application_name=application_name,
@@ -85,4 +86,5 @@ class FortifyUpload:
             fortify_helper.finalize_application_version_creation(version_id, custom_value)
 
             fortify_helper.upload_application_version_file(version_id=version_id, file_name=file_name)
+
         fortifyloghelper.log_info_file_uploaded_success(file_name, fortify_helper.extension, fortify_helper.fortify_url)
