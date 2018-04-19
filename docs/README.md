@@ -9,27 +9,33 @@
 
 - [Installation `installation`](#installation)
 - [Supported Features `supported_features`](#supported-features)
-- [Usage `usage`](#usage)
 - [Logging `logging`](#logging)
 - [Docker `docker`](#docker)
 - [Testing `testing`](#testing)
 - [Notifications `notifications`](#notifications)
 
 [Configuration](#configuration)
-
 - [WebBreaker `webbreaker_config`](#webbreaker-config)
-- [Fortify `fortify_config`](#fortify-config)
-- [ThreadFix `threadfix_config`](#threadfix-config)
-- [WebInspect `webinspect_config`](#webinspect-config)
-- [Email `email_config`](#email-config)
 
-- [WebBreaker Command Usage `webbreaker_cheatsheet`](#webbreaker-cheatsheet)
+[Usage ](#usage)
+- [Commands `commands`](#commands)
+- [WebInspect Scan `webinspect_scan`](#webinspect_scan)
+- [WebInspect List `webinspect_list`](#webinspect_list)
+- [WebInspect Download `webinspect_download`](#webinspect_download)
+- [WebInspect Proxy `webinspect_proxy`](#webinspect_proxy)
+- [WebInspect Swagger `webinspect_swagger`](#webinspect_swagger)
+- [Fortify List `fortify_list`](#fortify_list)
+- [Fortify Upload `fortify_upload`](#fortify_upload)
+- [Fortify Download `fortify_download`](#fortify_download)
+- [ThreadFix List `threadfix_list`](#threadfix_list)
+- [ThreadFix Upload `threadfix_upload`](#threadfix_upload)
+- [WebBreaker Administrative `webbreaker_administrative`](#webbreaker_administrative)
 
 
 ## Introduction `introduction`
 
 ### Description `description`
-Build functional security testing, into your software development and release cycles! WebBreaker provides the capabilities to automate and centrally manage Dynamic Application Security Testing (DAST) as part of your DevOps pipeline.
+Build non-functional security testing, into your software development and release cycles! WebBreaker provides the capabilities to automate and orchestrate Dynamic Application Security Testing (DAST) from a single client.
 
 ## User Guide `user-guide`
 
@@ -60,44 +66,15 @@ WebBreaker releases are packaged on github.com and can be installed locally.
 
 ### Supported Features: `supported_features`
 
-* Jenkins global environmental variable inheritance with scan options.
-* WebInspect REST API support for v9.30 and above. 
-* Export both XML and FPR WebInspect formats to Fortify Software Security Center (SSC) or other compatible vulnerability management web applications for vulnerability analysis/triage.
-* Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software.
-* Centrally administer all configurations required to launch WebInspect scans.
-* Remotely query arbitrary policies, settings, webmacros, from any WebInspect deployment.
-* Configurable property .ini files to support your [Foritfy](.webbreaker/config.ini) and [WebInspect](.webbreaker/config.ini) deployments.
-* Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater sensors.
-* ChatOps extensibility and [email notifications](.webbreaker/config.ini) on scan start and completion.
-* Local [logging](.webbreaker/log) of WebInspect scan state.
-
-### Usage `usage`
-Webbreaker utilizes a structure of upper-level and lower-level commands to enable interaction with multiple 3rd party platforms. The two platforms currently supported are WebInspect and Fortfiy and they can be accessed using their respective upper-level commands. Webbreaker supports multiple functions for each platform which are accessed via lower-level commands. The current command structure is listed below.
-
-- webbreaker
-    - webinspect
-        - scan
-        - servers
-        - list
-        - download
-        - proxy
-    - fortify
-        - list
-        - upload
-        - scan
-        - download
-    - admin
-        - credentials
-        - clear
-    - threadfix
-        - list
-        - teams
-        - applications
-        - scans
-        - upload
-        - create_app
-
-A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'
+* _Jenkins global environmental variable inheritance with scan options._
+* _WebInspect REST API support for v9.30 and above._
+* _Export both XML and FPR WebInspect formats to Fortify Software Security Center (SSC) or other compatible vulnerability management web applications for vulnerability analysis/triage._
+* _Ability to automatically upload scan results to Fortify SSC or other third-party vulnerability management software._
+* _Centrally administer all configurations required to launch WebInspect scans from a [GIT](https://github.com/webbreaker/webinspect) repository._
+* _Configurable ~/.webbreaker/config.ini property file to support your Fortify, WebInspect, and ThreadFix orchestration._
+* _Enterprise scalability with configurable Just-In-Time (JIT) scheduling to distribute your WebInspect scans between two (2) or greater servers._
+* _ChatOps extensibility and [email notifications](.webbreaker/config.ini) on scan start and completion._
+* _Local [logging](.webbreaker/log) of WebInspect scan state._
 
 ### Logging `logging`
 WebBreaker local logs may be found under `~/.webbreaker/logs` and can be implemented with Elastic Stack for log aggregation. Recommended compenents include Filebeat agents installed on all WebInspect servers, forwarding to Logstash, and visualized in Kibana. General implementation details are [here](https://qbox.io/blog/welcome-to-the-elk-stack-elasticsearch-logstash-kibana/).  A recommended approach is to tag log events and queries with ```WebInspect``` and ```webbreaker```, but remember 
@@ -163,30 +140,62 @@ Below is the default config.ini that is set at first time install, once you exec
 ### Default 
 ````
 [fortify]
-verify_ssl = False
+# Fortify SSC URL
 ssc_url = https://fortify.example.com/ssc
+
+# Values will be created from the `webbreaker admin credentials --fortify` command
 username =
 password =
+
+# Default Fortify SSC Project Template to associate the Project /Version
+project_template = Prioritized High Risk Issue Template
+
+# Fortify SSC Project or Application default value for uploading, downloading, or listing
+# May be overriden on command-line
 application_name = WEBINSPECT
+
+# Fortify SSC Application Version default values, with an optional custom attribute.
 business_risk_ranking = High
 development_phase = Active
 development_strategy = Internal
 accessibility = externalpublicnetwork
+
+# Fortify SSC custom attribute name, custom_attribute_value may be overridden on command line
 custom_attribute_name =
 custom_attribute_value =
 
+# Enforce validation of CA Certificate
+verify_ssl = False
+
 [threadfix]
+# Threadfix URL and API Key created by a User
 host = https://threadfix.example.com:8443/threadfix
-api_key =
+
+# Threadfix API Key created from a user by accessing your browser the Threadfix UI
+api_key = <Key Required>
 
 [webinspect]
+# WebInspect logical server lanes for load balancing between the maximum concurrent scans per server
+large_server_max_concurrent_scans = 2
+small_server_max_concurrent_scans = 1
+
+# WebInspect server(s) hosting RESTFul API endpoints
 server_01 = https://webinspect-server-1.example.com:8083
-endpoint_01 = %(server_01)s|%(size_large)s
+
+# WebInspect server interpolated from above, configured to a dedicated large server lane.
+endpoint_01 = %(server_01)s|%(large_server_max_concurrent_scans)s
+
+# GIT repo for centrally managed WebInspect configurations of settings, policies, and webmacros.
 git_repo = https://github.com/webbreaker/webinspect.git
+
+# WebInspect basic API authentication for access to scanning.
+# Not enabled by default, set `authenticate = true` to enable
+# Values will be created from the `webbreaker admin credentials --webinspect` command
 authenticate = false
 username =
 password =
 
+# Built-in policies with all webinspect releases, custom policies may be appended
 [webinspect_policy]
 aggressivesqlinjection = 032b1266-294d-42e9-b5f0-2a4239b23941
 allchecks = 08cd4862-6334-4b0e-abf5-cb7685d0cde7
@@ -214,6 +223,7 @@ sqlinjection = 6df62f30-4d47-40ec-b3a7-dad80d33f613
 standard = cb72a7c2-9207-4ee7-94d0-edd14a47c15c
 transportlayersecurity = 0fa627de-3f1c-4640-a7d3-154e96cda93c
 
+# smnp email host, port and email addresses required for email functionality.
 [emailer]
 smtp_host = smtp.example.com
 smtp_port = 25
@@ -239,7 +249,7 @@ email_template =
         </ul>
         </p>
         <p>
-            Questions? Concerns? Please contact us in our Hipchat room, &quot;WebBreaker Activity&quot;,
+            Questions? Concerns? Please chat us on our channel, &quot;WebBreaker&quot;,
             or <a href="mailto:webbreaker-team@example.com">email us</a>.
         </p>
 
@@ -252,118 +262,166 @@ email_template =
         </html>
 ````
 
-### [threadFix]
-##### host
-Threadfix host that will be used.
+## Usage 
+Webbreaker utilizes a structure of upper-level and lower-level commands to enable interaction with multiple 3rd party platforms. The three Products currently supported are WebInspect, ThreadFix, and Fortfiy and they can be accessed using their respective upper-level commands. Webbreaker supports multiple functions for each Product which are accessed via lower-level commands. The current command structure is listed below.
 
-##### api_key
-This api_key to authenticate ThreadFix actions
+- webbreaker
+    - webinspect
+        - scan
+        - servers
+        - list
+        - download
+        - proxy
+        - wiswag
+    - fortify
+        - list
+        - upload
+        - scan
+        - download
+    - admin
+        - credentials
+        - clear
+    - threadfix
+        - list
+        - teams
+        - applications
+        - upload
 
-### [fortify]
-Fortify SSC settings can be found under [fortify]
+A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'
 
-##### application_name
-Static Value of the default Fortify SSC Application you wish to use without stating it on the command line.
+### Commands `commands`
+Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.  We used WebInspect [Zero Bank](http://zero.webappsecurity.com/) for our examples below.
 
-##### verify_ssl
-Option to verify ssl or not while communicating with Fortify. The default option is 'False'.
+##### WebInspect Scan `webinspect_scan`
+    # WebInspect scan with settings from a GIT repo or a current working directory, .xml extension is not required, but supported.
+    webbreaker webinspect scan --settings zerobank
 
-##### ssc_url
-URL of the fortify server to contact.
+    # Basic WebInspect scan with credentials (only needed if authentication is enable in config.ini):
+    webbreaker webinspect scan --settings zerobank --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
-##### username
-Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use 
-`webbreaker admin credentials --fortify` to set your username & password.
+    # WebInspect Scan with overrides:
+    webbreaker webinspect scan --settings zerobank --allowed_hosts zero.webappsecurity.com --allowed_hosts legacy.webappsecurity.com
 
-##### password
-Fortify username that will be used for authentication with ssc_url. It is stored using an encrypted value. Use 
-`webbreaker admin credentials --fortify` to set your username & password.
+    # Scan with absolute path to your local WebInspect settings:
+    webbreaker webinspect scan --settings /Users/Matt/Documents/zerobank
+    
+    # Scan with load-balancing declared in your ~/.webbreaker/config.ini:
+    webbreaker webinspect scan --settings zerobank --size small
 
-##### business_risk_ranking
-Fortify defaults this to `High`. Other valid inputs are `Medium` & `Low`.
+##### WebInspect List `webinspect_list`
+    # List all WebInspect servers configured in config.ini:
+    webbreaker webinspect servers
 
-##### development_phase
-Current development phase of Fortify Version. Default is `Active`.
+    # List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com:
+    webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083
 
-##### development_strategy
-Development staffing strategy used for this Application. Default is `Internal`.
+    # List all WebInspect scans on webinspect-1.example.com and webinspect-2.example.com matching "zerobank":
+    webbreaker webinspect list --server webinspect-1.example.com:8083 --server webinspect-2.example.com:8083 --scan_name zerobank
 
-##### accessibility
-The level of recommended access required to interact with this Application. Default is `externalpublicnetwork`.
+    # List all WebInspect scans on all servers:
+    webbreaker webinspect list
 
-##### project_template
-Static value of the Fortify SSC Project Template you wish to set as a default for each Application Version you create.
+    # List all WebInspect scans on all servers matching "zerobank":
+    webbreaker webinspect list --scan_name zerobank
 
-##### custom_attribute_id
-If you would like to set another attribute definition with a custom id number for creation of a new Application Version.
+    # List all WebInspect scans on all servers using command line auth credentials:
+    webbreaker webinspect list --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
-##### custom_attribute_value
-If you would like to set another attribute definition with a custom value for creation of a new Application Version.
+##### WebInspect Download `webinspect_download`
+    # Download WebInspect scan from server or sensor:
+    webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank
 
-##### search_expression
-If this is set, it will attempt to retrieve the Application Attribute Definition and use that ID in setting Version Attributes.
-The format for creating a search_expression is `name:"Search Example"`
+    # Download WebInspect scan from server with credentials (only needed if authentication is enable in config.ini):
+    webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank --username $WEBINSPECT_USER --password $WEBINSPECT_PASSWORD
 
-##### attribute_definition_id
-Instead of using the search expression to retrieve the Application Attribute Definition, you may set it here and the search_expression will be ignored.
+    # Download WebInspect scan as XML:
+    webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank -x xml
 
-##### version_attribute_value
-Attribute value that is set when setting Version Attributes. The default is `New WebBreaker Application`
+    # Download WebInspect scan by ID:
+    webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank --scan_id my_important_scans_id
 
-##### version_attribute_values
-List of Version attribute values to set while setting Version Attributes.
+##### WebInspect Proxy `webinspect_proxy`
+    # Start a WebInspect proxy called test-proxy on port 9001:
+    webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
 
-### [webinspect]
+    # List all the WebInspect proxies:
+    webbreaker webinspect proxy --list
 
-WebInspect scan configuration files for `policies` are versioned and hosted from a GIT repository configured 
-in `~/.webbreaker/config.ini`.  Additionally, all WebInspect policies and servers are managed from this 
-configuration file.  
+    # Download the WebInspect proxy webmacro called test-proxy:
+    webbreaker webinspect proxy --download --webmacro zerobank-deposit --proxy_name zerobank_proxy
 
-All WebInspect distributions are packaged with a `Default.xml` setting file that may be overridden and uploaded 
-to the WebInspect deployment with the webbreaker option `--settings`.  The setting xml file contains 
-all possible options for your scan, including a WebInspect scan including policy, workflow and/or login 
-macro, scan depth, and allowed hosts.
+    # Download the WebInspect proxy settings file called test-proxy:
+    webbreaker webinspect proxy --download --setting zerobank --proxy_name zerobank_proxy
 
-#### server_XX and endpoint_XX
-Provides a _Just-In-Time_ (JIT) scheduler provides the ability to load balance a WebInspect cluster for scans.
+    # Upload a WebInspect webmacro proxy for a scan override called:
+    webbreaker webinspect proxy --upload zerobank-deposit.webmacro --proxy_name zerobank_proxy
 
-#### webinspect_size
-Sets the number for large and small WebInspect scan servers. This assists with _Just-In-Time_ (JIT) scheduling
+    # Stop and download webmacro workflow and WebInspect setting file for scanning:
+    webbreaker webinspect proxy --stop --proxy_name zerobank_proxy
 
-#### webinspect_repo
-A unique GIT repo is defined by the user and is mutually exclusive from the WebBreaker source.  The 
-assumption is each WebBreaker installation will have a unique GIT URL defined.  Upon each execution, 
-the repo refreshes *all* settings file(s), assuming that there may be newly created, deletions, or modifications 
-of settings files.  All settings files used in execution must reside in this respective repo 
-under `~/.webbreaker/etc/webinspect/settings`.
+##### WebInspect Swagger `webinspect_swagger`
+    # Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json URL:
+    webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
 
-#### username
-Basic authentication with `.htaccess` syntax configured on your WebInspect server
+    # Ingest, create, and download a named WebInspect setting file from a OpenAPI swagger.json specification:
+    webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json --wiswag_name petstore-swagger-test
 
-If authentication is set to true, all WebInspect requests will use basic auth. A user will be prompted for
-credentials which, if valid, will be encrypted and saved. Credentials can also be set via the
-`webbreaker admin credentials --webinspect` command.
+##### Fortify List `fortify_list`
+    # List Fortify SSC Applications:
+    webbreaker fortify list
 
-#### password
-Basic authentication with `.htaccess` syntax configured on your WebInspect server
+    # List Fortify SSC versions by application, `application` value is case sensitive:
+    webbreaker fortify list --application WEBINSPECT
 
-### [webinspect_policy]
-Grouping of proprietary WebInspect tests to perform.  Tests or rules are represented in an `xml` element with 
-a `.policy` file extension.  Custom tests or Checks are mapped to a unique WebInspect ID.  The mapping for all 
-policies shipped with WebInspect are mapped with their respective GUID within this section.
+##### Fortify Upload `fortify_upload`
+    # Upload a scan to Fortify SSC with Application from config.ini and new or existing Version:
+    webbreaker fortify upload --version zerobank --scan_name zerobank.fpr
 
-*Note:* All custom polices are automatically uploaded to the targeted WebInspect server and must be referenced 
-as a GUID.  
+    # Upload a scan to Fortify SSC with application/project & version name, .fpr is not required:
+    webbreaker fortify upload --application my_other_app --version zerobank --scan_name zerobank.fpr
 
-### email
-Notifications for start-scan and end-scan events. A simple publisher/subscriber pattern is implemented under 
-the "notifiers" folder.
+    # Upload a scan to a new Fortify SSC Application & Version, with a custom attribute:
+    webbreaker fortify upload --application my_other_app --version zerobank --scan_name auth_scan --custom_value ABC1234567
 
-A Reporter object holds a collection of Notifier objects, each of which implements a Notify function responsible 
-for creating the desired notification. Currently, two notification types are implemented email and database.
+##### Fortify Download `fortify_download`
+    # Download lastest .fpr scan from Fortify SSC from a specific application/project & version name:
+    webbreaker fortify download --application ZERO_BANK --version zerobank
 
-The email notifier merges the provided event data into an HTML email message and sends the message. All 
-SMTP-related settings are stored in .emailrc, and read during program startup.
+    # Download lastest .fpr scan from Fortify SSC with application configured in config.ini (Default is WEBINSPECT):
+    webbreaker fortify download --version zerobank
 
-## WebBreaker Command Usage `webbreaker_cheatsheet`
-See [WebBreaker Cheatsheet](https://github.com/target/webbreaker/blob/master/docs/cheatsheet.md)
+    # Download lastest .fpr scan from Fortify SSC with application/ version name and command-line authentication:
+    webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_PASS --application ZERO_BANK --version zerobank
+
+##### ThreadFix List `threadfix_list`
+    # List all applications for all teams found in ThreadFix:
+    webbreaker threadfix list
+
+    # List all applications with names containing 'secret' for all teams with names containing 'Marketing':
+    webbreaker threadfix list --team Marketing --application zerobank
+
+    # List all ThreadFix applications for the Marketing team:
+    webbreaker threadfix list --team Marketing
+
+##### ThreadFix Upload `threadfix_upload`
+    # Upload the local scan file 'zerobank.xml' to the 'zero_bank' application:
+    webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
+
+    # Upload the local file 'zerobank.xml' as a scan to the 'zero_bank' application
+    webbreaker threadfix upload --application zero_bank --scan_file zerobank.xml
+
+    # Create a new application, with a given name and url, in ThreadFix under the Marketing team:
+    webbreaker threadfix create --team Marketing --application zero_bank --url http://zero.webappsecurity.com/
+
+##### WebBreaker Administrative `webbreaker_administrative`
+    # Encrypt and store new Fortify SSC credentials. User will be prompted for username and password:
+    webbreaker admin credentials --fortify
+
+    # Encrypt and store WebInspect credentials. User will be prompted for username and password:
+    webbreaker admin credentials --webinspect
+
+    # Encrypt and store Fortify credentials as environment variables:
+    webbreaker admin credentials --fortify --username $FORT_USER --password $FORT_PASS
+
+    # Clear cuurent stored Fortify credentials:
+    webbreaker admin credentials --fortify --clear

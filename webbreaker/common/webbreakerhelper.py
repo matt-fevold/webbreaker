@@ -108,7 +108,11 @@ class WebBreakerHelper(object):
     @classmethod
     def webinspect_wiswag_desc(cls):
         return ("""
-        Launch a swagger scan""".format(Fore.RED,Style.RESET_ALL))
+        Create a WebInspect Swagger .xml scan file, from ingesting a .json Swagger URL or file,
+        see also https://www.youtube.com/watch?v=QVwT48dNmjE
+        {0}
+        webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json --wiswag_name petstore-swagger-test
+        {1}""".format(Fore.RED,Style.RESET_ALL))
 
     @classmethod
     def fortify_desc(cls):
@@ -256,7 +260,7 @@ class WebBreakerHelper(object):
 </ul>
 </p>
 <p>
-    Questions? Concerns? Please contact us in our Hipchat room, &quot;WebBreaker Activity&quot;,
+    Questions? Concerns? Please chat us on our channel, &quot;WebBreaker&quot;,
     or <a href="mailto:webbreaker-team@example.com">email us</a>.
 </p>
 

@@ -40,7 +40,7 @@ The commands are organized by product followed by actions you want to take on th
 
 :white_check_mark: Configure the `$HOME/.webbreaker/config.ini` or `%USERPROFILE%\.webbreaker\config.ini`
 
-:white_check_mark: Each supported product, Webinspect, Fortify SSC, WebInspect and ThreadFix has a section. Modify the ones you need.
+:white_check_mark: Below are Webinspect, Fortify SSC, and ThreadFix required settings, see [User Guide](https://target.github.io/webbreaker/#configuration) for advanced set-up.
 
 ```
 # Your required Fortify SSC URL and run `webbreaker admin credentials --fortify` 
@@ -49,43 +49,20 @@ ssc_url = https://ssc.example.com/ssc
 username = 
 password = 
 
-# Verify if your SSL cacerts have been signed with a known ca
-
-verify_ssl = False
-
-# Default Fortify SSC installation application version attributes with default values
-business_risk_ranking = High
-development_phase = Active
-development_strategy = Internal
-accessibility = externalpublicnetwork
-
-# Optional custom Fortify SSC attribute
-custom_attribute_name =
-custom_attribute_value =
-
 # Your ThreadFix URL and ThreadFix API Key
 [threadfix]
 host = https://threadfix.example.com:8443/threadfix
 api_key = <put your threadfix api key here>
 
-# Enable optional WebInspect basic API authentication and run `webbreaker admin credentials --webinspect`
-[webinspect]
-# Verify if your SSL cacerts have been signed with a known ca
-verify_ssl = False
-
-# Enable WebInspect authentication set it to `true` after it is configured on the server
-authenticate = false
-username = 
-password = 
-
-# Webinspect default port is 8083/tcp. Feel free to add more servers here with interpolation
+# Your Webinspect servers with the REST API port, default is 8083/tcp.
 server_01 = https://webinspect-1.example.com:8083
 server_02 = https://webinspect-2.example.com:8083
-endpoint_01 = %(server_01)s|%(size_large)s
-endpoint_02 = %(server_01)s|%(size_medium)s
+endpoint_01 = %(server_01)s|%(large_server_max_concurrent_scans)s
+endpoint_02 = %(server_01)s|%(small_server_max_concurrent_scans)s
 ```
 **NOTES:**
 * If you are using WebInspect turn-on your [WebInspect API Service](https://software.microfocus.com/en-us/software/webinspect).  
+* Advance configuration is available on our [User Guide](https://target.github.io/webbreaker/#configuration).
 
 ## Release Notes
 
@@ -110,7 +87,23 @@ Illustrated below is an example of a typical WebBreaker WebInspect scanning work
 `webbreaker threadfix upload --application WEBINSPECT --scan_file WEBINSPECT_SCAN_NAME.xml`
 
 1. Uploading Scan Results to Fortify SSC  
-`webbreaker fortify upload --fortify_user $FORTIFY_SSC_USER --fortify_password $FORTIFY_SSC_PASSWORD --version $WEBINSPECT_SCAN_NAME --scan_name $WEBINSPECT_SCAN_NAME`
+`webbreaker fortify upload --version $WEBINSPECT_SCAN_NAME --scan_name $WEBINSPECT_SCAN_NAME`
+
+1. Setting your Fortify SSC and WebInspect credentials.
+```
+webbreaker admin credentials --fortify
+webbreaker admin credentials --webinspect
+```
+
+1. Running scans in Jenkins
+```
+# scan
+webbreaker webinspect scan --settings zerobank --scan_name ${BUILD_TAG}
+# upload scan to Fortify SSC
+webbreaker fortify upload --scan_name ${BUILD_TAG} --version ${JOB_NAME}
+# upload scan to ThreadFix
+webbreaker threadfix upload --scan_name ${BUILD_TAG} --application ${JOB_NAME}
+```
 
 ## Bugs and Feature Requests
 

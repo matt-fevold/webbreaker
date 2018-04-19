@@ -118,7 +118,7 @@ class Config(object):
 
         # ThreadFix URL and ThreadFix API Key')
         self.conf_get('threadfix', 'host', 'https://threadfix.example.com:8443/threadfix')
-        self.conf_get('threadfix', 'api_key', 'ZfO0b7dotQZnXSgkMOEuQVoFIeDZwd8OEQE7XXX')
+        self.conf_get('threadfix', 'api_key', '')
 
         # WebInspect load balancing, size of server is bound to CPU & memory available
         self.conf_get('webinspect', 'size_large', '2')
