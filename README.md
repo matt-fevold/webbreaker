@@ -89,9 +89,6 @@ Illustrated below is an example of a typical WebBreaker WebInspect scanning work
 1. Uploading Scan Results to Fortify SSC  
 `webbreaker fortify upload --version $WEBINSPECT_SCAN_NAME --scan_name $WEBINSPECT_SCAN_NAME`
 
-1. Setting your Fortify SSC and WebInspect credentials.
-`webbreaker admin credentials --fortify` and `webbreaker admin credentials --webinspect`
-
 1. Running scans in Jenkins
 
 ```
