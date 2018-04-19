@@ -65,8 +65,6 @@ class WebInspectConfig(object):
         try:
             webinspect_dict = self.__get_webinspect_settings__()
             self.endpoints = webinspect_dict['endpoints']
-            # self.sizing = webinspect_dict['size_list']
-            # self.default_size = webinspect_dict['default_size']
             self.webinspect_git = webinspect_dict['git']
             self.mapped_policies = webinspect_dict['mapped_policies']
             self.verify_ssl = self._convert_verify_ssl_config(webinspect_dict['verify_ssl'])
@@ -94,7 +92,6 @@ class WebInspectConfig(object):
                     sizes.append([option[0], option[1]])
 
             webinspect_dict['git'] = wb_config.conf_get('webinspect', 'git_repo')
-            webinspect_dict['default_size'] = wb_config.conf_get('webinspect', 'default_size')
 
             webinspect_dict['endpoints'] = [[endpoint[1].split('|')[0], endpoint[1].split('|')[1]] for endpoint in
                                             endpoints]
