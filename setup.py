@@ -6,16 +6,19 @@ import sys
 import os
 from webbreaker import __version__ as version
 
-try:
-    from setuptools import setup, find_packages
+# could combine these two - but this should really be replaced with something else. Issue #152 addresses this
+try: # for pip >= 10
     from pip._internal.req import parse_requirements
     from pip._internal.download import PipSession
 
-except ImportError:
-
+except ImportError: # for pip <= 9.0.3
     from pip.req import parse_requirements
     from pip.download import PipSession
 
+
+try:
+    from setuptools import setup, find_packages
+except ImportError:
     from distutils.core import setup
 
 links = []

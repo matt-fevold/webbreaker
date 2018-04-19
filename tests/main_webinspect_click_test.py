@@ -162,7 +162,7 @@ def test_webinspect_scan(scan_mock, runner):
 
     scan_mock.assert_called_once_with({'username': None, 'start_urls': (), 'scan_scope': None, 'upload_policy': None,
                                        'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
-                                       'upload_settings': None, 'password': None, 'size': None, 'settings': 'Default',
+                                       'upload_settings': None, 'password': None, 'size': 'large', 'settings': 'Default',
                                        'scan_name': None, 'login_macro': None, 'scan_policy': None, 'allowed_hosts': (),
                                        'fortify_user': None, 'scan_mode': None})
 
@@ -175,7 +175,7 @@ def test_webinspect_scan_custom_settings(scan_mock, runner):
 
     scan_mock.assert_called_once_with({'username': None, 'start_urls': (), 'scan_scope': None, 'upload_policy': None,
                                        'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
-                                       'upload_settings': None, 'password': None, 'size': None,
+                                       'upload_settings': None, 'password': None, 'size': 'large',
                                        'settings': 'important_site_auth', 'scan_name': None, 'login_macro': None,
                                        'scan_policy': None, 'allowed_hosts': (), 'fortify_user': None,
                                        'scan_mode': None})
@@ -190,7 +190,7 @@ def test_webinspect_scan_custom_settings_with_username_password(scan_mock, runne
 
     scan_mock.assert_called_once_with({'username': 'user', 'start_urls': (), 'scan_scope': None, 'upload_policy': None,
                                        'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
-                                       'upload_settings': None, 'password': 'pass', 'size': None,
+                                       'upload_settings': None, 'password': 'pass', 'size': 'large',
                                        'settings': 'important_site_auth', 'scan_name': None, 'login_macro': None,
                                        'scan_policy': None, 'allowed_hosts': (), 'fortify_user': None, 'scan_mode': None})
 
@@ -204,7 +204,7 @@ def test_webinspect_scan_custom_settings_with_two_allowed_hosts(scan_mock, runne
 
     scan_mock.assert_called_once_with({'username': None, 'start_urls': (), 'scan_scope': None, 'upload_policy': None,
                                        'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
-                                       'upload_settings': None, 'password': None, 'size': None,
+                                       'upload_settings': None, 'password': None, 'size': 'large',
                                        'settings': 'important_site_auth', 'scan_name': None, 'login_macro': None,
                                        'scan_policy': None, 'allowed_hosts': ('example.com', 'example1.com',),
                                        'fortify_user': None, 'scan_mode': None})
@@ -218,46 +218,10 @@ def test_webinspect_scan_local_custom_settings(scan_mock, runner):
 
     scan_mock.assert_called_once_with({'username': None, 'start_urls': (), 'scan_scope': None, 'upload_policy': None,
                                        'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
-                                       'upload_settings': None, 'password': None, 'size': None,
+                                       'upload_settings': None, 'password': None, 'size': 'large',
                                        'settings': '/users/me/important_site_auth', 'scan_name': None,
                                        'login_macro': None, 'scan_policy': None, 'allowed_hosts': (),
                                        'fortify_user': None, 'scan_mode': None})
-
-
-@mock.patch('webbreaker.webinspect.scan.create_scan_event_handler')
-@mock.patch('webbreaker.webinspect.common.helper.WebInspectJitScheduler')
-@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi')
-@mock.patch('webbreaker.webinspect.common.helper.open', new_callable=mock_open, read_data="data")
-@mock.patch('webbreaker.__main__.open', new_callable=mock_open, read_data="data")
-def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock, email_mock, runner, caplog):
-    endpoint_mock.return_value.get_endpoint.return_value = "test.hq.target.com"
-    endpoint_mock.has_auth_creds()
-
-    scan_mock.return_value.create_scan.return_value = WebInspectResponseTest()
-    scan_mock.create_scan()
-    scan_mock.return_value.get_current_status.return_value = WebInspectResponseTest()
-    scan_mock.get_current_status()
-    scan_mock.return_value.export_scan_format.return_value = WebInspectResponseTest()
-    scan_mock.export_scan_format()
-
-    email_mock.handle_scan_event = True
-
-    result = runner.invoke(webbreaker,
-                           ['webinspect', 'scan'])
-
-    caplog.check(
-        ('__webbreaker__', 'INFO', "Querying WebInspect scan engines for availability."),
-        ('__webbreaker__', 'INFO', 'Using webinspect server: -->test.hq.target.com<-- for query'),
-        ('__webbreaker__', 'INFO', "Launching a scan"),
-        ('__webbreaker__', 'INFO', "Execution is waiting on scan status change"),
-        ('__webbreaker__', 'INFO', "Scan status has changed to complete."),
-        ('__webbreaker__', 'INFO', "Exporting scan: FakeScanID as fpr"),
-        ('__webbreaker__', 'INFO', "Exporting scan: FakeScanID as xml"),
-        ('__webbreaker__', 'INFO', "Webbreaker WebInspect has completed."),
-    )
-    caplog.uninstall()
-
-    assert result.exit_code == 0
 
 
 @mock.patch('webbreaker.webinspect.list_servers.WebInspectConfig')

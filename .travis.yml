@@ -6,7 +6,7 @@ python:
 install:
   - pip install tox-travis -rrequirements.txt -rtests/requirements.txt
   - python setup.py build
-  - python setup.py pyinstaller
+  - python setup.py install
 script:
   - tox
 notifications:
@@ -14,7 +14,8 @@ notifications:
     recipients:
     - brandon.spruth2@target.com
     - Matthew.Fevold@target.com
-    - Kyler.Witting@target.com
+    - Hayley.Yan@target.com
+    - Homer.gaidarsky@target.com
     on_success: change
     on_failure: always
 deploy:
@@ -31,3 +32,6 @@ deploy:
     tags: true
 after_success:
   - coveralls
+after_failure: "cat /home/travis/build/target/webbreaker/.tox/py27/log/py27-2.log"
+
+

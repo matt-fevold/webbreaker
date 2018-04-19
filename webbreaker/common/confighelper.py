@@ -93,14 +93,14 @@ class Config(object):
             return value
 
     def set_config(self):
-        # Complete SSC URL with the the context of your deployment.
+        # SSC URL exclude the /ssc context
         # TODO: Change ssc_url -> fortify_url or vice versa. Just standardize
         # Default Fortify SSC Application
         self.conf_get('fortify', 'application_name', 'WEBINSPECT')
 
         # Default verify_ssl value
         self.conf_get('fortify', 'verify_ssl', 'False')
-        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com/ssc')
+        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
 
         # Fortify SSC authentication execute, webbreaker admin credentials --fortify
         self.conf_get('fortify', 'username', '')
@@ -121,13 +121,12 @@ class Config(object):
         self.conf_get('threadfix', 'api_key', '')
 
         # WebInspect load balancing, size of server is bound to CPU & memory available
-        self.conf_get('webinspect', 'size_large', '2')
-        self.conf_get('webinspect', 'size_medium', '1')
-        self.conf_get('webinspect', 'default_size', 'size_large')
+        self.conf_get('webinspect', 'large_server_max_concurrent_scans', '2')
+        self.conf_get('webinspect', 'small_server_max_concurrent_scans', '1')
 
         # WebInspect server(s) RESTFul API endpoints
         self.conf_get('webinspect', 'server_01', 'https://webinspect-server-1.example.com:8083')
-        self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(size_large)s')
+        self.conf_get('webinspect', 'endpoint_01', '%(server_01)s|%(large_server_max_concurrent_scans)s')
         self.conf_get('webinspect', 'git_repo', 'https://github.com/webbreaker/webinspect.git')
 
         # API authentication set to true execute, webbreaker admin credentials --webinspect

@@ -65,8 +65,8 @@ class WebInspectConfig(object):
         try:
             webinspect_dict = self.__get_webinspect_settings__()
             self.endpoints = webinspect_dict['endpoints']
-            self.sizing = webinspect_dict['size_list']
-            self.default_size = webinspect_dict['default_size']
+            # self.sizing = webinspect_dict['size_list']
+            # self.default_size = webinspect_dict['default_size']
             self.webinspect_git = webinspect_dict['git']
             self.mapped_policies = webinspect_dict['mapped_policies']
             self.verify_ssl = self._convert_verify_ssl_config(webinspect_dict['verify_ssl'])
@@ -296,7 +296,7 @@ class WebInspectConfig(object):
                 webinspect_dict['webinspect_scan_targets'] = targets
                 webinspect_dict['webinspect_workflow_macros'] = options['workflow_macros']
                 webinspect_dict['webinspect_allowed_hosts'] = options['allowed_hosts']
-                webinspect_dict['webinspect_scan_size'] = 'size_' + options['size'] if options['size'] else self.default_size
+                webinspect_dict['webinspect_scan_size'] = options['size']
                 webinspect_dict['fortify_user'] = options['fortify_user']
 
             except argparse.ArgumentError as e:

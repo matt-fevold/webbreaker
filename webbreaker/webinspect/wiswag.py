@@ -13,7 +13,7 @@ from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
-from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler
+from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 
 
 class WebInspectWiswag:
@@ -33,9 +33,7 @@ class WebInspectWiswag:
         if self.wiswag_name is None:
             self._generate_random_wiswag_name()
 
-        response = self.api.create_wiswag(url, self.wiswag_name)
-        APIHelper().check_for_response_errors(response, "There was an error with ingesting your swagger json file or url "
-                                                        "validate your swagger ends with a .json!")
+        self.api.create_wiswag(url, self.wiswag_name)
 
         # go through the settings list 3 times (~15 secs before timeout)
         for i in range(3):
@@ -70,16 +68,18 @@ class WebInspectWiswag:
     def get_endpoint(self):
         config = WebInspectConfig()
         lb = WebInspectJitScheduler(endpoints=config.endpoints,
-                                    size_list=config.sizing,
-                                    size_needed='size_large', username=self.username,
+                                    username=self.username,
                                     password=self.password)
         Logger.app.info("Querying WebInspect scan engines for availability.")
-        endpoint = lb.get_endpoint()
 
-        if not endpoint:
-            raise EnvironmentError("Scheduler found no available endpoints.")
+        try:
+            endpoint = lb.get_endpoint()
+            return endpoint
 
-        return endpoint
+        except NoServersAvailableError as e:
+            Logger.app.error("No Servers are available due to a misconfiguration or lack of availability! {}".format(e))
+            sys.exit(ExitStatus.failure)
+
 
 
 

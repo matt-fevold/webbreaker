@@ -106,11 +106,14 @@ def test_proxy_start_success(auth_mock, config_mock, get_proxy_cert_mock, start_
 
 # proxy --list
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._list_proxy')
+@mock.patch('webbreaker.webinspect.proxy.WebInspectConfig')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectAuth')
-def test_proxy_list_success(auth_mock,  list_proxy_mock):
+def test_proxy_list_success(auth_mock,  config_mock, list_proxy_mock):
 
     # Given
     auth_mock.return_value.authenticate.return_value = ('user', 'pass')
+    config_mock.return_value.endpoints = ['webinspect_server1']
+
     # need to be a list
     list_proxy_mock.return_value = [ClassHelper(True).data]
 
@@ -124,11 +127,14 @@ def test_proxy_list_success(auth_mock,  list_proxy_mock):
 # proxy --upload
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._verify_proxy_server')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectApi')
+@mock.patch('webbreaker.webinspect.proxy.WebInspectConfig')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectAuth')
-def test_proxy_upload_success(auth_mock, api_mock, verify_proxy_server_mock):
+def test_proxy_upload_success(auth_mock, config_mock, api_mock, verify_proxy_server_mock):
 
     # Given
     auth_mock.return_value.authenticate.return_value = ('user', 'pass')
+    config_mock.return_value.endpoints = ['webinspect_server1']
+
     api_mock.return_value = ClassHelper(True)
     verify_proxy_server_mock.return_value = ClassHelper(True).data
 
@@ -145,11 +151,14 @@ def test_proxy_upload_success(auth_mock, api_mock, verify_proxy_server_mock):
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._delete_proxy')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._download_proxy')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._verify_proxy_server')
+@mock.patch('webbreaker.webinspect.proxy.WebInspectConfig')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectAuth')
-def test_proxy_stop_success(auth_mock, verify_proxy_server_mock, download_proxy_mock, delete_proxy_mock):
+def test_proxy_stop_success(auth_mock, config_mock, verify_proxy_server_mock, download_proxy_mock, delete_proxy_mock):
 
     # Given
     auth_mock.return_value.authenticate.return_value = ('user', 'pass')
+    config_mock.return_value.endpoints = ['webinspect_server1']
+
     verify_proxy_server_mock.return_value = ClassHelper(True).data
     download_proxy_mock.return_value = None
     delete_proxy_mock.return_value = None
@@ -167,11 +176,14 @@ def test_proxy_stop_success(auth_mock, verify_proxy_server_mock, download_proxy_
 # proxy --download
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._download_proxy')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectProxy._verify_proxy_server')
+@mock.patch('webbreaker.webinspect.proxy.WebInspectConfig')
 @mock.patch('webbreaker.webinspect.proxy.WebInspectAuth')
-def test_proxy_download_success(auth_mock, verify_proxy_server_mock, download_proxy_mock):
+def test_proxy_download_success(auth_mock, config_mock, verify_proxy_server_mock, download_proxy_mock):
 
     # Given
     auth_mock.return_value.authenticate.return_value = ('user', 'pass')
+    config_mock.return_value.endpoints = ['webinspect_server1']
+
     verify_proxy_server_mock.return_value = ClassHelper(True).data
     download_proxy_mock.return_value = None
 

@@ -10,8 +10,9 @@ from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
+
+from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
-from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler
 import webbreaker.webinspect.webinspect_json as webinspectjson
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webinspectapi.webinspect import WebInspectApi
@@ -349,21 +350,18 @@ class Overrides:
     def get_endpoint(self):
         config = WebInspectConfig()
         lb = WebInspectJitScheduler(endpoints=config.endpoints,
-                                    size_list=config.sizing,
-                                    size_needed=self.scan_size, username=self.username,
+                                    server_size_needed=self.scan_size,
+                                    username=self.username,
                                     password=self.password)
         Logger.app.info("Querying WebInspect scan engines for availability.")
         try:
             endpoint = lb.get_endpoint()
-        except (OSError, EnvironmentError) as e:
-            if self.scan_size is None:
-                Logger.app.error("No available endpoints were found ")
-                sys.exit(ExitStatus.failure)
-            else:
-                Logger.app.error("There are no webinspect servers of this size available. Please check your config.ini")
-                sys.exit(ExitStatus.failure)
+            return endpoint
 
-        return endpoint
+        except NoServersAvailableError as e:
+            Logger.app.error("No servers are available to handle this request! {}".format(e))
+            sys.exit(ExitStatus.failure)
+
 
 
 

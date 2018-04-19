@@ -127,7 +127,8 @@ def webinspect():
               required=True,
               help="Specify setting file")
 @click.option('--size',
-              type=click.Choice(['medium', 'large']),
+              type=click.Choice(['small', 'large']),
+              default='large',
               help="Specify scanner size")
 @click.option('--start_urls',
               multiple=True,
