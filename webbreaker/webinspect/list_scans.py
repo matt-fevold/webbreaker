@@ -2,7 +2,7 @@
 # -*-coding:utf-8-*-
 
 from webbreaker.webinspect.authentication import WebInspectAuth
-from webbreaker.webinspect.common.webinspect_helper import WebInspectAPIHelper
+from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webbreaker.common.webbreakerlogger import Logger
 

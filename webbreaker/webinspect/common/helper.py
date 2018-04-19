@@ -10,7 +10,7 @@ from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from webbreaker.webinspect.common.webinspect_loghelper import WebInspect_LogExceptionHelper
+from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler
 import webbreaker.webinspect.webinspect_json as webinspectjson
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
@@ -23,7 +23,7 @@ import sys
 from exitstatus import ExitStatus
 
 logexceptionhelper = LogExceptionHelper()
-webinspect_logexceptionhelp = WebInspect_LogExceptionHelper()
+webinspect_logexceptionhelp = WebInspectLogHelper()
 
 
 class WebInspectAPIHelper(object):
@@ -217,8 +217,8 @@ class WebInspectAPIHelper(object):
             Logger.console.debug("Uploaded policy {} to server.".format(self.setting_overrides.webinspect_upload_policy))
 
         except (ValueError, UnboundLocalError, TypeError, NameError) as e:
-            webinspect_logexceptionhelp.LogErrorUploading("policy", e)
-            webinspect_logexceptionhelp.LogNoWebInspectServerFound(e)
+            webinspect_logexceptionhelp.log_error_uploading("policy", e)
+            webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
     def upload_settings(self):
 
@@ -229,8 +229,8 @@ class WebInspectAPIHelper(object):
             Logger.console.debug("Uploaded settings {} to server.".format(self.setting_overrides.webinspect_upload_settings))
 
         except (ValueError, UnboundLocalError, NameError) as e:
-            webinspect_logexceptionhelp.LogErrorUploading("settings", e)
-            webinspect_logexceptionhelp.LogNoWebInspectServerFound(e)
+            webinspect_logexceptionhelp.log_error_uploading("settings", e)
+            webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
     def upload_webmacros(self):
         try:
@@ -240,8 +240,8 @@ class WebInspectAPIHelper(object):
                 Logger.console.debug("Uploaded webmacro {} to server.".format(webmacro))
 
         except (ValueError, UnboundLocalError) as e:
-            webinspect_logexceptionhelp.LogErrorUploading("webmacro", e)
-            webinspect_logexceptionhelp.LogNoWebInspectServerFound(e)
+            webinspect_logexceptionhelp.log_error_uploading("webmacro", e)
+            webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
     def wait_for_scan_status_change(self, scan_id):
         """
@@ -299,7 +299,7 @@ class WebInspectAPIHelper(object):
                                  (self.setting_overrides.scan_policy))
 
         except (UnboundLocalError, NameError) as e:
-            webinspect_logexceptionhelp.LogNoWebInspectServerFound(e)
+            webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
 
 class Overrides:
@@ -343,7 +343,7 @@ class Overrides:
             Logger.app.debug("start_urls: {}".format(self.start_urls))
             # Breakour exception handling into better messages
         except (EnvironmentError, UnboundLocalError, NameError, TypeError, AttributeError) as e:
-            webinspect_logexceptionhelp.LogSettingsError(self.settings, e)
+            webinspect_logexceptionhelp.log_error_settings(self.settings, e)
             raise
 
     def get_endpoint(self):

@@ -225,9 +225,9 @@ def test_webinspect_scan_local_custom_settings(scan_mock, runner):
 
 
 @mock.patch('webbreaker.webinspect.scan.create_scan_event_handler')
-@mock.patch('webbreaker.webinspect.common.webinspect_helper.WebInspectJitScheduler')
-@mock.patch('webbreaker.webinspect.common.webinspect_helper.WebInspectApi')
-@mock.patch('webbreaker.webinspect.common.webinspect_helper.open', new_callable=mock_open, read_data="data")
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectJitScheduler')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi')
+@mock.patch('webbreaker.webinspect.common.helper.open', new_callable=mock_open, read_data="data")
 @mock.patch('webbreaker.__main__.open', new_callable=mock_open, read_data="data")
 def test_webinspect_scan_req(main_open_mock, open_mock, scan_mock, endpoint_mock, email_mock, runner, caplog):
     endpoint_mock.return_value.get_endpoint.return_value = "test.hq.target.com"

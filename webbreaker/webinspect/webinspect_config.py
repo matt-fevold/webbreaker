@@ -15,7 +15,8 @@ from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.confighelper import Config
 
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from webbreaker.webinspect.common.webinspect_loghelper import WebInspect_LogExceptionHelper
+from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
+from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
 
 
@@ -42,7 +43,8 @@ except NameError:  # Python 2
 
 runenv = WebBreakerHelper.check_run_env()
 logexceptionhelper = LogExceptionHelper()
-webinspect_logexceptionhelper = WebInspect_LogExceptionHelper()
+webinspectloghelper = WebInspectLogHelper()
+fortifyloghelper = FortifyLogHelper()
 
 
 class WebInspectEndpoint(object):
@@ -170,7 +172,7 @@ class WebInspectConfig(object):
                         options['scan_name'] = "webinspect" + "-" + "".join(
                             random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
                 except AttributeError as e:
-                    webinspect_logexceptionhelper.LogScanError(options['scan_name'], e)
+                    webinspectloghelper.log_scan_error(options['scan_name'], e)
 
             if options['upload_settings']:
                 if os.path.isfile(options['upload_settings'] + '.xml'):
@@ -183,7 +185,7 @@ class WebInspectConfig(object):
                                                                        'settings',
                                                                        options['upload_settings'] + '.xml')
                     except (AttributeError, TypeError) as e:
-                        webinspect_logexceptionhelper.LogSettingsError(options['upload_settings'], e)
+                        webinspectloghelper.log_error_settings(options['upload_settings'], e)
 
             else:
                 if os.path.isfile(options['settings'] + '.xml'):
@@ -241,7 +243,7 @@ class WebInspectConfig(object):
                     options['upload_webmacros'] = corrected_paths
 
                 except (AttributeError, TypeError) as e:
-                    webinspect_logexceptionhelper.LogSettingsError(options['upload_webmacros'], e)
+                    webinspectloghelper.log_error_settings(options['upload_webmacros'], e)
 
             # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
             try:
@@ -264,7 +266,7 @@ class WebInspectConfig(object):
                     options['upload_policy'] = options['scan_policy']
 
             except TypeError as e:
-                webinspect_logexceptionhelper.LogScanPolicyError(e)
+                webinspectloghelper.log_error_scan_policy(e)
 
             # Determine the targets specified in a settings file
             try:
@@ -273,7 +275,7 @@ class WebInspectConfig(object):
                 else:
                     targets = None
             except NameError as e:
-                webinspect_logexceptionhelper.LogNoSettingsFile(e)
+                webinspectloghelper.log_no_settings_file(e)
 
             # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
             if not options['allowed_hosts']:
@@ -298,9 +300,9 @@ class WebInspectConfig(object):
                 webinspect_dict['fortify_user'] = options['fortify_user']
 
             except argparse.ArgumentError as e:
-                webinspect_logexceptionhelper.LogErrorInOptions(e)
+                webinspectloghelper.log_error_in_options(e)
         except (AttributeError, UnboundLocalError, KeyError):
-            webinspect_logexceptionhelper.LogConfigurationIncorrect(Logger.app_logfile)
+            self.incorrect = webinspectloghelper.log_configuration_incorrect(Logger.app_logfile)
             raise
 
         Logger.app.debug("Completed webinspect settings parse")
@@ -329,13 +331,13 @@ class WebInspectConfig(object):
                 Logger.app.error(
                     "No GIT Repo was declared in your config.ini, therefore nothing will be cloned!")
         except (CalledProcessError, AttributeError) as e:
-            webinspect_logexceptionhelper.LogWebInspectConfigIssue(e)
+            webinspectloghelper.log_webinspect_config_issue(e)
             raise
         except GitCommandError as e:
-            webinspect_logexceptionhelper.LogGitAccessError(self.webinspect_git, e)
+            webinspectloghelper.log_git_access_error(self.webinspect_git, e)
             raise Exception(logexceptionhelper.fetch_webinspect_configs)
         except IndexError as e:
-            webinspect_logexceptionhelper.LogConfigFileUnavailable(e)
+            webinspectloghelper.log_config_file_unavailable(e)
             raise Exception(logexceptionhelper.fetch_webinspect_configs)
 
         Logger.app.debug("Completed webinspect config fetch")
@@ -353,7 +355,7 @@ class WebInspectConfig(object):
         elif verify_ssl.upper() == 'FALSE':
             return False
         else:
-            logexceptionhelper.LogErrorFortifyInvalidSSLCredentials()
+            fortifyloghelper.log_error_invalid_ssl()
             sys.exit(ExitStatus.failure)
 
     def trim_ext(self, file):

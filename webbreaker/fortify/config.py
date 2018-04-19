@@ -4,12 +4,11 @@ import os
 import sys
 
 from exitstatus import ExitStatus
-from webbreaker.common.webbreakerlogger import Logger
 from subprocess import CalledProcessError
 from webbreaker.common.confighelper import Config
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
-logexceptionhelper = LogExceptionHelper()
+fortifyloghelper = FortifyLogHelper()
 
 try:
     import ConfigParser as configparser
@@ -41,9 +40,9 @@ class FortifyConfig(object):
             self.custom_attribute_value = config.get("fortify", "custom_attribute_value")
 
         except (configparser.NoOptionError, CalledProcessError) as noe:
-            Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
+            fortifyloghelper.log_error_file_incorrect_value(config_file, noe)
         except configparser.Error as e:
-            logexceptionhelper.LogErrorReading(config_file, e)
+            fortifyloghelper.log_error_reading(config_file, e)
 
     @staticmethod
     def _convert_verify_ssl_config(verify_ssl):
@@ -53,5 +52,5 @@ class FortifyConfig(object):
         elif verify_ssl.upper() == 'FALSE':
             return False
         else:
-            logexceptionhelper.LogErrorFortifyInvalidSSLCredentials()
+            fortifyloghelper.log_error_invalid_ssl()
             sys.exit(ExitStatus.failure)

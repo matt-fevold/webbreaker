@@ -8,94 +8,72 @@ from webbreaker.common.webbreakerlogger import Logger
 #   get our testing in a nicer spot - currently some tests check for logging output (not anything we've refactored
 #   recently (~2.1.5)) but those will change as more work is done. TODO
 
+
+# TODO need to move threadfix logger out into its own file similar to webinspect and fortify after refactoring is done on threadfix (Hayley)
+
 class LogExceptionHelper(object):
 
     def __init__(self):
         pass
 
     #__main__
-    def LogErrorGitCommand(self, args):
+    def log_error_git_command(self, args):
         Logger.app.error("Please install the git client or add it to your PATH variable ->"
                          " https://git-scm.com/download.  See log {}!!!".format(args))
 
     #ThreadFix
-    def LogErrorNoTeam(self):
+    def log_error_no_team(self):
         Logger.app.error("No teams were found")
 
-    def LogErrorNoTeamWithName(self, args):
+    def log_error_no_team_with_name(self, args):
         Logger.app.error("Unable to find team with name {}".format(args))
 
-    def LogErrorSpecifyTeam(self):
+    def log_error_specify_team(self):
         Logger.app.error("Please specify either a team or team_id")
 
-    def LogErrorNoApplicationWithTeamId(self, args):
+    def log_error_no_application_with_team_id(self, args):
         Logger.app.error("No applications were found for team_id {}".format(args))
 
-    def LogErrorNoTeamWithApplication(self, args):
+    def log_error_no_team_with_application(self, args):
         Logger.app.error("Unable to find team with application {}".format(args))
 
-    def LogErrorApplicationNotCreated(self):
+    def log_error_application_not_created(self):
         Logger.app.error("Application was not created, either the application exists, invalid token, or Threadfix"
                          " is unavailable!! ")
 
-    def LogErrorThreadfixResponse(self, args):
+    def log_error_threadfix_response(self, args):
         Logger.app.error("{}\n".format(args) + "Threadfix exited")
 
-    def LogErrorReading(self, args, e):
+    def log_error_reading(self, args, e):
         Logger.app.error("Error reading {} {}".format(args, e))
 
-    def LogErrorRetrievingApplication(self, args):
+    def log_error_retrieving_application(self, args):
         Logger.app.error("Error retrieving application for team {}".format(args))
 
-    def LogErrorRequestDownlaod(self, args):
+    def log_error_request_download(self, args):
         Logger.app.error("Error requesting download: {}".format(args))
 
-    def LogErrorNoScansFoundWithAppId(self, args):
+    def log_error_no_scans_found_with_app_id(self, args):
         Logger.app.error("No scans were found for app_id {}".format(args))
 
-    def LogErrorSpecifyApplication(self, args):
+    def log_error_specify_application(self, args):
         Logger.app.error("Please specify either an application or app_id! {}".format(args))
 
-    def LogErrorThreadfixRetrieveFail(self):
+    def log_error_threadfix_retrieve_fail(self):
         Logger.app.error("Failed to retrieve applications from ThreadFix")
 
-    def LogErrorNoApplicationWithMatchingName(self, args):
+    def log_error_no_application_with_matching_name(self, args):
         Logger.app.error("No application was found matching name {}".format(args))
 
-    def LogErrorMultipleApplicationFound(self, args):
+    def log_error_multiple_application_found(self, args):
         Logger.app.error("Multiple applications were found matching name {}. "
                          "Please specify the desired ID from below.".format(args))
 
-    def LogErrorScanFailToUpload(self):
+    def log_error_scan_fail_to_uplaod(self):
         Logger.app.error("Scan file failed to upload!")
 
-    def LogErrorAPITokenAssociatedWithLocalAccount(self):
+    def log_error_api_token_associated_with_local_account(self):
         Logger.app.error("Possible cause could be your API token must be associated with a local account!!")
-
-    #Fortify
-    def LogErrorFortifyAPIToken(self):
-        Logger.app.error("Unable to obtain a Fortify API token. Invalid Credentials")
-
-    def LogErrorUnableToCreateProjectVersion(self):
-        Logger.app.error("Unable to create new project version, see logs for details")
-
-    def LogErrorScanDownloadVersionFail(self, args):
-        Logger.app.error("Scan download for version {} has failed".format(args))
-
-    def LogErrorNoVersionMatchFound(self, args, application):
-        Logger.app.error("No version matching {} found under {} in Fortify".format(args, application))
-
-    def LogErrorDuplicateFortifySSC(self):
-        Logger.app.error("There are duplicate Fortify SSC Project Version names. Please choose another one.")
-
-    def LogErrorFortifyCredentialsNotStored(self):
-        Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
-
-    def LogIncorrectWebInspectConfigs(self, args):
-        Logger.app.error("Incorrect webinspect config values: {}".format(args))
-
-    def LogErrorFortifyInvalidSSLCredentials(self):
-        Logger.app.error("'verify_ssl' must be either 'False' or a full valid CA Path.")
 
 
 class LogInfoHelper(object):
@@ -104,60 +82,33 @@ class LogInfoHelper(object):
         pass
 
     #__main__
-    def LogInfoCredentialsStoreSuccess(self):
+    def log_info_credentials_store_success(self):
         Logger.app.info("Credentials stored successfully")
 
-    def LogInfoWebInspectCredentialClearSuccess(self):
+    def log_info_webinspect_credential_clear_success(self):
         Logger.app.info("Successfully cleared WebInspect credentials from config.ini")
 
-    def LogInfoApplicationCreatedWithId(self, args):
+    def log_info_application_created_with_id(self, args):
         Logger.app.info("Application was successfully created with id {}".format(args))
 
     #Threadfix
-    def LogInfoThreadfixScansListedSuccess(self):
+    def log_info_threadfix_scans_listed_success(self):
         Logger.app.info("Successfully listed Threadfix scans")
 
-    def LogInfoFindApplicationWithMatchingName(self, args):
+    def log_info_find_application_with_matching_name(self, args):
         Logger.app.info("Attempting to find application matching name {}".format(args))
 
-    def LogInfoUploadResp(self, args):
+    def log_info_upload_response(self, args):
         Logger.app.info("{}".format(args))
 
-    def LogInfoThreadfixListSuccess(self):
+    def log_info_threadfix_list_success(self):
         Logger.app.info("ThreadFix List successfully completed")
 
-    def LogInfoNoApplicationFound(self, args):
+    def log_info_no_application_found(self, args):
         Logger.app.info("No applications were found" + args)
 
-    def LogInfoThreadfixApplicationListSuccess(self):
+    def log_info_threadfix_application_list_success(self):
         Logger.app.info("Successfully listed threadfix applications")
 
-    def LogInfoThreadfixTeamsListedSuccess(self):
+    def log_info_threadfix_teams_listed_success(self):
         Logger.app.info("Successfully listed threadfix teams")
-
-
-    #Fortify
-    def LogInfoFortifyCredentialsClearSuccess(self):
-        Logger.app.info("Successfully cleared fortify credentials from config.ini")
-
-    def LogInfoFortifyCredentialStored(self):
-        Logger.app.info("Fortify credentials stored")
-
-    def LogInfoFortifyImportCredentials(self):
-        Logger.app.info("Importing Fortify credentials")
-
-    def LogInfoFortifyCheckConfig(self):
-        Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
-
-    def LogInfoFortifyCredentialsFound(self):
-        Logger.app.info("Fortify username and password successfully found in config.ini")
-
-    def LogInfoFortifyCredentialNotFound(self):
-        Logger.app.info("Fortify credentials not found in config.ini")
-
-    def LogInfoFortifyListSuccess(self):
-        Logger.app.info("Fortify list has successfully completed")
-
-    def LogInfoScanFileWrittenSuccess(self, args, filename):
-        Logger.app.info("Scan file for version {} successfully written to {}".format(args, filename))
-

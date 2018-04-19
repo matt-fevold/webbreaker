@@ -13,7 +13,7 @@ import webbreaker.webinspect.webinspect_json as webinspectjson
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.webinspect.authentication import WebInspectAuth
 
-from webbreaker.webinspect.common.webinspect_helper import WebInspectAPIHelper
+from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 
 import sys
 from exitstatus import ExitStatus

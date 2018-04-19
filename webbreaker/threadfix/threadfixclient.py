@@ -21,7 +21,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            logexceptionhelper.LogErrorThreadfixResponse(response.message)
+            logexceptionhelper.log_error_threadfix_response(response.message)
             return False
 
     def list_teams(self):
@@ -30,7 +30,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            logexceptionhelper.LogErrorThreadfixResponse(response.message)
+            logexceptionhelper.log_error_threadfix_response(response.message)
             return False
 
     def get_team_id_by_name(self, team_name):
@@ -46,7 +46,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            logexceptionhelper.LogErrorThreadfixResponse(response.message)
+            logexceptionhelper.log_error_threadfix_response(response.message)
             return False
 
     def list_all_apps(self, team_name=None, app_name=None):
@@ -60,7 +60,7 @@ class ThreadFixClient(object):
                 elif team_name is None:
                     team_ids.append({'id': team['id'], 'name': team['name']})
             if not len(team_ids):
-                logexceptionhelper.LogErrorNoTeamWithName(team_name)
+                logexceptionhelper.log_error_no_team_with_name(team_name)
             for team in team_ids:
                 app_response = self.list_apps_by_team(team['id'])
                 if app_response:
@@ -78,7 +78,7 @@ class ThreadFixClient(object):
 
                 else:
 
-                    logexceptionhelper.LogErrorRetrievingApplication(team['name'])
+                    logexceptionhelper.log_error_retrieving_application(team['name'])
             return applications
 
         else:
@@ -100,7 +100,7 @@ class ThreadFixClient(object):
                     scan['filename'] = 'Error'
             return master_data
         else:
-            logexceptionhelper.LogErrorThreadfixResponse(response.message)
+            logexceptionhelper.log_error_threadfix_response(response.message)
             return False
 
     def create_application(self, team_id, name, url):
@@ -109,7 +109,7 @@ class ThreadFixClient(object):
         if response.success:
             return response.data
         else:
-            logexceptionhelper.LogErrorThreadfixResponse(response.message)
+            logexceptionhelper.log_error_threadfix_response(response.message)
             return False
 
     # TODO verify this works. Unable to test due to ThreadFix configurations
@@ -125,7 +125,7 @@ class ThreadFixClient(object):
                         scan_file.write(response.data)
                         return filename
                 else:
-                    logexceptionhelper.LogErrorRequestDownlaod(response.message)
+                    logexceptionhelper.log_error_request_download(response.message)
                     return None
             else:
                 return -1

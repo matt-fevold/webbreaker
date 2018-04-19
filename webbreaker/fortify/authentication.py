@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.authorization import auth_prompt
 from webbreaker.common.secretclient import SecretClient
+from webbreaker.fortify.common.loghelper import FortifyLogHelper
+
+fortifyloghelper = FortifyLogHelper()
 
 
 # TODO: Convert to general `webbreaker/common/authenticate`
@@ -17,19 +19,18 @@ class FortifyAuth:
 
         # creds passed from cli
         if username and password:
-            Logger.app.info("Importing Fortify credentials")
+            fortifyloghelper.log_info_import_credentials()
             return username, password
         else:
             # check config for creds
-            Logger.app.info("No Fortify username or password provided. Checking config.ini for credentials")
-
+            fortifyloghelper.log_info_check_config()
             if self._has_auth_creds():
-                Logger.app.info("Fortify username and password successfully found in config.ini")
+                fortifyloghelper.log_info_credentials_found_in_config()
                 return self.username, self.password
 
             else:
                 # ask user for creds
-                Logger.app.info("Fortify credentials not found in config.ini")
+                fortifyloghelper.log_info_credential_not_found()
                 username, password = auth_prompt("Fortify")
 
                 self.write_credentials(username, password)

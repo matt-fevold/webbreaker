@@ -6,7 +6,7 @@ from testfixtures import LogCapture
 from mock import mock_open
 
 from webbreaker.webinspect.scan import WebInspectScan
-from webbreaker.webinspect.common.webinspect_helper import WebInspectAPIHelper
+from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 
 
 @mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.create_scan')

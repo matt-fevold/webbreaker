@@ -3,14 +3,11 @@
 
 import os
 import socket
-import sys
 
 from fortifyapi.fortify import FortifyApi
-from exitstatus import ExitStatus
 from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.fortify.config import FortifyConfig
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
-from webbreaker.common.webbreakerlogger import Logger
 
 
 class FortifyHelper(object):
@@ -27,81 +24,7 @@ class FortifyHelper(object):
         self.runenv = WebBreakerHelper.check_run_env()
         self.api = self._setup_fortify_ssc_api()
 
-    def download_scan(self, application_name, version_name):
-        """
-        Downloads a scan with matching Application name & Version name.
-        :param application_name: Required. Application to search for the Version under.
-        :param version_name: The Version to download.
-        """
-        version_id = self._get_version_id(application_name, version_name)
-
-        if version_id:
-            file_content, file_name = self._download_version(version_id)
-            with open(file_name, 'wb') as f:
-                f.write(file_content)
-            Logger.app.info("Scan file for version {} successfully written to {}".format(version_id, file_name))
-        else:
-            Logger.app.error(
-                "No version matching {} found under {} in Fortify".format(version_name, application_name))
-            sys.exit(ExitStatus.failure)
-
-    def list_application_versions(self, application_name):
-        """
-        List all Applications & Versions from the Fortify URL unless application_name is supplied (Not None).
-        :param application_name: If Application name is specified, only list versions for that Application
-        """
-        response_data = self._get_applications_and_versions()
-
-        print("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
-        print("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
-        for version in response_data:
-            if application_name is None or application_name == version['project']['name']:
-                print("{0:8} {1:30} {2:30}".format(version['id'], version['project']['name'], version['name']))
-
-        Logger.app.info("Fortify list has successfully completed")
-
-    def upload_scan(self, application_name, version_name, project_template, file_name, custom_value):
-        """
-        If the Application & Version already exists, log and exit with error.
-        Create a new Version and create Application if doesn't exist.
-        Finalize Application Version
-        Upload file to Application Version.
-        :param application_name: Name of the Application for Upload.
-        :param version_name: Name of the Version for Upload
-        :param project_template: Project Template GUID from config.ini
-        :param file_name: Scan name to upload. It will be appended with '.fpr' to create the filename
-        """
-        file_name = self._trim_ext(file_name)
-        description = self._project_version_description()
-        application_id = self._get_application_id(application_name)
-
-        if application_id:
-            version_id = self._get_version_id(application_name, version_name)
-            if version_id:
-                Logger.app.info(
-                    "Found existing Application Version '{} : {}'.".format(application_name,
-                                                                           version_name))
-            else:
-                version_id = self._create_application_version(application_name=application_name,
-                                                              application_id=application_id,
-                                                              version_name=version_name,
-                                                              application_template=project_template,
-                                                              description=description)
-                self._finalize_application_version_creation(version_id, custom_value)
-        else:
-            version_id = self._create_application_version(application_name=application_name,
-                                                          application_id=application_id,
-                                                          version_name=version_name,
-                                                          application_template=project_template,
-                                                          description=description)
-            self._finalize_application_version_creation(version_id, custom_value)
-
-        self._upload_application_version_file(version_id=version_id, file_name=file_name)
-        Logger.app.info(
-            "Your scan file {0}.{1}, has been successfully uploaded to {2}!".format(file_name, self.extension,
-                                                                                    self.fortify_url))
-
-    def _create_application_version(self, application_name, version_name, application_template, description,
+    def create_application_version(self, application_name, version_name, application_template, description,
                                     application_id=None):
         """
         Creates a new Version under the specified Application ID.
@@ -121,7 +44,7 @@ class FortifyHelper(object):
         APIHelper().check_for_response_errors(response)
         return response.data['data']['id']
 
-    def _download_version(self, version_id):
+    def download_version(self, version_id):
         """
         Downloads the Version specified, checks for errors, then returns the data & file name (Version name)
         :param version_id: Version ID to download
@@ -131,7 +54,7 @@ class FortifyHelper(object):
         APIHelper().check_for_response_errors(response)
         return response.data, file_name
 
-    def _finalize_application_version_creation(self, version_id, custom_value):
+    def finalize_application_version_creation(self, version_id, custom_value):
 
         custom_attribute = self._get_custom_attribute(custom_value)
 
@@ -153,7 +76,7 @@ class FortifyHelper(object):
         else:
             return custom_attribute_id, self.config.custom_attribute_value
 
-    def _get_application_id(self, application_name):
+    def get_application_id(self, application_name):
         """
         Returns the ID of the specified Application. Project is a deprecated name for Application.
         :return: ID of the Application
@@ -167,7 +90,7 @@ class FortifyHelper(object):
                 return application['id']
         return None
 
-    def _get_applications_and_versions(self):
+    def get_applications_and_versions(self):
         """
         Gets every application & Version for listing. It returns the response data after checking for errors.
         :return: Response data that will be used to list Applications & Versions
@@ -183,7 +106,7 @@ class FortifyHelper(object):
                 return response.data['data'][0]['id']
         return ''
 
-    def _get_version_id(self, application_name, version_name):
+    def get_version_id(self, application_name, version_name):
         """
         Returns the ID of the specified Application. Project is a deprecated name for Application
         :return: ID of the Version
@@ -197,7 +120,7 @@ class FortifyHelper(object):
                     return version['id']
         return None
 
-    def _project_version_description(self):
+    def project_version_description(self):
         if self.runenv == "jenkins":
             return "WebInspect scan from WebBreaker " + os.getenv('JOB_URL', "jenkins server")
         else:
@@ -220,13 +143,13 @@ class FortifyHelper(object):
         return FortifyApi(self.fortify_url, token=response_token.data['data']['token'],
                           verify_ssl=self.config.verify_ssl)
 
-    def _upload_application_version_file(self, version_id, file_name):
+    def upload_application_version_file(self, version_id, file_name):
         response = self.api.upload_artifact_scan(file_path=('{0}.{1}'.format(file_name, self.extension)),
                                                  project_version_id=version_id)
         APIHelper().check_for_response_errors(response)
 
     @staticmethod
-    def _trim_ext(file):
+    def trim_ext(file):
         try:
             return os.path.splitext(os.path.basename(file))[0]
         except (TypeError, AttributeError):

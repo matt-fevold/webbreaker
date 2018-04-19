@@ -10,6 +10,9 @@ from webbreaker.fortify.common.helper import FortifyHelper
 from webbreaker.fortify.config import FortifyConfig
 from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.fortify.common.loghelper import FortifyLogHelper
+
+fortifyloghelper = FortifyLogHelper()
 
 
 class FortifyDownload:
@@ -29,14 +32,33 @@ class FortifyDownload:
         :param version_name: Version to download
         :return: None
         """
+
         try:
-            fortify_helper = FortifyHelper(fortify_url=self.config.ssc_url,
-                                           fortify_username=self.username,
-                                           fortify_password=self.password)
-            fortify_helper.download_scan(application_name, version_name)
+            self.download_scan(application_name, version_name)
         except (AttributeError, UnboundLocalError) as e:
             Logger.app.critical("Unable to complete command 'fortify download': {}".format(e))
             sys.exit(ExitStatus.failure)
         except IOError as e:
-            Logger.app.error("Couldn't open or write to file {}.".format(e))
+            fortifyloghelper.log_error_can_not_open_or_write_to_file(e)
             sys.exit(ExitStatus.failure)
+
+    def download_scan(self, application_name, version_name):
+        """
+        Downloads a scan with matching Application name & Version name.
+        :param application_name: Required. Application to search for the Version under.
+        :param version_name: The Version to download.
+        """
+        fortify_helper = FortifyHelper(fortify_url=self.config.ssc_url,
+                                       fortify_username=self.username,
+                                       fortify_password=self.password)
+        version_id = fortify_helper.get_version_id(application_name, version_name)
+
+        if version_id:
+            file_content, file_name = fortify_helper.download_version(version_id)
+            with open(file_name, 'wb') as f:
+                f.write(file_content)
+                fortifyloghelper.log_info_version_successful_written_to_file(version_id, file_name)
+        else:
+            fortifyloghelper.log_error_no_version_match_under_application_name(version_name, application_name)
+            sys.exit(ExitStatus.failure)
+
