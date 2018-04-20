@@ -30,8 +30,6 @@ from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.fortify.download import FortifyDownload
 from webbreaker.fortify.list import FortifyList
 from webbreaker.fortify.upload import FortifyUpload
-from webbreaker.threadfix.threadfixclient import ThreadFixClient
-from webbreaker.threadfix.threadfixconfig import ThreadFixConfig
 from webbreaker.common.logexceptionhelper import LogExceptionHelper, LogInfoHelper
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.download import WebInspectDownload
@@ -40,6 +38,11 @@ from webbreaker.webinspect.list_scans import WebInspectListScans
 from webbreaker.webinspect.list_servers import WebInspectListServers
 from webbreaker.webinspect.proxy import WebInspectProxy
 from webbreaker.webinspect.scan import WebInspectScan
+from webbreaker.threadfix.list import ThreadFixList
+from webbreaker.threadfix.teams import ThreadFixTeams
+from webbreaker.threadfix.create import ThreadFixCreate
+from webbreaker.threadfix.scans import ThreadFixScans
+from webbreaker.threadfix.upload import ThreadFixUpload
 from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
 fortifyloghelper = FortifyLogHelper()
@@ -413,53 +416,7 @@ def threadfix():
                    help=WebBreakerHelper().threadfix_team_desc()
                    )
 def threadfix_list_teams():
-    threadfix_config = ThreadFixConfig()
-    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    teams = threadfix_client.list_teams()
-    if teams:
-        print("{0:^10} {1:30}".format('ID', 'Name'))
-        print("{0:10} {1:30}".format('-' * 10, '-' * 30))
-        for team in teams:
-            print("{0:^10} {1:30}".format(team['id'], team['name']))
-        loginfohelper.log_info_threadfix_teams_listed_success()
-        print('\n\n')
-    else:
-        logexceptionhelper.log_error_no_team()
-
-
-@threadfix.command(name='applications',
-                   short_help="List team's ThreadFix applications",
-                   help=WebBreakerHelper().threadfix_application_desc(),
-                   )
-@click.option('--team_id',
-              required=False,
-              help="ThreadFix team ID")
-@click.option('--team',
-              required=False,
-              help="ThreadFix team name")
-def threadfix_list_applications(team_id, team):
-    threadfix_config = ThreadFixConfig()
-    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    if not team_id and not team:
-        logexceptionhelper.log_error_specify_team()
-        return
-    if team and not team_id:
-        team_id = threadfix_client.get_team_id_by_name(team)
-    if team_id is None:
-
-        logexceptionhelper.log_error_no_team_with_name(team)
-        return
-    apps = threadfix_client.list_apps_by_team(team)
-    if apps:
-        print("{0:^10} {1:30}".format('ID', 'Name'))
-        print("{0:10} {1:30}".format('-' * 10, '-' * 30))
-        for app in apps:
-            print("{0:^10} {1:30}".format(app['id'], app['name']))
-        loginfohelper.log_info_threadfix_application_list_success()
-        print('\n\n')
-    else:
-        print(team_id)
-        logexceptionhelper.log_error_no_application_with_team_id(team_id)
+    ThreadFixTeams()
 
 
 @threadfix.command(name='create',
@@ -477,21 +434,7 @@ def threadfix_list_applications(team_id, team):
               default=None,
               help="Assign an Option URL")
 def threadfix_create_application(team_id, team, application, url):
-    threadfix_config = ThreadFixConfig()
-    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    if not team_id and not team:
-        logexceptionhelper.log_error_specify_team()
-        return
-    if team and not team_id:
-        team_id = threadfix_client.get_team_id_by_name(team)
-    if team_id is None:
-        logexceptionhelper.log_error_no_team_with_application(team)
-        return
-    created_app = threadfix_client.create_application(team_id, application, url)
-    if created_app:
-        loginfohelper.log_info_application_created_with_id((created_app['id']))
-    else:
-        logexceptionhelper.log_error_application_not_created()
+    ThreadFixCreate(team_id, team, application, url)
 
 
 @threadfix.command(name='scans',
@@ -501,18 +444,7 @@ def threadfix_create_application(team_id, team, application, url):
               required=True,
               help="ThreadFix Application ID")
 def threadfix_list_scans(app_id):
-    threadfix_config = ThreadFixConfig()
-    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    scans = threadfix_client.list_scans_by_app(app_id)
-    if scans:
-        print("{0:^10} {1:30} {2:30}".format('ID', 'Scanner Name', 'Filename'))
-        print("{0:10} {1:30} {2:30}".format('-' * 10, '-' * 30, '-' * 30))
-        for scan in scans:
-            print("{0:^10} {1:30} {2:30}".format(scan['id'], scan['scannerName'], scan['filename']))
-        loginfohelper.log_info_threadfix_scans_listed_success()
-        print('\n\n')
-    else:
-        logexceptionhelper.log_error_no_scans_found_with_app_id(app_id)
+    ThreadFixScans(app_id)
 
 @threadfix.command(name='upload',
                    short_help="Upload local scan to ThreadFix",
@@ -526,42 +458,7 @@ def threadfix_list_scans(app_id):
               required=True,
               help="Assign file to upload")
 def threadfix_upload_scan(app_id, application, scan_file):
-    if not app_id and not application:
-        logexceptionhelper.log_error_specify_application(app_id)
-        return
-
-    threadfix_config = ThreadFixConfig()
-    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    if not app_id:
-        loginfohelper.log_info_find_application_with_matching_name(application)
-        apps = threadfix_client.list_all_apps()
-        if not apps:
-            logexceptionhelper.log_error_threadfix_retrieve_fail()
-            return
-        else:
-            matches = []
-            for app in apps:
-                if app['app_name'] == application:
-                    matches.append(app.copy())
-            if len(matches) == 0:
-                logexceptionhelper.log_error_no_application_with_matching_name(application)
-                return
-            if len(matches) > 1:
-                logexceptionhelper.log_error_multiple_application_found(application)
-                print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
-                print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
-                for app in matches:
-                    print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
-                print('\n\n')
-                return
-            else:
-                app_id = matches[0]['app_id']
-
-    upload_resp = threadfix_client.upload_scan(app_id, scan_file)
-    if upload_resp:
-        loginfohelper.log_info_upload_response(upload_resp)
-    else:
-        logexceptionhelper.log_error_scan_fail_to_uplaod()
+    ThreadFixUpload(app_id, application, scan_file)
 
 
 @threadfix.command(name='list',
@@ -575,29 +472,7 @@ def threadfix_upload_scan(app_id, application, scan_file):
               default=None,
               help="Specify application name to list")
 def threadfix_list_applications(team, application):
-    threadfix_config = ThreadFixConfig()
-    threadfix_client = ThreadFixClient(host=threadfix_config.host, api_key=threadfix_config.api_key)
-    applications = threadfix_client.list_all_apps(team, application)
-    if applications is not False:
-        if len(applications):
-            print("{0:^10} {1:55} {2:30}".format('App ID', 'Team', 'Application'))
-            print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
-            for app in applications:
-                print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
-            print('\n\n')
-            loginfohelper.log_info_threadfix_list_success()
-        else:
-            query_info = ''
-            if team is not None:
-                query_info = ' with team name matching {}'.format(team)
-            if application is not None:
-                if query_info == '':
-                    query_info = ' with application name matching {}'.format(application)
-                else:
-                    query_info = query_info + ' and application name matching {}'.format(application)
-            loginfohelper.log_info_no_application_found(query_info)
-    else:
-        logexceptionhelper.log_error_api_token_associated_with_local_account()
+    ThreadFixList(team, application)
 
 
 if __name__ == '__main__':

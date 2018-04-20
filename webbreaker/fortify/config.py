@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-import sys
 
-from exitstatus import ExitStatus
 from subprocess import CalledProcessError
 from webbreaker.common.confighelper import Config
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.webbreakerconfig import convert_verify_ssl_config
 from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
 fortifyloghelper = FortifyLogHelper()
@@ -29,7 +28,7 @@ class FortifyConfig(object):
             self.ssc_url = config.get("fortify", "ssc_url")
             self.project_template = config.get("fortify", "project_template")
             self.application_name = config.get("fortify", "application_name")
-            self.verify_ssl = self._convert_verify_ssl_config(config.get("fortify", "verify_ssl"))
+            self.verify_ssl = convert_verify_ssl_config(config.get("fortify", "verify_ssl"))
 
             # Bulk API Application Values
             self.business_risk_ranking = config.get("fortify", "business_risk_ranking")
@@ -44,13 +43,3 @@ class FortifyConfig(object):
         except configparser.Error as e:
             fortifyloghelper.log_error_reading(config_file, e)
 
-    @staticmethod
-    def _convert_verify_ssl_config(verify_ssl):
-        path = os.path.abspath(os.path.realpath(verify_ssl))
-        if os.path.exists(path):
-            return path
-        elif verify_ssl.upper() == 'FALSE':
-            return False
-        else:
-            fortifyloghelper.log_error_invalid_ssl()
-            sys.exit(ExitStatus.failure)

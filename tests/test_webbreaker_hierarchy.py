@@ -62,9 +62,6 @@ def test_threadfix_hierarchy(runner):
     result = runner.invoke(webbreaker, ['threadfix', 'teams', '--help'])
     assert result.exit_code == 0
 
-    result = runner.invoke(webbreaker, ['threadfix', 'applications', '--help'])
-    assert result.exit_code == 0
-
     result = runner.invoke(webbreaker, ['threadfix', 'scans', '--help'])
     assert result.exit_code == 0
 

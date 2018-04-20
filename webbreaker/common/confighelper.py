@@ -11,7 +11,6 @@ except ImportError:  # Python3
     import configparser
     config = configparser.ConfigParser(allow_no_value=True)
 
-
 class Config(object):
     def __init__(self):
         self.home = os.path.expanduser('~')
@@ -174,4 +173,3 @@ class Config(object):
         self.conf_get('emailer', 'default_to_address', '')
         self.conf_get('emailer', 'chatroom', '')
         self.conf_get('emailer', 'email_template', WebBreakerHelper().email_template_config())
-

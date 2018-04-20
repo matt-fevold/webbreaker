@@ -5,6 +5,13 @@
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.confighelper import Config
 
+import os
+import sys
+from exitstatus import ExitStatus
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+
+logexceptionhelper = LogExceptionHelper()
+
 try:
     import ConfigParser as configparser
 
@@ -31,3 +38,14 @@ class WebBreakerConfig(object):
             Logger.console.info("Your scan email notifier is not configured: {}".format(self.config))
 
         return emailer_dict
+
+
+def convert_verify_ssl_config(verify_ssl):
+    path = os.path.abspath(os.path.realpath(verify_ssl))
+    if os.path.exists(path):
+        return path
+    elif verify_ssl.upper() == 'FALSE':
+        return False
+    else:
+        logexceptionhelper.LogErrorFortifyInvalidSSLCredentials()
+        sys.exit(ExitStatus.failure)
