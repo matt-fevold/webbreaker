@@ -23,7 +23,7 @@ class WebInspectJitScheduler(object):
             config) and return one that is not busy running scans.
 
             The servers are designed to be two different sizes and the user is allowed to choose if they want a large
-            or small server (default is large).
+            medium, or small server (default is large).
 
             JIT filters the list of endpoints for servers of that size and makes an api call to that server for it's
             running scans. It does this multi-threaded so whoever responds back quickest wins.
@@ -148,8 +148,8 @@ class WebInspectJitScheduler(object):
     @staticmethod
     def _convert_server_size_needed_to_int(server_size_needed):
         """
-        converts the cli large/small into the value set in the config for a [large|small]_server_max_concurrent_scans
-            by default this is large = 2, small = 1 but can be changed.
+        converts the cli large/medium/small into the value set in the config for a [large|medium|small]_server_max_concurrent_scans
+            by default this is large = 2, medium = 1, small = 1 but can be changed.
         :param server_size_needed:
         :return:
         """
@@ -159,6 +159,12 @@ class WebInspectJitScheduler(object):
                 Logger.app.info("A large server will be selected to handle this request.")
                 large_server_max_concurrent_scans = Config().conf_get('webinspect', 'large_server_max_concurrent_scans')
                 return int(large_server_max_concurrent_scans)  # by default 2
+
+            # medium exists for some backwards compatibility.
+            if server_size_needed.lower() in ['medium']:
+                Logger.app.info("A medium server will be selected to handle this request.")
+                medium_server_max_concurrent_scans = Config().conf_get('webinspect', 'medium_server_max_concurrent_scans')
+                return int(medium_server_max_concurrent_scans)  # by default 1
 
             if server_size_needed.lower() in ['small']:
                 Logger.app.info("A small server will be selected to handle this request.")

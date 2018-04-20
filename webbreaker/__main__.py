@@ -18,17 +18,11 @@ except ImportError:  # Python3
     import html.parser as HTMLParser
     import urllib.request as urllib
 
-import requests.exceptions
-from colorama import Fore
-from colorama import Style
 import click
-
-import re
 import sys
 
 from webbreaker import __version__ as version
 from webbreaker.common.authorization import auth_prompt
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.common.secretclient import SecretClient
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
@@ -127,7 +121,7 @@ def webinspect():
               required=True,
               help="Specify setting file")
 @click.option('--size',
-              type=click.Choice(['small', 'large']),
+              type=click.Choice(['small', 'medium', 'large']),
               default='large',
               help="Specify scanner size")
 @click.option('--start_urls',

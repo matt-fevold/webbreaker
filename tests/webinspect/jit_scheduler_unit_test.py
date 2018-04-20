@@ -48,6 +48,24 @@ def test_jit_scheduler_small_server_success(is_endpoint_available_mock):
 
 # need to mock is_available so no api calls are made.
 @mock.patch('webbreaker.webinspect.jit_scheduler.WebInspectJitScheduler._is_endpoint_available')
+def test_jit_scheduler_medium_server_success(is_endpoint_available_mock):
+
+    endpoints = [['some_server1.com:8083', '1'],
+                 ['some_server2.com:8083', '2'],
+                 ]
+
+    jit = WebInspectJitScheduler(endpoints=endpoints, server_size_needed='medium',
+                                 username='user', password='pass')
+
+    # Sadly this is a bit complex - is_available is supposed to add available endpoints to a queue
+    is_endpoint_available_mock.side_effect = jit._results_queue.put(endpoints[0], False)
+
+    result_endpoint = jit.get_endpoint()
+
+    assert result_endpoint == 'some_server1.com:8083'
+
+# need to mock is_available so no api calls are made.
+@mock.patch('webbreaker.webinspect.jit_scheduler.WebInspectJitScheduler._is_endpoint_available')
 def test_jit_scheduler_large_server_multiple_same_sized_endpoints_choose_first_success(is_endpoint_available_mock):
     # test to make sure whichever adds to the queue first is chosen (first endpoint wins)
     endpoints = [['some_server1.com:8083', '2'],

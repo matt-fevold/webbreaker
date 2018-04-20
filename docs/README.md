@@ -19,17 +19,17 @@
 
 [Usage ](#usage)
 - [Commands `commands`](#commands)
-- [WebInspect Scan `webinspect_scan`](#webinspect_scan)
-- [WebInspect List `webinspect_list`](#webinspect_list)
-- [WebInspect Download `webinspect_download`](#webinspect_download)
-- [WebInspect Proxy `webinspect_proxy`](#webinspect_proxy)
-- [WebInspect Swagger `webinspect_swagger`](#webinspect_swagger)
-- [Fortify List `fortify_list`](#fortify_list)
-- [Fortify Upload `fortify_upload`](#fortify_upload)
-- [Fortify Download `fortify_download`](#fortify_download)
-- [ThreadFix List `threadfix_list`](#threadfix_list)
-- [ThreadFix Upload `threadfix_upload`](#threadfix_upload)
-- [WebBreaker Administrative `webbreaker_administrative`](#webbreaker_administrative)
+- [WebInspect Scan `webinspect_scan`](#webinspect-scan)
+- [WebInspect List `webinspect_list`](#webinspect-list)
+- [WebInspect Download `webinspect_download`](#webinspect-download)
+- [WebInspect Proxy `webinspect_proxy`](#webinspect-proxy)
+- [WebInspect Swagger `webinspect_swagger`](#webinspect-swagger)
+- [Fortify List `fortify_list`](#fortify-list)
+- [Fortify Upload `fortify_upload`](#fortify-upload)
+- [Fortify Download `fortify_download`](#fortify-download)
+- [ThreadFix List `threadfix_list`](#threadfix-list)
+- [ThreadFix Upload `threadfix_upload`](#threadfix-upload)
+- [WebBreaker Administrative `webbreaker_administrative`](#webbreaker-administrative)
 
 
 ## Introduction `introduction`
@@ -137,6 +137,8 @@ notifications, the event will be logged, without any interruption of WebBreaker 
 
 Below is the default config.ini that is set at first time install, once you execute `webbreaker` for the first time.  All subsequent installs and updates will not update your `~/.webbreaker/config.ini` unless it is deleted.  You will need to modify the appropriate sections to your environment specifications.
 
+##### WebBreaker Config `webbreaker_config`
+
 ### Default 
 ````
 [fortify]
@@ -177,6 +179,7 @@ api_key = <Key Required>
 [webinspect]
 # WebInspect logical server lanes for load balancing between the maximum concurrent scans per server
 large_server_max_concurrent_scans = 2
+medium_server_max_concurrent_scans = 1
 small_server_max_concurrent_scans = 1
 
 # WebInspect server(s) hosting RESTFul API endpoints
@@ -397,7 +400,7 @@ Below are common command-line usage of webbreaker, command structure includes th
     # List all applications for all teams found in ThreadFix:
     webbreaker threadfix list
 
-    # List all applications with names containing 'secret' for all teams with names containing 'Marketing':
+    # List all applications with application containing et for all teams with names containing 'Marketing':
     webbreaker threadfix list --team Marketing --application zerobank
 
     # List all ThreadFix applications for the Marketing team:

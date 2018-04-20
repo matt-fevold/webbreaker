@@ -36,7 +36,7 @@ class Config(object):
         self.agent_json = self.set_path(dir_path=self.etc, file_name='agent.json')
         self.cert = self.set_path(file_name='wiproxycert.crt')
 
-        self.secret = os.path.join(self.install, '.webbreaker')
+        self.secret = os.path.join(self.install, '.webbreaker.key')
 
     def set_path(self, install=None, dir_path=None, file_name=None):
         if not install:
@@ -100,7 +100,7 @@ class Config(object):
 
         # Default verify_ssl value
         self.conf_get('fortify', 'verify_ssl', 'False')
-        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com')
+        self.conf_get('fortify', 'ssc_url', 'https://fortify.example.com/ssc')
 
         # Fortify SSC authentication execute, webbreaker admin credentials --fortify
         self.conf_get('fortify', 'username', '')
@@ -122,6 +122,7 @@ class Config(object):
 
         # WebInspect load balancing, size of server is bound to CPU & memory available
         self.conf_get('webinspect', 'large_server_max_concurrent_scans', '2')
+        self.conf_get('webinspect', 'medium_server_max_concurrent_scans', '1')
         self.conf_get('webinspect', 'small_server_max_concurrent_scans', '1')
 
         # WebInspect server(s) RESTFul API endpoints
