@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>WebBreaker</title>
+        <title>Webbreaker</title>
 
         <link rel="stylesheet" href="https://target.github.io/webbreaker/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://target.github.io/webbreaker/css/font-awesome.min.css">
@@ -16,9 +16,9 @@
         <header class="navbar navbar-default navbar-fixed-top">
 
             <a class="navbar-brand" href="https://target.github.io/webbreaker/">
-                WebBreaker
+                Webbreaker
                 <small class="hidden-xs hidden-sm">
-                    Dynamic Application Security Test Orchestration (DASTO), as part of your DevOps pipeline
+                    Centrally administer Dynamic Application Security Testing (DAST), as part of your DevOps pipeline
                 </small>
             </a>
 
@@ -201,6 +201,7 @@ api_key = &lt;Key Required&gt;
 [webinspect]
 # WebInspect logical server lanes for load balancing between the maximum concurrent scans per server
 large_server_max_concurrent_scans = 2
+medium_server_max_concurrent_scans = 1
 small_server_max_concurrent_scans = 1
 
 # WebInspect server(s) hosting RESTFul API endpoints
@@ -419,7 +420,7 @@ webbreaker fortify download --fortify_user $FORT_USER --fortify_password $FORT_P
 <pre><code># List all applications for all teams found in ThreadFix:
 webbreaker threadfix list
 
-# List all applications with names containing 'secret' for all teams with names containing 'Marketing':
+# List all applications with application containing et for all teams with names containing 'Marketing':
 webbreaker threadfix list --team Marketing --application zerobank
 
 # List all ThreadFix applications for the Marketing team:
