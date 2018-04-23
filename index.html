@@ -321,6 +321,15 @@ email_template =
 </ul></li>
 </ul>
 <p>A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'</p>
+<h3 id="faqs">FAQs <code>faqs</code></h3>
+<p><em>Question:</em> Why would I receive a 401 error that I am NOT authorized to perform WebInspect scan?</p>
+<p><em>Answer:</em> Either your credentials are not valid, or you need to configure the <code>[webinspect]</code> config.ini section with the following:</p>
+<pre><code>authenticate = true</code></pre>
+<p>Now follow these two steps.</p>
+<ol>
+<li><code>webbreaker admin credentials --webinspect --clear</code></li>
+<li><code>webbreaker admin credentials --webinspect</code></li>
+</ol>
 <h3 id="commands">Commands <code>commands</code></h3>
 <p>Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.  We used WebInspect <a href="http://zero.webappsecurity.com/">Zero Bank</a> for our examples below.</p>
 <h5 id="webinspect-scan">WebInspect Scan <code>webinspect_scan</code></h5>
