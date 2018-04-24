@@ -379,22 +379,27 @@ webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_nam
 webbreaker webinspect download --server webinspect-2.example.com:8083 --scan_name zerobank --scan_id my_important_scans_id</code></pre>
 <h5 id="webinspect-proxy">WebInspect Proxy <code>webinspect_proxy</code></h5>
 <pre><code># Start a WebInspect proxy called test-proxy on port 9001:
-webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
+webbreaker webinspect proxy --start --proxy_name zerobank_proxy --port 9001
+
+NOTE: Output from the command will contain the Proxy Address and Port to configure your browser's network settings. 
+Once complete, perform the desired base case actions for the WebInspect scan, such as authenticating, if your website
+has authentication, or submit a form or complete an optional workflow.  Upon completion, follow the step below to stop
+and download your WebInspect webmacro and setting file for scanning.
+
+# Stop and download webmacro workflow and WebInspect setting file for scanning:
+webbreaker webinspect proxy --stop --proxy_name zerobank_proxy
 
 # List all the WebInspect proxies:
 webbreaker webinspect proxy --list
 
 # Download the WebInspect proxy webmacro called test-proxy:
-webbreaker webinspect proxy --download --webmacro zerobank-deposit --proxy_name zerobank_proxy
+webbreaker webinspect proxy --download --webmacro zerobank_proxy --proxy_name zerobank_proxy
 
 # Download the WebInspect proxy settings file called test-proxy:
-webbreaker webinspect proxy --download --setting zerobank --proxy_name zerobank_proxy
+webbreaker webinspect proxy --download --setting zerobank_proxy --proxy_name zerobank_proxy
 
 # Upload a WebInspect webmacro proxy for a scan override called:
-webbreaker webinspect proxy --upload zerobank-deposit.webmacro --proxy_name zerobank_proxy
-
-# Stop and download webmacro workflow and WebInspect setting file for scanning:
-webbreaker webinspect proxy --stop --proxy_name zerobank_proxy</code></pre>
+webbreaker webinspect proxy --upload zerobank_proxy.webmacro --proxy_name zerobank_proxy</code></pre>
 <h5 id="webinspect-swagger">WebInspect Swagger <code>webinspect_swagger</code></h5>
 <pre><code># Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json URL:
 webbreaker webinspect wiswag --url http://petstore.swagger.io/v2/swagger.json
