@@ -171,5 +171,4 @@ class Config(object):
         self.conf_get('emailer', 'from_address', 'webbreaker-no-reply@example.com')
         self.conf_get('emailer', 'to_address', 'webbreaker-activity@example.com')
         self.conf_get('emailer', 'default_to_address', '')
-        self.conf_get('emailer', 'chatroom', '')
         self.conf_get('emailer', 'email_template', WebBreakerHelper().email_template_config())

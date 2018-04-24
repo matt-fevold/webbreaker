@@ -62,9 +62,9 @@ class WebInspectProxy:
                 if result and len(result):
                     Logger.app.info("Proxy successfully started")
                     print("Server\t\t:\t'{}'".format(server))
-                    print("Instance ID\t:\t{}".format(result['instanceId']))
-                    print("Address\t\t:\t{}".format(result['address']))
-                    print("Port\t\t:\t{}".format(result['port']))
+                    print("Proxy Name\t:\t{}".format(result['instanceId']))
+                    print("Proxy Address\t:\t{}".format(result['address']))
+                    print("Proxy Port\t:\t{}".format(result['port']))
                 else:
                     Logger.app.error("Unable to start proxy on '{}'".format(server))
                     sys.exit(ExitStatus.failure)

@@ -158,14 +158,18 @@ class WebBreakerHelper(object):
 
     @classmethod
     def admin_desc(cls):
-        return """
-        WebBreaker administrative commands for managing Fortify SSC, ThreadFix, and WebInspect credentials.
-        """
+        return ("""
+        WebBreaker administrative commands for managing Fortify SSC and WebInspect credentials.  All stored credentials
+         are performed with a unique AES 128-bit encrypted symetric key.  For example\n
+        {0}
+        webbreaker admin credentials --fortify
+        {1}
+        """.format(Fore.RED, Style.RESET_ALL))
 
     @classmethod
     def admin_credentials_desc(cls):
         return ("""
-        Interactive prompt to encrypt and store Fortify SSC credentials.  For example:\n
+        Interactive prompt to encrypt, store, and delete Fortify SSC and WebInspect credentials.  For example:\n
         {0}
         webbreaker admin credentials --fortify or --webinspect
         {1}
@@ -176,7 +180,7 @@ class WebBreakerHelper(object):
     @classmethod
     def admin_secret_desc(cls):
         return """
-        Creates an AES 128-bit encrypted symetric key and clears all stored credentials
+        Creates a new AES 128-bit encrypted symetric key and clears all stored credentials
         """
 
     @classmethod
