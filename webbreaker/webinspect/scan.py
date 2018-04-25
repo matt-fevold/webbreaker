@@ -1,31 +1,25 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
-import json
+from contextlib import contextmanager
+from exitstatus import ExitStatus
+import os, datetime
 import requests
 import urllib3
-from webinspectapi.webinspect import WebInspectApi
 from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
-from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler
-import webbreaker.webinspect.webinspect_json as webinspectjson
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.webinspect.authentication import WebInspectAuth
-
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
-
-import sys
-from exitstatus import ExitStatus
-from contextlib import contextmanager
 from signal import *
-import os, datetime
+from subprocess import CalledProcessError
+import sys
+
+
 try:
     import urlparse as urlparse
 except ImportError:
     from urllib.parse import urlparse
 
-logexceptionhelper = LogExceptionHelper()
 
 try:
     requests.packages.urllib3.disable_warnings()
@@ -56,9 +50,12 @@ class WebInspectScan:
         username, password = auth_config.authenticate(username, password)
 
         # ...as well as pulling down webinspect server config files from github...
-        self.config.fetch_webinspect_configs(overrides)
 
-        # ...and settings...
+        try:
+            self.config.fetch_webinspect_configs(overrides)
+        except (CalledProcessError, TypeError):
+            Logger.app.error("Retrieving WebInspect configurations from GIT repo...")
+            # ...and settings...
         webinspect_settings = self.config.parse_webinspect_options(overrides)
 
         # OK, we're ready to actually do something now
@@ -69,20 +66,19 @@ class WebInspectScan:
         # if a scan policy has been specified, we need to make sure we can find/use it
         webinspect_client.verify_scan_policy(self.config)
 
-        # Upload whatever configurations have been provided...
-        # All skipped unless explicitly declared in CLI
+        # Upload whatever overrides have been provided, skipped unless explicitly declared
         if webinspect_client.setting_overrides.webinspect_upload_settings:
             webinspect_client.upload_settings()
 
         if webinspect_client.setting_overrides.webinspect_upload_webmacros:
             webinspect_client.upload_webmacros()
 
-        # if there was a provided scan policy, we've already uploaded so don't bother doing it again. hack.
+        # if there was a provided scan policy, we've already uploaded so don't bother doing it again.
         if webinspect_client.setting_overrides.webinspect_upload_policy and not webinspect_client.setting_overrides.scan_policy:
             webinspect_client.upload_policy()
 
         Logger.app.info("Launching a scan")
-        # ... And launch a scan.
+        # Launch the scan.
 
         try:
             scan_id = webinspect_client.create_scan()
@@ -115,7 +111,7 @@ class WebInspectScan:
             # TODO add json export
 
         except (
-                requests.exceptions.ConnectionError, requests.exceptions.HTTPError, NameError, KeyError,
+                requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
                 IndexError) as e:
             Logger.app.error(
                 # "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))

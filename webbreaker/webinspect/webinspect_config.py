@@ -13,8 +13,6 @@ from subprocess import CalledProcessError, check_output
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.confighelper import Config
-
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
@@ -42,7 +40,6 @@ except NameError:  # Python 2
    FileNotFoundError = IOError
 
 runenv = WebBreakerHelper.check_run_env()
-logexceptionhelper = LogExceptionHelper()
 webinspectloghelper = WebInspectLogHelper()
 fortifyloghelper = FortifyLogHelper()
 
@@ -192,6 +189,7 @@ class WebInspectConfig(object):
                     options['upload_settings'] = os.path.join(webinspect_dir,
                                                               'settings',
                                                               options['settings'] + '.xml')
+
                 elif options['settings'] == 'Default':
                     # All WebInspect servers come with a Default.xml settings file, no need to upload it
                     options['upload_settings'] = None
@@ -313,6 +311,19 @@ class WebInspectConfig(object):
         try:
             if options['settings'] == 'Default':
                 Logger.app.debug("Default settings were used")
+
+                if os.path.isfile(options['upload_settings'] + '.xml'):
+                    options['upload_settings'] = options['upload_settings'] + '.xml'
+                if os.path.isfile(options['upload_settings']):
+                    options['upload_scan_settings'] = options['upload_settings']
+                else:
+                    try:
+                        options['upload_scan_settings'] = os.path.join(etc_dir,
+                                                                       'settings',
+                                                                       options['upload_settings'] + '.xml')
+                    except (AttributeError, TypeError) as e:
+                        webinspectloghelper.log_error_settings(options['upload_settings'], e)
+
             elif os.path.exists(git_dir):
                 Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
                 check_output(['git', 'init', etc_dir])
@@ -332,10 +343,10 @@ class WebInspectConfig(object):
             raise
         except GitCommandError as e:
             webinspectloghelper.log_git_access_error(self.webinspect_git, e)
-            raise Exception(logexceptionhelper.fetch_webinspect_configs)
+            raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
         except IndexError as e:
             webinspectloghelper.log_config_file_unavailable(e)
-            raise Exception(logexceptionhelper.fetch_webinspect_configs)
+            raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
 
         Logger.app.debug("Completed webinspect config fetch")
 

@@ -123,7 +123,7 @@ class WebInspectAPIHelper(object):
                 Logger.app.debug(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
                 f.write(response.data)
                 print(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
-        except UnboundLocalError as e:
+        except (UnboundLocalError, IOError) as e:
             Logger.app.error('Error saving file locally! {}'.format(e))
 
     def get_policy_by_guid(self, policy_guid):

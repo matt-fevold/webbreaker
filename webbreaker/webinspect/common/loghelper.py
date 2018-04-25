@@ -45,3 +45,6 @@ class WebInspectLogHelper(object):
 
     def log_error_incorrect_webinspect_configs(self, args):
         Logger.app.error("Incorrect webinspect config values: {}".format(args))
+
+    def log_error_fetch_webinspect_configs(self):
+        Logger.app.error("Fetching webinspect config")
