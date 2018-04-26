@@ -20,6 +20,11 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
+try:  # python 3
+    import queue
+except ImportError:  # python 2
+    import Queue as queue
+
 
 try:
     requests.packages.urllib3.disable_warnings()
@@ -28,8 +33,11 @@ except (ImportError, AttributeError):  # Python3
 
 
 class WebInspectScan:
-    def __init__(self, overrides):
-        print(overrides)
+    def __init__(self, overrides, timeout=10):
+        # print(overrides)
+        # used for multi threading the _is_available API call
+        self._results_queue = queue.Queue()
+        self.timeout = timeout
         self.scan(overrides)
 
     def _set_config_(self):
@@ -49,7 +57,8 @@ class WebInspectScan:
 
         auth_config = WebInspectAuth()
         username, password = auth_config.authenticate(username, password)
-
+        self.username = username
+        self.password = password
         # ...as well as pulling down webinspect server config files from github...
 
         try:
@@ -85,18 +94,16 @@ class WebInspectScan:
             scan_id = self.webinspect_api.create_scan()
             Logger.app.debug("Scan ID: {}".format(scan_id))
 
-
-
             from multiprocessing.dummy import Pool as ThreadPool
 
             pool = ThreadPool(1)
 
             # start some threads - first to finish adds to a queue and that is what we return.
             pool.imap_unordered(self._scan, scan_id)
-            pool.close()
-            pool.join()
+            self._results_queue.get(block=True, timeout=self.timeout)
+            # pool.close()
+            # pool.join()
 
-            
         except (
                 requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
                 IndexError) as e:
@@ -121,20 +128,22 @@ class WebInspectScan:
             raise
 
     def _scan(self, scan_id):
+        #need WebinspectAPI endpoint
+        webinspect_api = WebInspectAPIHelper( username=self.username, password=self.password)
         scan_complete = False
         while not scan_complete:
             # Logger.app.info("inside thread :) ")
-            current_status = self.webinspect_api.get_scan_status(scan_id)
+            current_status = webinspect_api.get_scan_status(scan_id)
             Logger.app.info("current status: ", current_status)
 
 
             if current_status.lower() == 'complete':
                 scan_complete = True
-                return True
+                self._results_queue.put('complete', block=False)
 
 
-        self.webinspect_api.export_scan_results(scan_id, 'fpr')
-        self.webinspect_api.export_scan_results(scan_id, 'xml')
+        webinspect_api.export_scan_results(scan_id, 'fpr')
+        webinspect_api.export_scan_results(scan_id, 'xml')
         # TODO add json export
 
 
