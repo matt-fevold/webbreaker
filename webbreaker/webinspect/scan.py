@@ -29,6 +29,7 @@ except (ImportError, AttributeError):  # Python3
 
 class WebInspectScan:
     def __init__(self, overrides):
+        print(overrides)
         self.scan(overrides)
 
     def _set_config_(self):
@@ -61,55 +62,41 @@ class WebInspectScan:
         # OK, we're ready to actually do something now
 
         # The webinspect client is our point of interaction with the webinspect server farm
-        webinspect_client = WebInspectAPIHelper(username=username, password=password, webinspect_setting_overrides=webinspect_settings)
+        self.webinspect_api = WebInspectAPIHelper(username=username, password=password, webinspect_setting_overrides=webinspect_settings)
 
         # if a scan policy has been specified, we need to make sure we can find/use it
-        webinspect_client.verify_scan_policy(self.config)
+        self.webinspect_api.verify_scan_policy(self.config)
 
         # Upload whatever overrides have been provided, skipped unless explicitly declared
-        if webinspect_client.setting_overrides.webinspect_upload_settings:
-            webinspect_client.upload_settings()
+        if self.webinspect_api.setting_overrides.webinspect_upload_settings:
+            self.webinspect_api.upload_settings()
 
-        if webinspect_client.setting_overrides.webinspect_upload_webmacros:
-            webinspect_client.upload_webmacros()
+        if self.webinspect_api.setting_overrides.webinspect_upload_webmacros:
+            self.webinspect_api.upload_webmacros()
 
         # if there was a provided scan policy, we've already uploaded so don't bother doing it again.
-        if webinspect_client.setting_overrides.webinspect_upload_policy and not webinspect_client.setting_overrides.scan_policy:
-            webinspect_client.upload_policy()
+        if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
+            self.webinspect_api.upload_policy()
 
         Logger.app.info("Launching a scan")
         # Launch the scan.
 
         try:
-            scan_id = webinspect_client.create_scan()
+            scan_id = self.webinspect_api.create_scan()
             Logger.app.debug("Scan ID: {}".format(scan_id))
 
-            if scan_id:
-                # Initialize handle_scan_event first then go to webinspectscanhelpers
 
-                global handle_scan_event
-                Logger.app.debug("handle_scan_event: {}".format(handle_scan_event))
-                handle_scan_event = create_scan_event_handler(webinspect_client, scan_id, webinspect_settings)
-                handle_scan_event('scan_start')
-                Logger.app.debug("Starting scan handling")
-                Logger.app.info("Execution is waiting on scan status change")
-                with scan_running():
-                    webinspect_client.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
-                status = webinspect_client.get_scan_status(scan_id)
-                Logger.app.info("Scan status has changed to {0}.".format(status))
 
-                if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
-                    Logger.app.error(
-                        "See the WebInspect server scan log --> {}, typically the application to be scanned is "
-                        "unavailable.".format(WebInspectConfig().endpoints))
-                    Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
-                    handle_scan_event('scan_end')
-                    sys.exit(ExitStatus.failure)
+            from multiprocessing.dummy import Pool as ThreadPool
 
-            webinspect_client.export_scan_results(scan_id, 'fpr')
-            webinspect_client.export_scan_results(scan_id, 'xml')
-            # TODO add json export
+            pool = ThreadPool(1)
 
+            # start some threads - first to finish adds to a queue and that is what we return.
+            pool.imap_unordered(self._scan, scan_id)
+            pool.close()
+            pool.join()
+
+            
         except (
                 requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
                 IndexError) as e:
@@ -123,7 +110,7 @@ class WebInspectScan:
             auth_config.write_credentials(username, password)
 
         try:
-            handle_scan_event('scan_end')
+            # handle_scan_event('scan_end')
             Logger.app.info("Webbreaker WebInspect has completed.")
 
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
@@ -133,58 +120,103 @@ class WebInspectScan:
                 "Webbreaker WebInspect scan was unable to complete! See also: {}".format(e))
             raise
 
-
-handle_scan_event = None
-
-
-# Use a closure for events related to scan status changes
-def create_scan_event_handler(webinspect_client, scan_id, webinspect_settings):
-    def scan_event_handler(event_type, external_termination=False):
-        try:
-            event = {}
-            event['scanid'] = scan_id
-            event['server'] = webinspect_client.setting_overrides.endpoint
-            event['scanname'] = webinspect_settings['webinspect_scan_name']
-            event['event'] = event_type
-            event['timestamp'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            event['subject'] = 'WebBreaker ' + event['event']
-
-            if webinspect_settings['webinspect_allowed_hosts']:
-                event['targets'] = webinspect_settings['webinspect_allowed_hosts']
-            else:
-                event['targets'] = webinspect_settings['webinspect_scan_targets']
-
-            if external_termination:
-                webinspect_client.stop_scan(scan_id)
-        except Exception as e:
-            Logger.console.error("Oh no: {}".format(e))
-
-    return scan_event_handler
+    def _scan(self, scan_id):
+        scan_complete = False
+        while not scan_complete:
+            # Logger.app.info("inside thread :) ")
+            current_status = self.webinspect_api.get_scan_status(scan_id)
+            Logger.app.info("current status: ", current_status)
 
 
-# Special function here - called only when we're in a context (defined below) of intercepting process-termination
-# signals. If, while a scan is executing, WebBreaker receives a termination signal from the OS, we want to
-# handle that as a scan-end event prior to terminating. So, this function will be called by the python signal
-# handler within the scan-running context.
-def write_end_event(*args):
-    handle_scan_event('scan_end', external_termination=True)
-    os._exit(0)
+            if current_status.lower() == 'complete':
+                scan_complete = True
+                return True
 
 
-@contextmanager
-def scan_running():
-    # Intercept the "please terminate" signals
-    original_sigint_handler = getsignal(SIGINT)
-    original_sigabrt_handler = getsignal(SIGABRT)
-    original_sigterm_handler = getsignal(SIGTERM)
-    for sig in (SIGABRT, SIGINT, SIGTERM):
-        signal(sig, write_end_event)
-    try:
-        yield
-    except:
-        raise
-    finally:
-        # Go back to normal signal handling
-        signal(SIGABRT, original_sigabrt_handler)
-        signal(SIGINT, original_sigint_handler)
-        signal(SIGTERM, original_sigterm_handler)
+        self.webinspect_api.export_scan_results(scan_id, 'fpr')
+        self.webinspect_api.export_scan_results(scan_id, 'xml')
+        # TODO add json export
+
+
+
+        # if scan_id:
+        #     # Initialize handle_scan_event first then go to webinspectscanhelpers
+        #
+        #     global handle_scan_event
+        #     Logger.app.debug("handle_scan_event: {}".format(handle_scan_event))
+        #     handle_scan_event = create_scan_event_handler(self.webinspect_api, scan_id, webinspect_settings)
+        #     handle_scan_event('scan_start')
+        #     Logger.app.debug("Starting scan handling")
+        #     Logger.app.info("Execution is waiting on scan status change")
+        #     with scan_running():
+        #         self.webinspect_api.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
+        #     status = self.webinspect_api.get_scan_status(scan_id)
+        #     Logger.app.info("Scan status has changed to {0}.".format(status))
+        #
+        #     if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
+        #         Logger.app.error(
+        #             "See the WebInspect server scan log --> {}, typically the application to be scanned is "
+        #             "unavailable.".format(WebInspectConfig().endpoints))
+        #         Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
+        #         handle_scan_event('scan_end')
+        #         sys.exit(ExitStatus.failure)
+
+# handle_scan_event = None
+
+#
+# # Use a closure for events related to scan status changes
+# def create_scan_event_handler(self.webinspect_api, scan_id, webinspect_settings):
+#     def scan_event_handler(event_type, external_termination=False):
+#         try:
+#             event = {}
+#             event['scanid'] = scan_id
+#             event['server'] = self.webinspect_api.setting_overrides.endpoint
+#             event['scanname'] = webinspect_settings['webinspect_scan_name']
+#             event['event'] = event_type
+#             event['timestamp'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+#             event['subject'] = 'WebBreaker ' + event['event']
+#
+#             if webinspect_settings['webinspect_allowed_hosts']:
+#                 event['targets'] = webinspect_settings['webinspect_allowed_hosts']
+#             else:
+#                 event['targets'] = webinspect_settings['webinspect_scan_targets']
+#
+#             if external_termination:
+#                 self.webinspect_api.stop_scan(scan_id)
+#         except Exception as e:
+#             Logger.console.error("Oh no: {}".format(e))
+#
+#     return scan_event_handler
+#
+#
+# # Special function here - called only when we're in a context (defined below) of intercepting process-termination
+# # signals. If, while a scan is executing, WebBreaker receives a termination signal from the OS, we want to
+# # handle that as a scan-end event prior to terminating. So, this function will be called by the python signal
+# # handler within the scan-running context.
+# def write_end_event(*args):
+#     handle_scan_event('scan_end', external_termination=True)
+#     os._exit(0)
+#
+#
+# @contextmanager
+# def scan_running():
+#     # Intercept the "please terminate" signals
+#     original_sigint_handler = getsignal(SIGINT)
+#     original_sigabrt_handler = getsignal(SIGABRT)
+#     original_sigterm_handler = getsignal(SIGTERM)
+#     for sig in (SIGABRT, SIGINT, SIGTERM):
+#         signal(sig, write_end_event)
+#     try:
+#         yield
+#     except:
+#         raise
+#     finally:
+#         # Go back to normal signal handling
+#         signal(SIGABRT, original_sigabrt_handler)
+#         signal(SIGINT, original_sigint_handler)
+#         signal(SIGTERM, original_sigterm_handler)
+#
+#
+# if __name__ == '__main__':
+#     pass
+#
