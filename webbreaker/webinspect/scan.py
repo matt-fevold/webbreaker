@@ -3,20 +3,18 @@
 
 from contextlib import contextmanager
 from exitstatus import ExitStatus
-import os, datetime
 from multiprocessing.dummy import Pool as ThreadPool
 import requests
-import urllib3
+from signal import getsignal, SIGINT, SIGABRT,SIGTERM, signal
 from sys import exit
 from subprocess import CalledProcessError
+import urllib3
 
 
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
-
-
 
 try:
     import urlparse as urlparse
@@ -91,13 +89,22 @@ class WebInspectScan:
 
         try:
             Logger.app.info("Launching a scan")
-            scan_id = self.webinspect_api.create_scan()
+            self.scan_id = self.webinspect_api.create_scan()  # it is self.scan to properly handle an exit event - find a better way
 
             # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
-            pool.imap_unordered(self._scan, [scan_id])
+            pool.imap_unordered(self._scan, [self.scan_id])
             Logger.app.info("Waiting for scan completion...")
-            self._results_queue.get(block=True, timeout=self.timeout)
+
+            # context manager to handle interrupts properly
+            with self._termination_event_handler():
+                # block until scan completion.
+                if self.timeout == 0:  # 0 means never timeout
+                    self._results_queue.get(block=True)
+                else:  # timeout after user specified value.
+                    self._results_queue.get(block=True, timeout=self.timeout)
+
+            # kill thread
             pool.terminate()
 
         # TODO go through and make sure that all these exceptions happen - way too many
@@ -108,7 +115,7 @@ class WebInspectScan:
             raise
         except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
             Logger.app.error("The WebInspect scan has timed out after {} seconds.".format(self.timeout))
-            self._stop_scan(scan_id)
+            self._stop_scan(self.scan_id)
             exit(ExitStatus.failure)
 
         Logger.app.info("Webbreaker WebInspect has completed.")
@@ -136,3 +143,35 @@ class WebInspectScan:
 
     def _stop_scan(self, scan_id):
         self.webinspect_api.stop_scan(scan_id)
+
+    # below functions are for handling someone forcefully ending webbreaker.
+    def _exit_scan_gracefully(self, *args):
+        """
+        called when someone ctl+c's - sends an api call to end the running scan.
+        :param args:
+        :return:
+        """
+        Logger.app.info("Aborting!")
+        self.webinspect_api.stop_scan(self.scan_id)
+        exit(ExitStatus.failure)
+
+    @contextmanager
+    def _termination_event_handler(self):
+        """
+        meant to handle termination events (ctr+c and more) so that we call scan_end(scan_id) if a user decides to end the
+        scan.
+        :return:
+        """
+        # Intercept the "please terminate" signals
+        original_sigint_handler = getsignal(SIGINT)
+        original_sigabrt_handler = getsignal(SIGABRT)
+        original_sigterm_handler = getsignal(SIGTERM)
+        for sig in (SIGABRT, SIGINT, SIGTERM):
+            signal(sig, self._exit_scan_gracefully)
+
+        yield  # needed for context manager
+
+        # Go back to normal signal handling
+        signal(SIGABRT, original_sigabrt_handler)
+        signal(SIGINT, original_sigint_handler)
+        signal(SIGTERM, original_sigterm_handler)
