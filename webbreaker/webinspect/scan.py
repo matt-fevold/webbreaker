@@ -92,8 +92,7 @@ class WebInspectScan:
 
         try:
             scan_id = self.webinspect_api.create_scan()
-            Logger.app.debug("Scan ID: {}".format(scan_id))
-
+            self.webinspect_server = self.webinspect_api.setting_overrides.endpoint  # for multithreading we want to use the same server each request
             from multiprocessing.dummy import Pool as ThreadPool
 
             pool = ThreadPool(1)
@@ -129,7 +128,7 @@ class WebInspectScan:
 
     def _scan(self, scan_id):
         #need WebinspectAPI endpoint
-        webinspect_api = WebInspectAPIHelper( username=self.username, password=self.password)
+        webinspect_api = WebInspectAPIHelper(host=self.webinspect_server, username=self.username, password=self.password)
         scan_complete = False
         while not scan_complete:
             # Logger.app.info("inside thread :) ")
