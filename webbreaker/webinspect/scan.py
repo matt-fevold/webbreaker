@@ -4,15 +4,18 @@
 from contextlib import contextmanager
 from exitstatus import ExitStatus
 import os, datetime
+from multiprocessing.dummy import Pool as ThreadPool
 import requests
 import urllib3
+from sys import exit
+from subprocess import CalledProcessError
+
+
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
-from signal import *
-from subprocess import CalledProcessError
-import sys
+
 
 
 try:
@@ -26,18 +29,19 @@ except ImportError:  # python 2
     import Queue as queue
 
 
-try:
+try:  # python 2
     requests.packages.urllib3.disable_warnings()
 except (ImportError, AttributeError):  # Python3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class WebInspectScan:
-    def __init__(self, overrides, timeout=10):
-        # print(overrides)
+    def __init__(self, overrides):
         # used for multi threading the _is_available API call
         self._results_queue = queue.Queue()
-        self.timeout = timeout
+        self.timeout = overrides['timeout']  # Default is 0 which is no timeout
+
+        # run the scan
         self.scan(overrides)
 
     def _set_config_(self):
@@ -57,10 +61,8 @@ class WebInspectScan:
 
         auth_config = WebInspectAuth()
         username, password = auth_config.authenticate(username, password)
-        self.username = username
-        self.password = password
-        # ...as well as pulling down webinspect server config files from github...
 
+        # ...as well as pulling down webinspect server config files from github...
         try:
             self.config.fetch_webinspect_configs(overrides)
         except (CalledProcessError, TypeError):
@@ -87,144 +89,50 @@ class WebInspectScan:
         if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
             self.webinspect_api.upload_policy()
 
-        Logger.app.info("Launching a scan")
-        # Launch the scan.
-
         try:
+            Logger.app.info("Launching a scan")
             scan_id = self.webinspect_api.create_scan()
-            self.webinspect_server = self.webinspect_api.setting_overrides.endpoint  # for multithreading we want to use the same server each request
-            from multiprocessing.dummy import Pool as ThreadPool
 
+            # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
-
-            # start some threads - first to finish adds to a queue and that is what we return.
-            pool.imap_unordered(self._scan, scan_id)
+            pool.imap_unordered(self._scan, [scan_id])
+            Logger.app.info("Waiting for scan completion...")
             self._results_queue.get(block=True, timeout=self.timeout)
-            # pool.close()
-            # pool.join()
+            pool.terminate()
 
-        except (
-                requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
+        # TODO go through and make sure that all these exceptions happen - way too many
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
                 IndexError) as e:
             Logger.app.error(
-                # "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
                 "WebInspect scan was not properly configured, unable to launch!! see also: {}".format(e))
             raise
+        except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
+            Logger.app.error("The WebInspect scan has timed out after {} seconds.".format(self.timeout))
+            self._stop_scan(scan_id)
+            exit(ExitStatus.failure)
+
+        Logger.app.info("Webbreaker WebInspect has completed.")
 
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
 
-        try:
-            # handle_scan_event('scan_end')
-            Logger.app.info("Webbreaker WebInspect has completed.")
-
-        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
-                IndexError) as e:
-            Logger.app.error(
-                # "Unable to connect to WebInspect {0}, see also: {1}".format(webinspect_settings['webinspect_url'], e))
-                "Webbreaker WebInspect scan was unable to complete! See also: {}".format(e))
-            raise
-
     def _scan(self, scan_id):
-        #need WebinspectAPI endpoint
-        webinspect_api = WebInspectAPIHelper(host=self.webinspect_server, username=self.username, password=self.password)
+        # for multithreading we want to use the same server each request
+        self.webinspect_server = self.webinspect_api.setting_overrides.endpoint
+        self.webinspect_api.host = self.webinspect_server
+
         scan_complete = False
         while not scan_complete:
-            # Logger.app.info("inside thread :) ")
-            current_status = webinspect_api.get_scan_status(scan_id)
-            Logger.app.info("current status: ", current_status)
-
+            current_status = self.webinspect_api.get_scan_status(scan_id)
 
             if current_status.lower() == 'complete':
                 scan_complete = True
                 self._results_queue.put('complete', block=False)
 
-
-        webinspect_api.export_scan_results(scan_id, 'fpr')
-        webinspect_api.export_scan_results(scan_id, 'xml')
+        self.webinspect_api.export_scan_results(scan_id, 'fpr')
+        self.webinspect_api.export_scan_results(scan_id, 'xml')
         # TODO add json export
 
-
-
-        # if scan_id:
-        #     # Initialize handle_scan_event first then go to webinspectscanhelpers
-        #
-        #     global handle_scan_event
-        #     Logger.app.debug("handle_scan_event: {}".format(handle_scan_event))
-        #     handle_scan_event = create_scan_event_handler(self.webinspect_api, scan_id, webinspect_settings)
-        #     handle_scan_event('scan_start')
-        #     Logger.app.debug("Starting scan handling")
-        #     Logger.app.info("Execution is waiting on scan status change")
-        #     with scan_running():
-        #         self.webinspect_api.wait_for_scan_status_change(scan_id)  # execution waits here, blocking call
-        #     status = self.webinspect_api.get_scan_status(scan_id)
-        #     Logger.app.info("Scan status has changed to {0}.".format(status))
-        #
-        #     if status.lower() != 'complete':  # case insensitive comparison is tricky. this should be good enough for now
-        #         Logger.app.error(
-        #             "See the WebInspect server scan log --> {}, typically the application to be scanned is "
-        #             "unavailable.".format(WebInspectConfig().endpoints))
-        #         Logger.app.error('Scan is incomplete and is unrecoverable. WebBreaker will exit!!')
-        #         handle_scan_event('scan_end')
-        #         sys.exit(ExitStatus.failure)
-
-# handle_scan_event = None
-
-#
-# # Use a closure for events related to scan status changes
-# def create_scan_event_handler(self.webinspect_api, scan_id, webinspect_settings):
-#     def scan_event_handler(event_type, external_termination=False):
-#         try:
-#             event = {}
-#             event['scanid'] = scan_id
-#             event['server'] = self.webinspect_api.setting_overrides.endpoint
-#             event['scanname'] = webinspect_settings['webinspect_scan_name']
-#             event['event'] = event_type
-#             event['timestamp'] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-#             event['subject'] = 'WebBreaker ' + event['event']
-#
-#             if webinspect_settings['webinspect_allowed_hosts']:
-#                 event['targets'] = webinspect_settings['webinspect_allowed_hosts']
-#             else:
-#                 event['targets'] = webinspect_settings['webinspect_scan_targets']
-#
-#             if external_termination:
-#                 self.webinspect_api.stop_scan(scan_id)
-#         except Exception as e:
-#             Logger.console.error("Oh no: {}".format(e))
-#
-#     return scan_event_handler
-#
-#
-# # Special function here - called only when we're in a context (defined below) of intercepting process-termination
-# # signals. If, while a scan is executing, WebBreaker receives a termination signal from the OS, we want to
-# # handle that as a scan-end event prior to terminating. So, this function will be called by the python signal
-# # handler within the scan-running context.
-# def write_end_event(*args):
-#     handle_scan_event('scan_end', external_termination=True)
-#     os._exit(0)
-#
-#
-# @contextmanager
-# def scan_running():
-#     # Intercept the "please terminate" signals
-#     original_sigint_handler = getsignal(SIGINT)
-#     original_sigabrt_handler = getsignal(SIGABRT)
-#     original_sigterm_handler = getsignal(SIGTERM)
-#     for sig in (SIGABRT, SIGINT, SIGTERM):
-#         signal(sig, write_end_event)
-#     try:
-#         yield
-#     except:
-#         raise
-#     finally:
-#         # Go back to normal signal handling
-#         signal(SIGABRT, original_sigabrt_handler)
-#         signal(SIGINT, original_sigint_handler)
-#         signal(SIGTERM, original_sigterm_handler)
-#
-#
-# if __name__ == '__main__':
-#     pass
-#
+    def _stop_scan(self, scan_id):
+        self.webinspect_api.stop_scan(scan_id)

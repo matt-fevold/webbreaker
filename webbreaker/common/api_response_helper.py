@@ -39,7 +39,7 @@ class APIHelper:
         if response.success:
             pass
         else:
-            Logger.app.error("The call to the API was not successful: {} {}".format(response.message, response.data))
+            Logger.app.error("The call to the API was not successful: {}".format(response.message))
             if error_message is not None:
                 Logger.app.error(error_message)
 

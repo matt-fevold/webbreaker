@@ -41,7 +41,6 @@ class WebInspectAPIHelper(object):
             self.host = self.setting_overrides.endpoint
 
         self._set_api()
-
         Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
 
     def _set_api(self):
@@ -52,20 +51,21 @@ class WebInspectAPIHelper(object):
     def _trim_ext(file):
         return os.path.splitext(os.path.basename(file))[0]
 
-    def __settings_exists__(self):
-        try:
-            response = self.api.list_settings()
-
-            APIHelper().check_for_response_errors(response)
-
-            for setting in response.data:
-                if setting in self.setting_overrides.settings:
-                    return True
-
-        except (ValueError, UnboundLocalError) as e:
-            Logger.app.error("Unable to determine if setting file exists, scan will continue without setting!"
-                             "Error: {}".format(e))
-        return False
+    # not being used - commented out for now - DURING PR YELL AT SOMEONE
+    # def __settings_exists__(self):
+    #     try:
+    #         response = self.api.list_settings()
+    #
+    #         APIHelper().check_for_response_errors(response)
+    #
+    #         for setting in response.data:
+    #             if setting in self.setting_overrides.settings:
+    #                 return True
+    #
+    #     except (ValueError, UnboundLocalError) as e:
+    #         Logger.app.error("Unable to determine if setting file exists, scan will continue without setting!"
+    #                          "Error: {}".format(e))
+    #    return False
 
     def create_scan(self):
         """

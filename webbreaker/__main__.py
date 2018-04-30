@@ -130,6 +130,10 @@ def webinspect():
 @click.option('--start_urls',
               multiple=True,
               help="Assign starting url(s)")
+@click.option('--timeout',
+              default=0,
+              type=int,
+              help="Timeout value for webinspect scan. Value is in seconds.")
 # Deprecated as of 2.1.9, these options are set from scan via git repo. ^.^
 @click.option('--upload_policy',
               help="Upload policy file to WebInspect")
