@@ -51,22 +51,6 @@ class WebInspectAPIHelper(object):
     def _trim_ext(file):
         return os.path.splitext(os.path.basename(file))[0]
 
-    # not being used - commented out for now - DURING PR YELL AT SOMEONE
-    # def __settings_exists__(self):
-    #     try:
-    #         response = self.api.list_settings()
-    #
-    #         APIHelper().check_for_response_errors(response)
-    #
-    #         for setting in response.data:
-    #             if setting in self.setting_overrides.settings:
-    #                 return True
-    #
-    #     except (ValueError, UnboundLocalError) as e:
-    #         Logger.app.error("Unable to determine if setting file exists, scan will continue without setting!"
-    #                          "Error: {}".format(e))
-    #    return False
-
     def create_scan(self):
         """
         Launches and monitors a scan
@@ -243,19 +227,6 @@ class WebInspectAPIHelper(object):
         except (ValueError, UnboundLocalError) as e:
             webinspect_logexceptionhelp.log_error_uploading("webmacro", e)
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
-
-    # Deprocated as of 2.1.20
-    # def wait_for_scan_status_change(self, scan_id):
-    #     """
-    #     Blocking call, will remain in this method until status of scan changes
-    #     :param scan_id:
-    #     :return:
-    #     """
-    #     # WebInspect Scan has started, wait here until it's done
-    #     response = self.api.wait_for_status_change(scan_id)  # this line is the blocker
-    #     APIHelper().check_for_response_errors(response)
-    #
-    #     Logger.console.debug('Scan status {}'.format(response.data))
 
     def verify_scan_policy(self, config):
         try:
