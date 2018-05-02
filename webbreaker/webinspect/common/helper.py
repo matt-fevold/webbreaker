@@ -244,17 +244,18 @@ class WebInspectAPIHelper(object):
             webinspect_logexceptionhelp.log_error_uploading("webmacro", e)
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
-    def wait_for_scan_status_change(self, scan_id):
-        """
-        Blocking call, will remain in this method until status of scan changes
-        :param scan_id:
-        :return:
-        """
-        # WebInspect Scan has started, wait here until it's done
-        response = self.api.wait_for_status_change(scan_id)  # this line is the blocker
-        APIHelper().check_for_response_errors(response)
-
-        Logger.console.debug('Scan status {}'.format(response.data))
+    # Deprocated as of 2.1.20
+    # def wait_for_scan_status_change(self, scan_id):
+    #     """
+    #     Blocking call, will remain in this method until status of scan changes
+    #     :param scan_id:
+    #     :return:
+    #     """
+    #     # WebInspect Scan has started, wait here until it's done
+    #     response = self.api.wait_for_status_change(scan_id)  # this line is the blocker
+    #     APIHelper().check_for_response_errors(response)
+    #
+    #     Logger.console.debug('Scan status {}'.format(response.data))
 
     def verify_scan_policy(self, config):
         try:

@@ -60,7 +60,8 @@ class WebInspectConfig(object):
     def __init__(self):
         Logger.app.debug("Starting webinspect config initialization")
         try:
-            webinspect_dict = self.__get_webinspect_settings__()
+            webinspect_dict = self._get_webinspect_settings()
+            
             self.endpoints = webinspect_dict['endpoints']
             self.webinspect_git = webinspect_dict['git']
             self.mapped_policies = webinspect_dict['mapped_policies']
@@ -69,14 +70,14 @@ class WebInspectConfig(object):
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
 
-    def __get_webinspect_settings__(self):
+    def _get_webinspect_settings(self):
         Logger.app.debug("Getting webinspect settings from config file")
-        webinspect_dict = {}
-        wb_config = Config()
-        webinspect_setting = wb_config.config
+        settings_dict = {}
+        webinspect_config = Config()
+        config_file = webinspect_config.config
 
         try:
-            config.read(webinspect_setting)
+            config.read(config_file)
             endpoints = []
             sizes = []
             endpoint = re.compile('endpoint_\d*')
@@ -88,26 +89,26 @@ class WebInspectConfig(object):
                 elif size.match(option[0]):
                     sizes.append([option[0], option[1]])
 
-            webinspect_dict['git'] = wb_config.conf_get('webinspect', 'git_repo')
+            settings_dict['git'] = webinspect_config.conf_get('webinspect', 'git_repo')
 
-            webinspect_dict['endpoints'] = [[endpoint[1].split('|')[0], endpoint[1].split('|')[1]] for endpoint in
+            settings_dict['endpoints'] = [[endpoint[1].split('|')[0], endpoint[1].split('|')[1]] for endpoint in
                                             endpoints]
 
-            webinspect_dict['size_list'] = sizes
+            settings_dict['size_list'] = sizes
 
-            webinspect_dict['mapped_policies'] = [[option, config.get('webinspect_policy', option)] for option in
+            settings_dict['mapped_policies'] = [[option, config.get('webinspect_policy', option)] for option in
                                                   config.options('webinspect_policy')]
 
-            webinspect_dict['verify_ssl'] = wb_config.conf_get('webinspect', 'verify_ssl')
+            settings_dict['verify_ssl'] = webinspect_config.conf_get('webinspect', 'verify_ssl')
 
         except (configparser.NoOptionError, CalledProcessError) as e:
-            Logger.app.error("{} has incorrect or missing values {}".format(webinspect_setting, e))
+            Logger.app.error("{} has incorrect or missing values {}".format(config_file, e))
         except configparser.Error as e:
-            Logger.app.error("Error reading webinspect settings {} {}".format(webinspect_setting, e))
+            Logger.app.error("Error reading webinspect settings {} {}".format(config_file, e))
         Logger.app.debug("Initializing webinspect settings from config.ini")
-        return webinspect_dict
+        return settings_dict
 
-    def __getScanTargets__(self, settings_file_path):
+    def _get_scan_targets(self, settings_file_path):
         """
         Given a settings file at the provided path, return a set containing
         the targets for the scan.
@@ -139,7 +140,7 @@ class WebInspectConfig(object):
     def parse_webinspect_options(self, options):
         try:
             webinspect_dir = Config().git
-            webinspect_dict = {}
+            settings_dict = {}
 
             # Trim .xml
             options['settings'] = self.trim_ext(options['settings'])
@@ -266,7 +267,7 @@ class WebInspectConfig(object):
             # Determine the targets specified in a settings file
             try:
                 if options['upload_settings']:
-                    targets = self.__getScanTargets__(options['upload_settings'])
+                    targets = self._get_scan_targets(options['upload_settings'])
                 else:
                     targets = None
             except NameError as e:
@@ -277,22 +278,22 @@ class WebInspectConfig(object):
                 options['allowed_hosts'] = options['start_urls']
 
             try:
-                webinspect_dict['webinspect_settings'] = options['settings']
-                webinspect_dict['webinspect_scan_name'] = options['scan_name']
-                webinspect_dict['webinspect_upload_settings'] = options['upload_settings']
-                webinspect_dict['webinspect_upload_policy'] = options['upload_policy']
-                webinspect_dict['webinspect_upload_webmacros'] = options['upload_webmacros']
-                webinspect_dict['webinspect_overrides_scan_mode'] = options['scan_mode']
-                webinspect_dict['webinspect_overrides_scan_scope'] = options['scan_scope']
-                webinspect_dict['webinspect_overrides_login_macro'] = options['login_macro']
-                webinspect_dict['webinspect_overrides_scan_policy'] = options['scan_policy']
-                webinspect_dict['webinspect_overrides_scan_start'] = options['scan_start']
-                webinspect_dict['webinspect_overrides_start_urls'] = options['start_urls']
-                webinspect_dict['webinspect_scan_targets'] = targets
-                webinspect_dict['webinspect_workflow_macros'] = options['workflow_macros']
-                webinspect_dict['webinspect_allowed_hosts'] = options['allowed_hosts']
-                webinspect_dict['webinspect_scan_size'] = options['size']
-                webinspect_dict['fortify_user'] = options['fortify_user']
+                settings_dict['webinspect_settings'] = options['settings']
+                settings_dict['webinspect_scan_name'] = options['scan_name']
+                settings_dict['webinspect_upload_settings'] = options['upload_settings']
+                settings_dict['webinspect_upload_policy'] = options['upload_policy']
+                settings_dict['webinspect_upload_webmacros'] = options['upload_webmacros']
+                settings_dict['webinspect_overrides_scan_mode'] = options['scan_mode']
+                settings_dict['webinspect_overrides_scan_scope'] = options['scan_scope']
+                settings_dict['webinspect_overrides_login_macro'] = options['login_macro']
+                settings_dict['webinspect_overrides_scan_policy'] = options['scan_policy']
+                settings_dict['webinspect_overrides_scan_start'] = options['scan_start']
+                settings_dict['webinspect_overrides_start_urls'] = options['start_urls']
+                settings_dict['webinspect_scan_targets'] = targets
+                settings_dict['webinspect_workflow_macros'] = options['workflow_macros']
+                settings_dict['webinspect_allowed_hosts'] = options['allowed_hosts']
+                settings_dict['webinspect_scan_size'] = options['size']
+                settings_dict['fortify_user'] = options['fortify_user']
 
             except argparse.ArgumentError as e:
                 webinspectloghelper.log_error_in_options(e)
@@ -301,8 +302,9 @@ class WebInspectConfig(object):
             raise
 
         Logger.app.debug("Completed webinspect settings parse")
-        return webinspect_dict
+        return settings_dict
 
+    # TODO - move this to scan along with the other functions that only are used there.
     def fetch_webinspect_configs(self, options):
         config_helper = Config()
         etc_dir = config_helper.etc
@@ -366,6 +368,7 @@ class WebInspectConfig(object):
             fortifyloghelper.log_error_invalid_ssl()
             sys.exit(ExitStatus.failure)
 
+    # TODO find a permanent home for this function
     def trim_ext(self, file):
         if type(file) is list:
             result = []

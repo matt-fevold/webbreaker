@@ -118,7 +118,7 @@ class WebInspectScan:
             self._stop_scan(self.scan_id)
             exit(ExitStatus.failure)
 
-        Logger.app.info("Webbreaker WebInspect has completed.")
+        Logger.app.info("Webbreaker WebInspect Scan has completed.")
 
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
@@ -143,6 +143,8 @@ class WebInspectScan:
 
     def _stop_scan(self, scan_id):
         self.webinspect_api.stop_scan(scan_id)
+
+
 
     # below functions are for handling someone forcefully ending webbreaker.
     def _exit_scan_gracefully(self, *args):
@@ -175,3 +177,5 @@ class WebInspectScan:
         signal(SIGABRT, original_sigabrt_handler)
         signal(SIGINT, original_sigint_handler)
         signal(SIGTERM, original_sigterm_handler)
+
+
