@@ -19,8 +19,7 @@ class FortifyList:
         self.config = FortifyConfig()
 
         self.username, self.password = FortifyAuth().authenticate(username, password)
-        self.application_name = self.config.application_name
-        self.list(self.application_name)
+        self.list(application_name)
 
     def list(self, application_name):
         """
