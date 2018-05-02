@@ -1,10 +1,9 @@
 from webbreaker.threadfix.common.helper import ThreadFixHelper
 from webbreaker.common.api_response_helper import APIHelper
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from webbreaker.common.logexceptionhelper import LogInfoHelper
+from webbreaker.threadfix.common.loghelper import ThreadFixLogHelper
 
-logexceptionhelper = LogExceptionHelper()
-loginfohelper = LogInfoHelper()
+threadfixloghelper = ThreadFixLogHelper()
+
 
 class ThreadFixScans(object):
     def __init__(self, app_id):
@@ -18,10 +17,10 @@ class ThreadFixScans(object):
             print("{0:10} {1:30} {2:30}".format('-' * 10, '-' * 30, '-' * 30))
             for scan in scans:
                 print("{0:^10} {1:30} {2:30}".format(scan['id'], scan['scannerName'], scan['filename']))
-            loginfohelper.LogInfoThreadfixScansListedSuccess()
+            threadfixloghelper.log_info_threadfix_scans_listed_success()
             print('\n\n')
         else:
-            logexceptionhelper.LogErrorNoScansFoundWithAppId(app_id)
+            threadfixloghelper.log_error_no_scans_found_with_app_id(app_id)
 
     def _list_scans_by_app(self, app_id):
         api = self.helper.api
