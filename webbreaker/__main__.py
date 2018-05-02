@@ -30,7 +30,7 @@ from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.fortify.download import FortifyDownload
 from webbreaker.fortify.list import FortifyList
 from webbreaker.fortify.upload import FortifyUpload
-from webbreaker.common.logexceptionhelper import LogExceptionHelper, LogInfoHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.download import WebInspectDownload
 from webbreaker.webinspect.wiswag import WebInspectWiswag
@@ -47,8 +47,8 @@ from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
 fortifyloghelper = FortifyLogHelper()
 
-logexceptionhelper = LogExceptionHelper()
-loginfohelper = LogInfoHelper()
+loghelper = LogExceptionHelper()
+# loginfohelper = LogInfoHelper()
 
 try:
     from git.exc import GitCommandError
@@ -345,7 +345,7 @@ def admin_credentials(fortify, webinspect, clear, username, password):
             if username and password:
                 try:
                     fortify_auth.write_credentials(username, password)
-                    loginfohelper.log_info_credentials_store_success()
+                    loghelper.log_info_credentials_store_success()
 
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()
@@ -354,7 +354,7 @@ def admin_credentials(fortify, webinspect, clear, username, password):
                 username, password = auth_prompt("Fortify")
                 try:
                     fortify_auth.write_credentials(username, password)
-                    loginfohelper.log_info_credentials_store_success()
+                    loghelper.log_info_credentials_store_success()
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()
 
@@ -362,12 +362,12 @@ def admin_credentials(fortify, webinspect, clear, username, password):
         webinspect_auth = WebInspectAuth()
         if clear:
             webinspect_auth.clear_credentials()
-            loginfohelper.log_info_webinspect_credential_clear_success()
+            loghelper.log_info_webinspect_credential_clear_success()
         else:
             if username and password:
                 try:
                     webinspect_auth.write_credentials(username, password)
-                    loginfohelper.log_info_credentials_store_success()
+                    loghelper.log_info_credentials_store_success()
 
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()
@@ -376,7 +376,7 @@ def admin_credentials(fortify, webinspect, clear, username, password):
                 username, password = auth_prompt("WebInspect")
                 try:
                     webinspect_auth.write_credentials(username, password)
-                    loginfohelper.log_info_credentials_store_success()
+                    loghelper.log_info_credentials_store_success()
 
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()

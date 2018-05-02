@@ -1,9 +1,8 @@
 from webbreaker.threadfix.common.helper import ThreadFixHelper
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from webbreaker.common.logexceptionhelper import LogInfoHelper
+from webbreaker.threadfix.common.loghelper import ThreadFixLogHelper
 
-loginfohelper = LogInfoHelper()
-logexceptionhelper = LogExceptionHelper()
+threadfixloghelper = ThreadFixLogHelper()
+
 
 class ThreadFixTeams(object):
     def __init__(self):
@@ -17,7 +16,7 @@ class ThreadFixTeams(object):
             print("{0:10} {1:30}".format('-' * 10, '-' * 30))
             for team in teams:
                 print("{0:^10} {1:30}".format(team['id'], team['name']))
-            loginfohelper.LogInfoThreadfixTeamsListedSuccess()
+            threadfixloghelper.log_info_threadfix_teams_listed_success()
             print('\n\n')
         else:
-            logexceptionhelper.LogErrorNoTeam()
+            threadfixloghelper.log_error_no_team()

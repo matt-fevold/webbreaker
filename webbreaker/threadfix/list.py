@@ -1,9 +1,7 @@
 from webbreaker.threadfix.common.helper import ThreadFixHelper
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from webbreaker.common.logexceptionhelper import LogInfoHelper
+from webbreaker.threadfix.common.loghelper import ThreadFixLogHelper
 
-loginfohelper = LogInfoHelper()
-logexceptionhelper = LogExceptionHelper()
+threadfixloghelper = ThreadFixLogHelper()
 
 
 class ThreadFixList(object):
@@ -20,7 +18,7 @@ class ThreadFixList(object):
                 for app in applications:
                     print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
                 print('\n\n')
-                loginfohelper.LogInfoThreadfixListSuccess()
+                threadfixloghelper.log_info_threadfix_list_success()
             else:
                 query_info = ''
                 if team is not None:
@@ -30,6 +28,6 @@ class ThreadFixList(object):
                         query_info = ' with application name matching {}'.format(application)
                     else:
                         query_info = query_info + ' and application name matching {}'.format(application)
-                loginfohelper.LogInfoNoApplicationFound(query_info)
+                threadfixloghelper.log_info_no_application_found(query_info)
         else:
-            logexceptionhelper.LogErrorAPITokenAssociatedWithLocalAccount()
+            threadfixloghelper.log_error_api_token_associated_with_local_account()
