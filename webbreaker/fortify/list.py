@@ -19,7 +19,8 @@ class FortifyList:
         self.config = FortifyConfig()
 
         self.username, self.password = FortifyAuth().authenticate(username, password)
-        self.list(application_name)
+        self.application_name = self.config.application_name
+        self.list(self.application_name)
 
     def list(self, application_name):
         """
@@ -43,6 +44,7 @@ class FortifyList:
                                        fortify_username=self.username,
                                        fortify_password=self.password)
         response_data = fortify_helper.get_applications_and_versions()
+        print("response_data ", response_data)
 
         print("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
         print("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
