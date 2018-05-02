@@ -44,7 +44,6 @@ class FortifyList:
                                        fortify_username=self.username,
                                        fortify_password=self.password)
         response_data = fortify_helper.get_applications_and_versions()
-        print("response_data ", response_data)
 
         print("{0:^8} {1:30} {2:30}".format('ID', 'Application', 'Version'))
         print("{0:8} {1:30} {2:30}".format('-' * 8, '-' * 30, '-' * 30))
