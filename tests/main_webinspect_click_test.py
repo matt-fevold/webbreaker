@@ -168,18 +168,6 @@ def test_webinspect_scan(scan_mock, runner):
 
 
 @mock.patch('webbreaker.__main__.WebInspectScan.__init__')
-def test_webinspect_scan_timeout(scan_mock, runner):
-    scan_mock.return_value = None
-
-    runner.invoke(webbreaker, ['webinspect', 'scan', '--timeout', 5])
-
-    scan_mock.assert_called_once_with({'username': None, 'start_urls': (), 'scan_scope': None, 'upload_policy': None,
-                                       'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
-                                       'upload_settings': None, 'password': None, 'size': 'large', 'settings': 'Default',
-                                       'scan_name': None, 'login_macro': None, 'scan_policy': None, 'allowed_hosts': (),
-                                       'fortify_user': None, 'scan_mode': None, 'timeout': 5})
-
-@mock.patch('webbreaker.__main__.WebInspectScan.__init__')
 def test_webinspect_scan_custom_settings(scan_mock, runner):
     scan_mock.return_value = None
 
@@ -190,7 +178,7 @@ def test_webinspect_scan_custom_settings(scan_mock, runner):
                                        'upload_settings': None, 'password': None, 'size': 'large',
                                        'settings': 'important_site_auth', 'scan_name': None, 'login_macro': None,
                                        'scan_policy': None, 'allowed_hosts': (), 'fortify_user': None,
-                                       'scan_mode': None, 'timeout': 0})
+                                       'scan_mode': None})
 
 
 @mock.patch('webbreaker.__main__.WebInspectScan.__init__')
@@ -205,7 +193,7 @@ def test_webinspect_scan_custom_settings_with_username_password(scan_mock, runne
                                        'upload_settings': None, 'password': 'pass', 'size': 'large',
                                        'settings': 'important_site_auth', 'scan_name': None, 'login_macro': None,
                                        'scan_policy': None, 'allowed_hosts': (), 'fortify_user': None,
-                                       'scan_mode': None, 'timeout': 0})
+                                       'scan_mode': None})
 
 
 @mock.patch('webbreaker.__main__.WebInspectScan.__init__')
@@ -220,7 +208,7 @@ def test_webinspect_scan_custom_settings_with_two_allowed_hosts(scan_mock, runne
                                        'upload_settings': None, 'password': None, 'size': 'large',
                                        'settings': 'important_site_auth', 'scan_name': None, 'login_macro': None,
                                        'scan_policy': None, 'allowed_hosts': ('example.com', 'example1.com',),
-                                       'fortify_user': None, 'scan_mode': None, 'timeout': 0})
+                                       'fortify_user': None, 'scan_mode': None})
 
 
 @mock.patch('webbreaker.__main__.WebInspectScan.__init__')
@@ -234,7 +222,7 @@ def test_webinspect_scan_local_custom_settings(scan_mock, runner):
                                        'upload_settings': None, 'password': None, 'size': 'large',
                                        'settings': '/users/me/important_site_auth', 'scan_name': None,
                                        'login_macro': None, 'scan_policy': None, 'allowed_hosts': (),
-                                       'fortify_user': None, 'scan_mode': None, 'timeout': 0})
+                                       'fortify_user': None, 'scan_mode': None})
 
 
 @mock.patch('webbreaker.webinspect.list_servers.WebInspectConfig')
