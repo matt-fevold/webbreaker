@@ -126,9 +126,10 @@ class WebInspectJitScheduler(object):
         :param endpoint: The endpoint to evaluate
         :param max_concurrent_scans:  The max number of allowed scans to be running on the endpoint
         """
-
         api = webinspectapi.WebInspectApi(webinspect_endpoint[0], verify_ssl=False,
                                           username=self.username, password=self.password)
+
+
         # list_running_scans is in version 1.0.31 webinspectapi
         response = api.list_running_scans()
 

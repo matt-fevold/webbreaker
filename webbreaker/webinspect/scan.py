@@ -38,11 +38,11 @@ class WebInspectScan:
     def __init__(self, overrides):
         # used for multi threading the _is_available API call
         self._results_queue = queue.Queue()
-        self.timeout = overrides['timeout']  # Default is 0 which is no timeout
 
         # run the scan
         self.scan(overrides)
 
+    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def _set_config_(self):
         self.config = WebInspectConfig()
         Logger.app.debug("Webinspect Config: {}".format(self.config))
@@ -70,8 +70,6 @@ class WebInspectScan:
             # ...and settings...
         webinspect_settings = self.config.parse_webinspect_options(overrides)
 
-        # OK, we're ready to actually do something now
-
         # The webinspect client is our point of interaction with the webinspect server farm
         self.webinspect_api = WebInspectAPIHelper(username=username, password=password, webinspect_setting_overrides=webinspect_settings)
 
@@ -90,21 +88,17 @@ class WebInspectScan:
             self.webinspect_api.upload_policy()
 
         try:
-            Logger.app.info("Launching a scan")
+            Logger.app.info("Running WebInspect Scan")
             self.scan_id = self.webinspect_api.create_scan()  # it is self.scan to properly handle an exit event - find a better way
 
             # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
             pool.imap_unordered(self._scan, [self.scan_id])
-            #Logger.app.info("Waiting for scan completion...")
 
             # context manager to handle interrupts properly
             with self._termination_event_handler():
                 # block until scan completion.
-                if self.timeout == 0:  # 0 means never timeout
-                    self._results_queue.get(block=True)
-                else:  # timeout after user specified value.
-                    self._results_queue.get(block=True, timeout=self.timeout)
+                self._results_queue.get(block=True)
 
             # kill thread
             pool.terminate()
@@ -116,11 +110,11 @@ class WebInspectScan:
                 "WebInspect scan was not properly configured, unable to launch!! see also: {}".format(e))
             raise
         except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
-            Logger.app.error("The WebInspect scan has timed out after {} seconds.".format(self.timeout))
+            Logger.app.error("The WebInspect server is unreachable after several retries: {}!".format(e))
             self._stop_scan(self.scan_id)
             exit(ExitStatus.failure)
 
-        Logger.app.info("Webbreaker WebInspect Scan has completed.")
+        Logger.app.info("WebInspect Scan Complete.")
 
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
@@ -138,10 +132,10 @@ class WebInspectScan:
 
             if current_status.lower() == 'complete':
                 scan_complete = True
+                # Now let's download or export the scan artifact in two formats
                 self.webinspect_api.export_scan_results(scan_id, 'fpr')
                 self.webinspect_api.export_scan_results(scan_id, 'xml')
                 self._results_queue.put('complete', block=False)
-                # Now let's download or export the scan artifact in two formats
                 # TODO add json export
 
     def _stop_scan(self, scan_id):
