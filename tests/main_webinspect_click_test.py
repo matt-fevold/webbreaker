@@ -164,7 +164,7 @@ def test_webinspect_scan(scan_mock, runner):
                                        'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
                                        'upload_settings': None, 'password': None, 'size': 'large', 'settings': 'Default',
                                        'scan_name': None, 'login_macro': None, 'scan_policy': None, 'allowed_hosts': (),
-                                       'fortify_user': None, 'scan_mode': None, 'timeout': 0})
+                                       'fortify_user': None, 'scan_mode': None})
 
 
 @mock.patch('webbreaker.__main__.WebInspectScan.__init__')
