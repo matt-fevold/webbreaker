@@ -21,14 +21,15 @@ def test_scan_success(auth_mock, config_mock, api_mock, create_scan_api_mock):
     api_mock.return_value.get_scan_status.return_value = 'complete'
 
     #
-    api_mock.return_value.wait_for_scan_status_change = create_scan_api_mock
+    api_mock.return_value.create_scan = create_scan_api_mock
 
     overrides = {
         'username': None,
         'password': None,
         'allowed_hosts': (),
         'start_urls': (),
-        'workflow_macros': ()
+        'workflow_macros': (),
+        'timeout': 0
     }
 
     WebInspectScan(overrides)
