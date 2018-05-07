@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
-import click
 from contextlib import contextmanager
 from exitstatus import ExitStatus
 from multiprocessing.dummy import Pool as ThreadPool

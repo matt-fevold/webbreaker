@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
+from pybreaker import CircuitBreaker
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webbreaker.common.webbreakerlogger import Logger
 
 
+@CircuitBreaker(fail_max=5, reset_timeout=60)
 class WebInspectListScans:
     def __init__(self, scan_name, server, username, password):
         self.list_scans(scan_name, server, username, password)
