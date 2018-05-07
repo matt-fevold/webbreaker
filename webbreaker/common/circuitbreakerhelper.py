@@ -13,19 +13,19 @@ class CircuitBreakerHelper(CircuitBreaker):
 class APIListener(CircuitBreakerListener):
     "Listener used by circuit breakers that execute api operations."
 
-    def before_call(self, cb, func, *args, **kwargs):
+    def before_call(self, callback, func, *args, **kwargs):
         "Called before the circuit breaker `cb` calls `func`."
         pass
 
-    def state_change(self, cb, old_state, new_state):
+    def state_change(self, callback, old_state, new_state):
         "Called when the circuit breaker `cb` state changes."
         pass
 
-    def failure(self, cb, exc):
+    def failure(self, callback, execution):
         "Called when a function invocation raises a system error."
         pass
 
-    def success(self, cb):
+    def success(self, callback):
         "Called when a function invocation succeeds."
         pass
 
@@ -33,6 +33,6 @@ class APIListener(CircuitBreakerListener):
 class LogListener(CircuitBreakerListener):
     "Listener used to log circuit breaker events."
 
-    def state_change(self, cb, old_state, new_state):
-        msg = "State Change: callback: {0}, New State: {1}".format(cb.name, new_state)
-        Logger.app.info("{}".format(msg))
+    def state_change(self, callback, old_state, new_state):
+        msg = "State Change: callback: {0}, New State: {1}".format(callback.name, new_state)
+        Logger.app.error("{}".format(msg))
