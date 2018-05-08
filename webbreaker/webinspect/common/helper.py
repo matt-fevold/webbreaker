@@ -101,9 +101,6 @@ class WebInspectAPIHelper(object):
         response = self.api.export_scan_format(scan_id, extension, detail_type)
         #APIHelper().check_for_response_errors(response)
 
-        #if self.setting_overrides is not None:
-        #    scan_name = self.setting_overrides.scan_name
-
         try:
             with open('{0}.{1}'.format(scan_name, extension), 'wb') as f:
                 Logger.app.debug(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
