@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
+from pybreaker import CircuitBreaker
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
@@ -10,12 +11,12 @@ from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 webinspect_logexceptionhelper = WebInspectLogHelper()
 
 
-
 class WebInspectDownload:
     def __init__(self, server, scan_name, scan_id, extension, username, password):
         self.download(server, scan_name, scan_id, extension, username, password)
 
     @staticmethod
+    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def download(server, scan_name, scan_id, extension, username, password):
         try:
             auth_config = WebInspectAuth()
