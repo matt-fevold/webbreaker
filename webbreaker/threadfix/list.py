@@ -17,7 +17,6 @@ class ThreadFixList(object):
                 print("{0:10} {1:55} {2:30}".format('-' * 10, '-' * 55, '-' * 30))
                 for app in applications:
                     print("{0:^10} {1:55} {2:30}".format(app['app_id'], app['team_name'], app['app_name']))
-                print('\n\n')
                 threadfixloghelper.log_info_threadfix_list_success()
             else:
                 query_info = ''

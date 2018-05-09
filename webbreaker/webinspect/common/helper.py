@@ -3,9 +3,6 @@
 
 import os
 import json
-
-import os
-import json
 from pybreaker import CircuitBreaker
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
@@ -28,7 +25,7 @@ webinspect_logexceptionhelp = WebInspectLogHelper()
 
 
 class WebInspectAPIHelper(object):
-    def __init__(self, host=None, username=None, password=None, webinspect_setting_overrides=None):
+    def __init__(self, host=None, username=None, password=None, webinspect_setting_overrides=None, silent=False):
         # If a host is passed then we are doing a download or a list,  otherwise a scan.
         self.host = host
         self.username = username
@@ -41,7 +38,8 @@ class WebInspectAPIHelper(object):
             self.host = self.setting_overrides.endpoint
 
         self._set_api()
-        Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
+        if silent is False:  # want to be able to hide this output for multithreading
+            Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
 
     def _set_api(self):
         self.api = WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
@@ -101,7 +99,8 @@ class WebInspectAPIHelper(object):
         response = self.api.export_scan_format(scan_id, extension, detail_type)
         #APIHelper().check_for_response_errors(response)
 
-        if self.setting_overrides is not None:
+	# setting_overrides is on a webinspect scan
+        if scan_name == None:
             scan_name = self.setting_overrides.scan_name
 
         try:
@@ -111,6 +110,7 @@ class WebInspectAPIHelper(object):
                 print(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
         except (UnboundLocalError, IOError) as e:
             Logger.app.error('Error saving file locally! {}'.format(e))
+	
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_policy_by_guid(self, policy_guid):
@@ -173,11 +173,20 @@ class WebInspectAPIHelper(object):
             Logger.app.error("There was an error listing WebInspect scans! {}".format(e))
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
+    def list_running_scans(self):
+        """
+        List all running scans on host
+        :return:
+        """
+        response = self.api.list_running_scans()
+
+        return response
+
+    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def policy_exists(self, policy_guid):
         # true if policy exists
         response = self.api.get_policy_by_guid(policy_guid)
         #APIHelper().check_for_response_errors(response)
-
         return response.success
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)

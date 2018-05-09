@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
+
 import sys
 from exitstatus import ExitStatus
-import webinspectapi.webinspect as webinspectapi
+# deviating from standard style to remove circular dependency problem.
+import webbreaker.webinspect.common.helper
+from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.common.confighelper import Config
 
 from webbreaker.common.webbreakerlogger import Logger
@@ -36,13 +38,15 @@ class WebInspectJitScheduler(object):
         :param password:
         """
         self.endpoints = endpoints
-        self.username = username
-        self.password = password
+
+        auth_config = WebInspectAuth()
+        self.username, self.password = auth_config.authenticate(username, password)
+
         self.server_size_needed = self._convert_server_size_needed_to_int(server_size_needed)
 
         Logger.app.debug("endpoints: {}".format(self.endpoints))
         Logger.app.debug("username: {}".format(self.username))
-        Logger.app.debug("password: {}".format(len(self.password)*"*"))
+
         Logger.app.debug("server_size_needed: {}".format(self.server_size_needed))
 
         # used for multi threading the _is_available API call
@@ -126,13 +130,13 @@ class WebInspectJitScheduler(object):
         :param endpoint: The endpoint to evaluate
         :param max_concurrent_scans:  The max number of allowed scans to be running on the endpoint
         """
-        api = webinspectapi.WebInspectApi(webinspect_endpoint[0], verify_ssl=False,
-                                          username=self.username, password=self.password)
 
+        # Doing it kind of ugly - it removes a circular dependency issue, it's functionally the same as other uses of
+        #  WebInspectAPIHelper.
+        api = webbreaker.webinspect.common.helper.WebInspectAPIHelper(host=webinspect_endpoint[0], username=self.username, password=self.password, silent=True)
 
         # list_running_scans is in version 1.0.31 webinspectapi
         response = api.list_running_scans()
-
         if response.success:
             # response.data is amount of running scans. endpoint[1] is either 1 or 2,
             #                                               aka how many scans it can handle at once.
@@ -184,18 +188,3 @@ class NoServersAvailableError(Exception):
     def __init__(self):
         super(NoServersAvailableError, self).__init__("The JIT Scheduler found no available servers for this request.")
 
-
-# used for development purposes.
-if __name__ == '__main__':
-    from webbreaker.webinspect.authentication import WebInspectAuth
-    username, password = WebInspectAuth().authenticate(None, None)
-
-    scheduler = WebInspectJitScheduler([['some_server:8083', '1']],
-                                       'small', username, password)
-
-    try:
-        endpoint = scheduler.get_endpoint()
-    except NoServersAvailableError as e:
-        Logger.app.error(e)
-
-    # print("selected: {}".format(endpoint))
