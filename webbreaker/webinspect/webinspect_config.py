@@ -9,6 +9,7 @@ import string
 import re
 import xml.etree.ElementTree as ElementTree
 from exitstatus import ExitStatus
+from pybreaker import CircuitBreaker
 from subprocess import CalledProcessError, check_output
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
@@ -70,6 +71,7 @@ class WebInspectConfig(object):
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
 
+    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def _get_webinspect_settings(self):
         Logger.app.debug("Getting webinspect settings from config file")
         settings_dict = {}
@@ -82,24 +84,29 @@ class WebInspectConfig(object):
             sizes = []
             endpoint = re.compile('endpoint_\d*')
             size = re.compile('size_')
+            endpoint_dict = {endpoint, size}
 
             for option in config.items('webinspect'):
+                print(" HERE*****", option)
+                print("-------------------------")
+                print("  endpoint: option[0] ", endpoint.match(option[0]))
+                print("  endpoint: option[1] ", endpoint.match(option[1]))
                 if endpoint.match(option[0]):
                     endpoints.append([option[0], option[1]])
                 elif size.match(option[0]):
                     sizes.append([option[0], option[1]])
 
-            settings_dict['git'] = webinspect_config.conf_get('webinspect', 'git_repo')
+                settings_dict['git'] = webinspect_config.conf_get('webinspect', 'git_repo')
 
-            settings_dict['endpoints'] = [[endpoint[1].split('|')[0], endpoint[1].split('|')[1]] for endpoint in
-                                            endpoints]
+                settings_dict['endpoints'] = [[endpoint[1].split('|')[0], endpoint[1].split('|')[1]] for endpoint in
+                                                endpoints]
 
-            settings_dict['size_list'] = sizes
+                settings_dict['size_list'] = sizes
 
-            settings_dict['mapped_policies'] = [[option, config.get('webinspect_policy', option)] for option in
-                                                  config.options('webinspect_policy')]
+                settings_dict['mapped_policies'] = [[option, config.get('webinspect_policy', option)] for option in
+                                                      config.options('webinspect_policy')]
 
-            settings_dict['verify_ssl'] = webinspect_config.conf_get('webinspect', 'verify_ssl')
+                settings_dict['verify_ssl'] = webinspect_config.conf_get('webinspect', 'verify_ssl')
 
         except (configparser.NoOptionError, CalledProcessError) as e:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, e))

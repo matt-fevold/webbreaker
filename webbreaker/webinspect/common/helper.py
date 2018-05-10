@@ -343,6 +343,7 @@ class Overrides:
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_endpoint(self):
         config = WebInspectConfig()
+        print("  Endpoints : ", config.endpoints)
         lb = WebInspectJitScheduler(endpoints=config.endpoints,
                                     server_size_needed=self.scan_size,
                                     username=self.username,
