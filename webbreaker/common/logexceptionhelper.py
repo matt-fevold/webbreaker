@@ -26,3 +26,5 @@ class LogExceptionHelper(object):
 
     def log_info_webinspect_credential_clear_success(self):
         Logger.app.info("Successfully cleared WebInspect credentials from config.ini")
+
+

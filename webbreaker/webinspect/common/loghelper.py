@@ -48,3 +48,6 @@ class WebInspectLogHelper(object):
 
     def log_error_fetch_webinspect_configs(self):
         Logger.app.error("Fetching webinspect config")
+
+    def log_error_invalid_ssl(self):
+        Logger.app.error("'verify_ssl' must be either 'False' or a full valid CA Path.")

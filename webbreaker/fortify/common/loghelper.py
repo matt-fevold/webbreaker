@@ -22,8 +22,6 @@ class FortifyLogHelper(object):
     def log_error_reading(self, args, e):
         Logger.app.error("Error reading {} {}".format(args, e))
 
-    def log_error_invalid_ssl(self):
-        Logger.app.error("'verify_ssl' must be either 'False' or a full valid CA Path.")
 
     def log_error_duplicate_ssc_project_versioin(self):
         Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")
