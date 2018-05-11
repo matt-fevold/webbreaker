@@ -94,32 +94,38 @@ class WebInspectJitScheduler(object):
         Logger.app.debug("Searching for appropriately sized servers")
 
         correct_sized_endpoints = self._get_endpoints_of_the_right_size()
-        # correct_sized_endpoints = random.shuffle(correct_sized_endpoints)
-        # print("correct size ", correct_sized_endpoints)
         Logger.app.debug("correct_sized_endpoints: {}".format(correct_sized_endpoints))
 
-        # if there are no endpoints of that size.
-        if len(correct_sized_endpoints) == 0:
-            Logger.app.error("No servers of that size are available.")
-            raise NoServersAvailableError
+        # TODO REVERT
+        for endpoint in correct_sized_endpoints:
+            if self._is_endpoint_available(webinspect_endpoint=endpoint):
+                Logger.app.debug("Endpoint found: {}".format(endpoint))
+                return endpoint
 
-        pool = ThreadPool(len(correct_sized_endpoints))
+        return None
 
-        # start some threads - first to finish adds to a queue and that is what we return.
-        pool.imap_unordered(self._is_endpoint_available, correct_sized_endpoints)
-
-        try:
-            correct_sized_endpoint = self._results_queue.get(block=True, timeout=self.timeout)
-        except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
-            Logger.app.error("The search has timed out after {} seconds.".format(self.timeout))
-            raise NoServersAvailableError
-
-        Logger.app.debug("We have an endpoint: {}".format(correct_sized_endpoint))
-
-        # kill all running threads
-        pool.terminate()
-
-        return correct_sized_endpoint
+        # # if there are no endpoints of that size.
+        # if len(correct_sized_endpoints) == 0:
+        #     Logger.app.error("No servers of that size are available.")
+        #     raise NoServersAvailableError
+        #
+        # pool = ThreadPool(len(correct_sized_endpoints))
+        #
+        # # start some threads - first to finish adds to a queue and that is what we return.
+        # pool.imap_unordered(self._is_endpoint_available, correct_sized_endpoints)
+        #
+        # try:
+        #     correct_sized_endpoint = self._results_queue.get(block=True, timeout=self.timeout)
+        # except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
+        #     Logger.app.error("The search has timed out after {} seconds.".format(self.timeout))
+        #     raise NoServersAvailableError
+        #
+        # Logger.app.debug("We have an endpoint: {}".format(correct_sized_endpoint))
+        #
+        # # kill all running threads
+        # pool.terminate()
+        #
+        # return correct_sized_endpoint
 
     def _get_endpoints_of_the_right_size(self):
         """

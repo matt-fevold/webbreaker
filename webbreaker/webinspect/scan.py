@@ -90,18 +90,19 @@ class WebInspectScan:
         # TODO revert back to the old way
         try:
             Logger.app.info("Running WebInspect Scan")
+            self.scan_id = self.webinspect_api.create_scan()
 
             scan_complete = False
             while not scan_complete:
-                current_scan_status = self.webinspect_api.get_scan_status(scan_id)
-                scan_id = self.webinspect_api.create_scan()  # it is self.scan to properly handle an exit event - find a better way
-                print("scan id: ", scan_id)
 
-                current_scan_status = self.webinspect_api.get_scan_status(scan_id)
-                if scan_id:
+                current_scan_status = self.webinspect_api.get_scan_status(self.scan_id)
+                print("scan id: ", self.scan_id)
+
+                if self.scan_id:
                     Logger.app.info("Scan status: {}".format(current_scan_status))
-                elif current_scan_status.lower() != 'complete':
-                    Logger.app.info("status change: ".format(current_scan_status))
+                    if current_scan_status.lower() != 'complete':
+                        scan_complete = True
+                        Logger.app.info("status change: ".format(current_scan_status))
 
             # # Start a single thread so we can have a timeout functionality added.
             # pool = ThreadPool(1)
@@ -114,6 +115,10 @@ class WebInspectScan:
             #
             # # kill thread
             # pool.terminate()
+
+                self.webinspect_api.export_scan_results(self.scan_id, 'fpr')
+                self.webinspect_api.export_scan_results(self.scan_id, 'xml')
+                # self._stop_scan(self.scan_id)
 
         # TODO go through and make sure that all these exceptions happen - way too many
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
@@ -132,23 +137,23 @@ class WebInspectScan:
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
-    def _scan(self, scan_id):
-        # for multithreading we want to use the same server each request
-        self.webinspect_server = self.webinspect_api.setting_overrides.endpoint
-        self.webinspect_api.host = self.webinspect_server
-
-        scan_complete = False
-        while not scan_complete:
-            current_status = self.webinspect_api.get_scan_status(scan_id)
-
-            if current_status.lower() == 'complete':
-                scan_complete = True
-                # Now let's download or export the scan artifact in two formats
-                self.webinspect_api.export_scan_results(scan_id, 'fpr')
-                self.webinspect_api.export_scan_results(scan_id, 'xml')
-                self._results_queue.put('complete', block=False)
-                # TODO add json export
+    # @CircuitBreaker(fail_max=5, reset_timeout=60)
+    # def _scan(self, scan_id):
+    #     # for multithreading we want to use the same server each request
+    #     self.webinspect_server = self.webinspect_api.setting_overrides.endpoint
+    #     self.webinspect_api.host = self.webinspect_server
+    #
+    #     scan_complete = False
+    #     while not scan_complete:
+    #         current_status = self.webinspect_api.get_scan_status(scan_id)
+    #
+    #         if current_status.lower() == 'complete':
+    #             scan_complete = True
+    #             # Now let's download or export the scan artifact in two formats
+    #             self.webinspect_api.export_scan_results(scan_id, 'fpr')
+    #             self.webinspect_api.export_scan_results(scan_id, 'xml')
+    #             self._results_queue.put('complete', block=False)
+    #             # TODO add json export
 
     def _stop_scan(self, scan_id):
         self.webinspect_api.stop_scan(scan_id)
