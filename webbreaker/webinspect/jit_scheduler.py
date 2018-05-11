@@ -11,6 +11,7 @@ from webbreaker.common.confighelper import Config
 
 from webbreaker.common.webbreakerlogger import Logger
 
+
 from multiprocessing.dummy import Pool as ThreadPool
 try:  # python 3
     import queue
@@ -43,6 +44,7 @@ class WebInspectJitScheduler(object):
         self.username, self.password = auth_config.authenticate(username, password)
 
         self.server_size_needed = self._convert_server_size_needed_to_int(server_size_needed)
+        print("server_size_need ", self.server_size_needed)
 
         Logger.app.debug("endpoints: {}".format(self.endpoints))
         Logger.app.debug("username: {}".format(self.username))
@@ -50,8 +52,8 @@ class WebInspectJitScheduler(object):
         Logger.app.debug("server_size_needed: {}".format(self.server_size_needed))
 
         # used for multi threading the _is_available API call
-        self._results_queue = queue.Queue()
-        self.timeout = timeout
+        # self._results_queue = queue.Queue()
+        # self.timeout = timeout
 
     def get_endpoint(self):
         """
@@ -74,6 +76,7 @@ class WebInspectJitScheduler(object):
         # TODO revert, no multithreading
         try:
             endpoint = self._get_available_endpoint()
+            print("here")
             if endpoint:
                 Logger.app.info("WebBreaker has selected {} as a server for your WebInspect scan".format(endpoint[0]))
             else:
@@ -82,8 +85,6 @@ class WebInspectJitScheduler(object):
         except NoServersAvailableError:
             Logger.app.error("No Server available error")
             return None
-
-
 
     def _get_available_endpoint(self):
         """
@@ -98,13 +99,15 @@ class WebInspectJitScheduler(object):
 
         # TODO REVERT
         for endpoint in correct_sized_endpoints:
+            # print("correct endpoints: ", correct_sized_endpoints)
             if self._is_endpoint_available(webinspect_endpoint=endpoint):
+                print("Im here")
                 Logger.app.debug("Endpoint found: {}".format(endpoint))
                 return endpoint
-
+            # print("still in the loop")
         return None
 
-        # # if there are no endpoints of that size.
+        # if there are no endpoints of that size.
         # if len(correct_sized_endpoints) == 0:
         #     Logger.app.error("No servers of that size are available.")
         #     raise NoServersAvailableError
@@ -153,6 +156,7 @@ class WebInspectJitScheduler(object):
         :param endpoint: The endpoint to evaluate
         :param max_concurrent_scans:  The max number of allowed scans to be running on the endpoint
         """
+        print("Here")
 
         # Doing it kind of ugly - it removes a circular dependency issue, it's functionally the same as other uses of
         #  WebInspectAPIHelper.
@@ -161,17 +165,19 @@ class WebInspectJitScheduler(object):
         # list_running_scans is in version 1.0.31 webinspectapi
         response = api.list_running_scans()
         if response.success:
+
             # response.data is amount of running scans. endpoint[1] is either 1 or 2,
             #                                               aka how many scans it can handle at once.
-            if len(response.data) < int(webinspect_endpoint[1]):
-
-                Logger.app.debug("Server '{}' is available!".format(webinspect_endpoint[0]))
-                # the first thread that gets to this wins and gets to run the scan.
-                self._results_queue.put(webinspect_endpoint, False)
-                return
-            else:
-                Logger.app.debug("Server '{}' is not available".format(webinspect_endpoint[0]))
-                return
+            # if len(response.data) < int(webinspect_endpoint[1]):
+            #
+            #     Logger.app.debug("Server '{}' is available!".format(webinspect_endpoint[0]))
+            #     # the first thread that gets to this wins and gets to run the scan.
+            #     self._results_queue.put(webinspect_endpoint, False)
+            #     return
+            # else:
+            #     Logger.app.debug("Server '{}' is not available".format(webinspect_endpoint[0]))
+            #     return
+            print("response data", response.message)
 
     @staticmethod
     def _convert_server_size_needed_to_int(server_size_needed):

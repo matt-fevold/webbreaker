@@ -102,7 +102,7 @@ class WebInspectScan:
                     Logger.app.info("Scan status: {}".format(current_scan_status))
                     if current_scan_status.lower() != 'complete':
                         scan_complete = True
-                        Logger.app.info("status change: ".format(current_scan_status))
+                        # Logger.app.info("status change: ".format(current_scan_status))
 
             # # Start a single thread so we can have a timeout functionality added.
             # pool = ThreadPool(1)

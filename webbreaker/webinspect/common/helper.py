@@ -351,6 +351,7 @@ class Overrides:
         Logger.app.info("Querying WebInspect scan engines for availability.")
         try:
             endpoint = lb.get_endpoint()
+
             # print("  get_endpoint", endpoint)
             return endpoint
 
