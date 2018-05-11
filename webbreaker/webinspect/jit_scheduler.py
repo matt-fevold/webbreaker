@@ -19,7 +19,7 @@ except ImportError:  # python 2
 
 
 class WebInspectJitScheduler(object):
-    def __init__(self, endpoints, server_size_needed='large', username=None, password=None, timeout=30):
+    def __init__(self, endpoints, server_size_needed='large', username=None, password=None, timeout=60):
         """
         The Just-In-Time Scheduler is meant to take in a list of endpoints (either passed in from a user or from a
             config) and return one that is not busy running scans.
@@ -61,13 +61,29 @@ class WebInspectJitScheduler(object):
 
         # Logger.app.debug("Searching for an available endpoint")
 
-        endpoint = self._get_available_endpoint()
+        # endpoint = self._get_available_endpoint()
+        # print(" JIT get_endpoint ", endpoint)
+        #
+        # if endpoint:
+        #     Logger.app.info("WebBreaker has selected: {} as your WebInspect Server.".format(endpoint[0]))
+        #     return endpoint[0]
+        # else:
+        #     raise NoServersAvailableError
 
-        if endpoint:
-            Logger.app.info("WebBreaker has selected: {} as your WebInspect Server.".format(endpoint[0]))
+
+        # TODO revert, no multithreading
+        try:
+            endpoint = self._get_available_endpoint()
+            if endpoint:
+                Logger.app.info("WebBreaker has selected {} as a server for your WebInspect scan".format(endpoint[0]))
+            else:
+                Logger.app.error("There are no avaiable WebInspect servers")
             return endpoint[0]
-        else:
-            raise NoServersAvailableError
+        except NoServersAvailableError:
+            Logger.app.error("No Server available error")
+            return None
+
+
 
     def _get_available_endpoint(self):
         """
@@ -79,6 +95,7 @@ class WebInspectJitScheduler(object):
 
         correct_sized_endpoints = self._get_endpoints_of_the_right_size()
         # correct_sized_endpoints = random.shuffle(correct_sized_endpoints)
+        # print("correct size ", correct_sized_endpoints)
         Logger.app.debug("correct_sized_endpoints: {}".format(correct_sized_endpoints))
 
         # if there are no endpoints of that size.

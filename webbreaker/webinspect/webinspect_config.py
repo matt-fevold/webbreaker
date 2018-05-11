@@ -84,17 +84,19 @@ class WebInspectConfig(object):
             sizes = []
             endpoint = re.compile('endpoint_\d*')
             size = re.compile('size_')
-            endpoint_dict = {endpoint, size}
+            # endpoint_dict = {endpoint, size}
 
             for option in config.items('webinspect'):
-                print(" HERE*****", option)
-                print("-------------------------")
-                print("  endpoint: option[0] ", endpoint.match(option[0]))
-                print("  endpoint: option[1] ", endpoint.match(option[1]))
+                # print(" HERE*****", option)
+                # print("-------------------------")
+                # print("  endpoint: option[0] ", endpoint.match(option[0]))
+                # print("  endpoint: option[1] ", endpoint.match(option[1]))
                 if endpoint.match(option[0]):
                     endpoints.append([option[0], option[1]])
+                    # print("option 0", option[0], " option 1", option[1])
                 elif size.match(option[0]):
                     sizes.append([option[0], option[1]])
+                    # print("elseif ", "option 0", option[0], " option 1", option[1])
 
                 settings_dict['git'] = webinspect_config.conf_get('webinspect', 'git_repo')
 

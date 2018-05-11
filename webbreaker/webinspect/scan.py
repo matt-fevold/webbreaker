@@ -37,7 +37,7 @@ except (ImportError, AttributeError):  # Python3
 class WebInspectScan:
     def __init__(self, overrides):
         # used for multi threading the _is_available API call
-        self._results_queue = queue.Queue()
+        # self._results_queue = queue.Queue()
 
         # run the scan
         self.scan(overrides)
@@ -87,21 +87,33 @@ class WebInspectScan:
         if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
             self.webinspect_api.upload_policy()
 
+        # TODO revert back to the old way
         try:
             Logger.app.info("Running WebInspect Scan")
-            self.scan_id = self.webinspect_api.create_scan()  # it is self.scan to properly handle an exit event - find a better way
 
-            # Start a single thread so we can have a timeout functionality added.
-            pool = ThreadPool(1)
-            pool.imap_unordered(self._scan, [self.scan_id])
+            scan_complete = False
+            while not scan_complete:
+                current_scan_status = self.webinspect_api.get_scan_status(scan_id)
+                scan_id = self.webinspect_api.create_scan()  # it is self.scan to properly handle an exit event - find a better way
+                print("scan id: ", scan_id)
 
-            # context manager to handle interrupts properly
-            with self._termination_event_handler():
-                # block until scan completion.
-                self._results_queue.get(block=True)
+                current_scan_status = self.webinspect_api.get_scan_status(scan_id)
+                if scan_id:
+                    Logger.app.info("Scan status: {}".format(current_scan_status))
+                elif current_scan_status.lower() != 'complete':
+                    Logger.app.info("status change: ".format(current_scan_status))
 
-            # kill thread
-            pool.terminate()
+            # # Start a single thread so we can have a timeout functionality added.
+            # pool = ThreadPool(1)
+            # pool.imap_unordered(self._scan, [self.scan_id])
+            #
+            # # context manager to handle interrupts properly
+            # with self._termination_event_handler():
+            #     # block until scan completion.
+            #     self._results_queue.get(block=True)
+            #
+            # # kill thread
+            # pool.terminate()
 
         # TODO go through and make sure that all these exceptions happen - way too many
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
