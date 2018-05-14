@@ -28,7 +28,7 @@ def main():
         print("No python executable was found: {}".format(e))
 
     # Declare exe and install deps
-    requirements_install = ['pip', "install", "--user", "-r", requirements_file]
+    requirements_install = ['pip', "install", "-r", requirements_file]
     # Declare site-packages and user bin for console scripts on modules
     user_site = [python_exe, '-m', 'site', '--user-site']
     # Set user bin directory for py modules installed
@@ -52,9 +52,9 @@ def main():
                 try:
                     # Install openssl, wheel and pyinstaller
                     print("Validating and installing from pip open_ssl, wheel, and pyinstaller modules...")
-                    cmdline(['pip', 'install', '--user', 'pyOpenSSL'])
-                    cmdline(['pip', 'install', '--user', 'wheel'])
-                    cmdline(['pip', 'install', '--user', 'pyinstaller==3.3'])
+                    cmdline(['pip', 'install', 'pyOpenSSL'])
+                    cmdline(['pip', 'install', 'wheel'])
+                    cmdline(['pip', 'install', 'pyinstaller==3.3'])
                     # Run requirements
                     print("Installing requirements.txt...")
                     if os.path.isfile(requirements_file):
