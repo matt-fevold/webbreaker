@@ -344,6 +344,7 @@ class Overrides:
     def get_endpoint(self):
         config = WebInspectConfig()
         # print("  Endpoints : ", config.endpoints)
+        # print("size need ", self.scan_size)
         lb = WebInspectJitScheduler(endpoints=config.endpoints,
                                     server_size_needed=self.scan_size,
                                     username=self.username,
@@ -352,7 +353,7 @@ class Overrides:
         try:
             endpoint = lb.get_endpoint()
 
-            # print("  get_endpoint", endpoint)
+            print("------get_endpoint----", endpoint)
             return endpoint
 
         except NoServersAvailableError as e:
