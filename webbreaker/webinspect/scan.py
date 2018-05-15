@@ -391,7 +391,7 @@ class ScanOverrides:
             # name the scan
             self._parse_scan_name_option()
 
-            # ? TODO
+            # parse and trim .xml
             self._parse_upload_settings_option()
 
             # if login macro has been specified, ensure it's uploaded.
@@ -400,7 +400,7 @@ class ScanOverrides:
             # if workflow macros have been provided, ensure they are uploaded
             self._parse_workflow_macros_option()
 
-            # ? TODO
+            # parse and trim .webmacros
             self._parse_upload_webmacros_option()
 
             # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
@@ -435,9 +435,8 @@ class ScanOverrides:
             except argparse.ArgumentError as e:
                 webinspectloghelper.log_error_in_options(e)
         except (AttributeError, UnboundLocalError, KeyError):
-            # TODO WTF
-            self.incorrect = webinspectloghelper.log_configuration_incorrect(Logger.app_logfile)
-            raise
+            webinspectloghelper.log_configuration_incorrect(Logger.app_logfile)
+            # raise
 
         Logger.app.debug("Completed webinspect settings parse")
         return settings_dict
@@ -463,7 +462,9 @@ class ScanOverrides:
 
     def _parse_upload_settings_option(self):
         """
-        ? TODO
+        Check for a .xml settings file. Relative path for files are okay
+        This function will then trim .xml. If file exist, upload to the server. Else raise an error.
+        All webInspect server come with a Default.xml settings file
         :return:
         """
         if self.webinspect_upload_settings:
@@ -530,7 +531,8 @@ class ScanOverrides:
 
     def _parse_upload_webmacros_option(self):
         """
-        ? TODO
+        Check and vaildate for a .webmacro settings file. Relative paths for files are okay
+        This function will then trim .webmacro off, if file exist then upload to server, otherwise raise an error
         :return:
         """
         if self.options.upload_webmacros:
