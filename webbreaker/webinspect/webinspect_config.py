@@ -4,16 +4,14 @@
 
 import os
 import sys
-
+from subprocess import CalledProcessError
 import re
 from exitstatus import ExitStatus
-from subprocess import CalledProcessError, check_output
+
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.confighelper import Config
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
-
-
 
 try:
     from git.exc import GitCommandError
@@ -22,6 +20,7 @@ except (ImportError, AttributeError) as e:  # module will fail if git is not ins
                      " https://git-scm.com/download.  See log {}!!!".format
                      (Logger.app_logfile, e.message))
 
+# Python2/3 compatibility statements
 try:
     import ConfigParser as configparser
 
@@ -40,18 +39,6 @@ runenv = WebBreakerHelper.check_run_env()
 webinspectloghelper = WebInspectLogHelper()
 
 
-# class WebInspectEndpoint(object):
-#     def __init__(self, uri, size):
-#         self.uri = uri
-#         self.size = size
-#
-#
-# class WebInspectSize(object):
-#     def __init__(self, size, max_scans):
-#         self.size = size
-#         self.max_scans = max_scans
-#
-
 class WebInspectConfig(object):
     def __init__(self):
         Logger.app.debug("Starting webinspect config initialization")
@@ -66,7 +53,12 @@ class WebInspectConfig(object):
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
 
-    def _get_webinspect_settings(self):
+    @staticmethod
+    def _get_webinspect_settings():
+        """
+        Read in webinspect config.ini settings and return it as a dictionary.
+        :return:
+        """
         Logger.app.debug("Getting webinspect settings from config file")
         settings_dict = {}
         webinspect_config = Config()
@@ -120,50 +112,4 @@ class WebInspectConfig(object):
             webinspectloghelper.log_error_invalid_ssl()
             sys.exit(ExitStatus.failure)
 
-    # TODO - move this to scan along with the other functions that only are used there.
-    def fetch_webinspect_configs(self, options):
-        config_helper = Config()
-        etc_dir = config_helper.etc
-        git_dir = os.path.join(config_helper.git, '.git')
 
-        try:
-            if options['settings'] == 'Default':
-                Logger.app.debug("Default settings were used")
-
-                if os.path.isfile(options['upload_settings'] + '.xml'):
-                    options['upload_settings'] = options['upload_settings'] + '.xml'
-                if os.path.isfile(options['upload_settings']):
-                    options['upload_scan_settings'] = options['upload_settings']
-                else:
-                    try:
-                        options['upload_scan_settings'] = os.path.join(etc_dir,
-                                                                       'settings',
-                                                                       options['upload_settings'] + '.xml')
-                    except (AttributeError, TypeError) as e:
-                        webinspectloghelper.log_error_settings(options['upload_settings'], e)
-
-            elif os.path.exists(git_dir):
-                Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
-                check_output(['git', 'init', etc_dir])
-                check_output(
-                    ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'reset', '--hard'])
-                check_output(
-                    ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'pull', '--rebase'])
-                sys.stdout.flush()
-            elif not os.path.exists(git_dir):
-                Logger.app.info("Cloning your specified WebInspect configurations to {}".format(config_helper.git))
-                check_output(['git', 'clone', self.webinspect_git, config_helper.git])
-            else:
-                Logger.app.error(
-                    "No GIT Repo was declared in your config.ini, therefore nothing will be cloned!")
-        except (CalledProcessError, AttributeError) as e:
-            webinspectloghelper.log_webinspect_config_issue(e)
-            raise
-        except GitCommandError as e:
-            webinspectloghelper.log_git_access_error(self.webinspect_git, e)
-            raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
-        except IndexError as e:
-            webinspectloghelper.log_config_file_unavailable(e)
-            raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
-
-        Logger.app.debug("Completed webinspect config fetch")
