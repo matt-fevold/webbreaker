@@ -35,7 +35,7 @@ class WebInspectAPIHelper(object):
 
         # if - we are running a webinspect scan
         if webinspect_setting_overrides is not None:
-            self.setting_overrides = ScanOverrides(webinspect_setting_overrides)
+            self.setting_overrides = ScanOverrides(webinspect_setting_overrides, username, password)
             # set the host to be the available endpoint
             self.host = self.setting_overrides.endpoint
 

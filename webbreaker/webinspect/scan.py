@@ -20,7 +20,8 @@ import re
 from pybreaker import CircuitBreaker
 
 from webbreaker.webinspect.authentication import WebInspectAuth
-from webbreaker.webinspect.common.helper import WebInspectAPIHelper
+# deviating from standard style to remove circular dependency problem.
+import webbreaker.webinspect.common.helper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 from webbreaker.common.confighelper import Config
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
@@ -89,7 +90,11 @@ class WebInspectScan:
         # get a formatted dictionary to pass to the webinspect api
         formatted_overrides = self.scan_overrides.get_formatted_overrides()
 
-        self.webinspect_api = WebInspectAPIHelper(username=username, password=password, webinspect_setting_overrides=formatted_overrides)
+        # Doing it kind of ugly - it removes a circular dependency issue, it's functionally the same as other uses of
+        #  WebInspectAPIHelper.
+        self.webinspect_api = webbreaker.webinspect.common.helper.WebInspectAPIHelper(username=username,
+                                                                                      password=password,
+                                                                                      webinspect_setting_overrides=formatted_overrides)
 
         # abstract out a bunch of conditional uploads
         self._upload_settings_and_policies()
