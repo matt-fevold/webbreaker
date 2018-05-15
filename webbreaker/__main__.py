@@ -30,7 +30,7 @@ from webbreaker.fortify.authentication import FortifyAuth
 from webbreaker.fortify.download import FortifyDownload
 from webbreaker.fortify.list import FortifyList
 from webbreaker.fortify.upload import FortifyUpload
-from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper, LogInfoHelper
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.download import WebInspectDownload
 from webbreaker.webinspect.wiswag import WebInspectWiswag
@@ -47,8 +47,8 @@ from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
 fortifyloghelper = FortifyLogHelper()
 
-loghelper = LogExceptionHelper()
-# loginfohelper = LogInfoHelper()
+logexceptionhelper = LogExceptionHelper()
+loginfohelper = LogInfoHelper()
 
 try:
     from git.exc import GitCommandError
@@ -229,13 +229,13 @@ def webinspect_proxy(download, list, port, proxy_name, setting, server, start, s
 
 
 @webinspect.command(name='wiswag',
-                    short_help="Create a swagger WebInspect setting file for scanning.",
+                    short_help="Launch swagger scan",
                     help=WebBreakerHelper().webinspect_wiswag_desc())
 @click.option('--url',
               required=True,
               help="Json file path")
 @click.option('--wiswag_name',
-              help="Name of wiswag setting file")
+              help="Name of wiswag")
 @click.option('--username',
               help="Specify WebInspect username")
 @click.option('--password',
@@ -315,18 +315,18 @@ def admin():
 
 
 @admin.command(name='credentials',
-               short_help="Create and delete Fortify and WebInspect credentials",
+               short_help="Create & update Fortify credentials",
                help=WebBreakerHelper().admin_credentials_desc()
                )
 @click.option('--fortify',
               is_flag=True,
-              help="Set your Fortify credentials in config.ini")
+              help="Flag used to designate options as Fortify credentials")
 @click.option('--webinspect',
               is_flag=True,
-              help="Set your WebInspect credentials in config.ini")
+              help="Flag used to designate options as WebInspect credentials")
 @click.option('--clear',
               is_flag=True,
-              help="Clear config.ini Fortify or WebInspect credentials")
+              help="Flag to clear credentials of Fortify OR WebInspect")
 @click.option('--username',
               help="Specify username")
 @click.option('--password',
@@ -341,7 +341,7 @@ def admin_credentials(fortify, webinspect, clear, username, password):
             if username and password:
                 try:
                     fortify_auth.write_credentials(username, password)
-                    loghelper.log_info_credentials_store_success()
+                    loginfohelper.log_info_credentials_store_success()
 
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()
@@ -350,7 +350,7 @@ def admin_credentials(fortify, webinspect, clear, username, password):
                 username, password = auth_prompt("Fortify")
                 try:
                     fortify_auth.write_credentials(username, password)
-                    loghelper.log_info_credentials_store_success()
+                    loginfohelper.log_info_credentials_store_success()
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()
 
@@ -358,27 +358,26 @@ def admin_credentials(fortify, webinspect, clear, username, password):
         webinspect_auth = WebInspectAuth()
         if clear:
             webinspect_auth.clear_credentials()
-            loghelper.log_info_webinspect_credential_clear_success()
+            loginfohelper.log_info_webinspect_credential_clear_success()
         else:
             if username and password:
                 try:
                     webinspect_auth.write_credentials(username, password)
-                    loghelper.log_info_credentials_store_success()
+                    loginfohelper.log_info_credentials_store_success()
 
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()
 
             else:
-                username, password = auth_prompt("WebInspect")
+                username, password = auth_prompt("webinspect")
                 try:
                     webinspect_auth.write_credentials(username, password)
-                    loghelper.log_info_credentials_store_success()
+                    loginfohelper.log_info_credentials_store_success()
 
                 except ValueError:
                     fortifyloghelper.log_error_credentials_not_stored()
     else:
-        sys.stdout.write(str("Please specify either the --fortify or --webinspect options,\n"
-                             "if you wish to re-set your credentals append --clear"))
+        sys.stdout.write(str("Please specify either the --fortify or --webinspect flag\n"))
 
 
 @admin.command(name='secret',
@@ -388,7 +387,7 @@ def admin_credentials(fortify, webinspect, clear, username, password):
 @click.option('-f', '--force',
               required=False,
               is_flag=True,
-              help="No interactive prompt.")
+              help="Optional flag to prevent confirmation prompt")
 def admin_secret(force):
     secret_client = SecretClient()
     if secret_client.secret_exists():
@@ -405,7 +404,7 @@ def admin_secret(force):
         secret_client.write_secret()
 
 
-@cli.group(short_help="Interaction with ThreadFix RESTFul API",
+@cli.group(short_help="Interaction with ThreadFix API",
            help=WebBreakerHelper().threadfix_desc()
            )
 def threadfix():

@@ -192,8 +192,7 @@ def test_webinspect_scan_custom_settings_with_username_password(scan_mock, runne
                                        'upload_webmacros': None, 'scan_start': None, 'workflow_macros': (),
                                        'upload_settings': None, 'password': 'pass', 'size': 'large',
                                        'settings': 'important_site_auth', 'scan_name': None, 'login_macro': None,
-                                       'scan_policy': None, 'allowed_hosts': (), 'fortify_user': None,
-                                       'scan_mode': None})
+                                       'scan_policy': None, 'allowed_hosts': (), 'fortify_user': None, 'scan_mode': None})
 
 
 @mock.patch('webbreaker.__main__.WebInspectScan.__init__')

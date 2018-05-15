@@ -1,9 +1,11 @@
 from webbreaker.threadfix.threadfixconfig import ThreadFixConfig
 from threadfixproapi.threadfixpro import ThreadFixProAPI
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.logexceptionhelper import LogInfoHelper
 from webbreaker.common.api_response_helper import APIHelper
-from webbreaker.threadfix.common.loghelper import ThreadFixLogHelper
 
-threadfixloghelper = ThreadFixLogHelper()
+logexceptionhelper = LogExceptionHelper()
+loginfohelper = LogInfoHelper()
 
 
 class ThreadFixHelper(object):
@@ -32,7 +34,7 @@ class ThreadFixHelper(object):
                     elif team_name is None:
                         team_ids.append({'id': team['id'], 'name': team['name']})
                 if not len(team_ids):
-                    threadfixloghelper.log_error_no_team_with_name(team_name)
+                    logexceptionhelper.LogErrorNoTeamWithName(team_name)
                 for team in team_ids:
                     app_response = self.list_apps_by_team(team['id'])
                     if app_response:
@@ -50,7 +52,7 @@ class ThreadFixHelper(object):
 
                     else:
 
-                        threadfixloghelper.log_error_retrieving_application(team['name'])
+                        logexceptionhelper.LogErrorRetrievingApplication(team['name'])
                 return applications
 
             else:

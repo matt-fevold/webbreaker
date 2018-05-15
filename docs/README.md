@@ -292,17 +292,6 @@ Webbreaker utilizes a structure of upper-level and lower-level commands to enabl
 
 A proper Webbreaker command utilizes the structure 'webbreaker [webinspect|fortify|threadfix|admin] [lower-level command] [OPTIONS]'
 
-### FAQs `faqs`
-_Question:_ Why would I receive a 401 error that I am NOT authorized to perform WebInspect scan?
-
-_Answer:_ Either your credentials are not valid, or you need to configure the `[webinspect]` config.ini section with the following:
-    
-    authenticate = true
-    
-Now follow these two steps.
-1. `webbreaker admin credentials --webinspect --clear`
-1. `webbreaker admin credentials --webinspect`
-    
 ### Commands `commands`
 Below are common command-line usage of webbreaker, command structure includes the supported webbreaker Product (i.e. webinspect, fortify, threadfix, and admin) followed by an action you wish to take on the Product, typically scan, upload, download, or list.  We used WebInspect [Zero Bank](http://zero.webappsecurity.com/) for our examples below.
 
@@ -356,27 +345,22 @@ Below are common command-line usage of webbreaker, command structure includes th
 
 ##### WebInspect Proxy `webinspect_proxy`
     # Start a WebInspect proxy called test-proxy on port 9001:
-    webbreaker webinspect proxy --start --proxy_name zerobank_proxy --port 9001
-    
-    NOTE: Output from the command will contain the Proxy Address and Port to configure your browser's network settings. 
-    Once complete, perform the desired base case actions for the WebInspect scan, such as authenticating, if your website
-    has authentication, or submit a form or complete an optional workflow.  Upon completion, follow the step below to stop
-    and download your WebInspect webmacro and setting file for scanning.
-    
-    # Stop and download webmacro workflow and WebInspect setting file for scanning:
-    webbreaker webinspect proxy --stop --proxy_name zerobank_proxy
+    webbreaker webinspect proxy --start --proxy_name test-proxy --port 9001
 
     # List all the WebInspect proxies:
     webbreaker webinspect proxy --list
 
     # Download the WebInspect proxy webmacro called test-proxy:
-    webbreaker webinspect proxy --download --webmacro zerobank_proxy --proxy_name zerobank_proxy
+    webbreaker webinspect proxy --download --webmacro zerobank-deposit --proxy_name zerobank_proxy
 
     # Download the WebInspect proxy settings file called test-proxy:
-    webbreaker webinspect proxy --download --setting zerobank_proxy --proxy_name zerobank_proxy
+    webbreaker webinspect proxy --download --setting zerobank --proxy_name zerobank_proxy
 
     # Upload a WebInspect webmacro proxy for a scan override called:
-    webbreaker webinspect proxy --upload zerobank_proxy.webmacro --proxy_name zerobank_proxy
+    webbreaker webinspect proxy --upload zerobank-deposit.webmacro --proxy_name zerobank_proxy
+
+    # Stop and download webmacro workflow and WebInspect setting file for scanning:
+    webbreaker webinspect proxy --stop --proxy_name zerobank_proxy
 
 ##### WebInspect Swagger `webinspect_swagger`
     # Ingest, create, and download a WebInspect setting file from a OpenAPI swagger.json URL:

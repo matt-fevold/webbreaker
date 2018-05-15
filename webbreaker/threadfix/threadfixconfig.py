@@ -4,8 +4,8 @@
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.confighelper import Config
 from subprocess import CalledProcessError
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.common.webbreakerconfig import convert_verify_ssl_config
-from webbreaker.threadfix.common.loghelper import ThreadFixLogHelper
 
 try:
     import ConfigParser as configparser
@@ -16,8 +16,7 @@ except ImportError:  # Python3
 
     config = configparser.ConfigParser()
 
-threadfixloghelper = ThreadFixLogHelper()
-
+logexceptionhelper = LogExceptionHelper()
 
 class ThreadFixConfig(object):
     def __init__(self):
@@ -33,7 +32,7 @@ class ThreadFixConfig(object):
         except (configparser.NoOptionError, CalledProcessError) as noe:
             Logger.app.error("{} has incorrect or missing values {}".format(config_file, noe))
         except (configparser.Error) as e:
-            threadfixloghelper.log_error_reading(config_file, e)
+            logexceptionhelper.log_error_reading(config_file, e)
             # Logger.app.error("Error reading {} {}".format(config_file, e))
 
     def _get_config(self, key):

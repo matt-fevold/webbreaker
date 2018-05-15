@@ -9,10 +9,8 @@ import os
 import sys
 from exitstatus import ExitStatus
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
-from webbreaker.fortify.common.loghelper import FortifyLogHelper
 
 logexceptionhelper = LogExceptionHelper()
-fortifyloghelper = FortifyLogHelper()
 
 try:
     import ConfigParser as configparser
@@ -49,5 +47,5 @@ def convert_verify_ssl_config(verify_ssl):
     elif verify_ssl.upper() == 'FALSE':
         return False
     else:
-        fortifyloghelper.log_error_invalid_ssl_credentials()
+        logexceptionhelper.LogErrorFortifyInvalidSSLCredentials()
         sys.exit(ExitStatus.failure)

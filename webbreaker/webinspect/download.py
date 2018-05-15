@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 
+logexceptionhelper = LogExceptionHelper()
 webinspect_logexceptionhelper = WebInspectLogHelper()
 
 class WebInspectDownload:

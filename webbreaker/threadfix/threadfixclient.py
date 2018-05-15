@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from threadfixproapi.threadfixpro import ThreadFixProAPI
-from webbreaker.threadfix.common.loghelper import ThreadFixLogHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.logexceptionhelper import LogInfoHelper
 
-threadfixloghelper = ThreadFixLogHelper()
+logexceptionhelper = LogExceptionHelper()
+loginfohelper = LogInfoHelper()
 
 
 class ThreadFixClient(object):
@@ -25,7 +27,7 @@ class ThreadFixClient(object):
                         scan_file.write(response.data)
                         return filename
                 else:
-                    threadfixloghelper.log_error_request_download(response.message)
+                    logexceptionhelper.log_error_request_download(response.message)
                     return None
             else:
                 return -1

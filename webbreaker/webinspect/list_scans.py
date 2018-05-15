@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
-from pybreaker import CircuitBreaker
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.common.circuitbreakerhelper import APIListener, LogListener
-
-# Experimental
-api_breaker = CircuitBreaker(listeners=[APIListener(), LogListener()])
 
 
 class WebInspectListScans:
@@ -52,6 +47,7 @@ class WebInspectListScans:
                         print("{0:80} {1:40} {2:10}".format(scan['Name'], scan['ID'], scan['Status']))
                 else:
                     print("No scans found on {}".format(server))
+            print('\n\n\n')
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)

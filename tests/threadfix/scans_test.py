@@ -5,8 +5,9 @@ from webbreaker.threadfix.scans import ThreadFixScans
 from threadfixproapi.threadfixpro import ThreadFixProResponse
 
 @mock.patch('webbreaker.threadfix.scans.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.scans.threadfixloghelper')
-def test_threadfix_scans_successful_list(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.scans.loginfohelper')
+@mock.patch('webbreaker.threadfix.scans.logexceptionhelper')
+def test_threadfix_scans_successful_list(logex_mock, loginfo_mock, helper_mock):
     app_id = '123'
     expected_list_scans = ThreadFixProResponse(message='test', success=True, data=[{'id': app_id, 'scannerName': 'scanner name'}])
     helper_mock.return_value.api.list_scans.return_value = expected_list_scans
@@ -14,24 +15,25 @@ def test_threadfix_scans_successful_list(log_mock, helper_mock):
 
     ThreadFixScans(app_id)
     assert helper_mock.call_count == 1
-    assert log_mock.log_info_threadfix_scans_listed_success.call_count == 1
-    assert log_mock.log_error_no_scans_found_with_app_id.call_count == 0
+    assert loginfo_mock.LogInfoThreadfixScansListedSuccess.call_count == 1
+    assert logex_mock.LogErrorNoScansFoundWithAppId.call_count == 0
 
 @mock.patch('webbreaker.threadfix.scans.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.scans.threadfixloghelper')
-def test_threadfix_scans_empty_list(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.scans.loginfohelper')
+@mock.patch('webbreaker.threadfix.scans.logexceptionhelper')
+def test_threadfix_scans_empty_list(logex_mock, loginfo_mock, helper_mock):
     app_id = '123'
     expected_list_scans = ThreadFixProResponse(message='no scans', success=True, data=[])
     helper_mock.return_value.api.list_scans.return_value = expected_list_scans
 
     ThreadFixScans(app_id)
     assert helper_mock.call_count == 1
-    assert log_mock.log_info_threadfix_scans_listed_success.call_count == 0
-    assert log_mock.log_error_no_scans_found_with_app_id.call_count == 1
+    assert loginfo_mock.LogInfoThreadfixScansListedSuccess.call_count == 0
+    assert logex_mock.LogErrorNoScansFoundWithAppId.call_count == 1
 
 @mock.patch('webbreaker.threadfix.scans.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.scans.threadfixloghelper')
-def test_threadfix_scans_failed_response(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.scans.loginfohelper')
+def test_threadfix_scans_failed_response(loginfo_mock, helper_mock):
     app_id = '123'
     expected_list_scans = ThreadFixProResponse(message='error', success=False, data=[])
     helper_mock.return_value.api.list_scans.return_value = expected_list_scans
@@ -39,4 +41,4 @@ def test_threadfix_scans_failed_response(log_mock, helper_mock):
     with pytest.raises(SystemExit):
         ThreadFixScans(app_id)
     assert helper_mock.call_count == 1
-    assert log_mock.log_info_threadfix_scans_listed_success.call_count == 0
+    assert loginfo_mock.LogInfoThreadfixScansListedSuccess.call_count == 0

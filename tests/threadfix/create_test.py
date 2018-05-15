@@ -5,8 +5,8 @@ from webbreaker.threadfix.create import ThreadFixCreate
 from threadfixproapi.threadfixpro import ThreadFixProResponse
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_successful_no_team_id(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+def test_threadfix_create_app_successful_no_team_id(loginfo_mock, helper_mock):
     team_id = '10'
     team = 'some team'
     test_team = {
@@ -27,11 +27,12 @@ def test_threadfix_create_app_successful_no_team_id(log_mock, helper_mock):
     tfc = ThreadFixCreate(None, team, app_name, url)
     assert helper_mock.call_count == 1
     assert tfc.helper.get_team_list.call_count == 1
-    log_mock.log_info_application_created_with_id.assert_called_once_with(new_app['id'])
+    loginfo_mock.LogInfoApplicationCreatedWithId.assert_called_once_with(new_app['id'])
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_failed_no_team_id_team_not_exist(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+@mock.patch('webbreaker.threadfix.create.logexceptionhelper')
+def test_threadfix_create_app_failed_no_team_id_team_not_exist(logex_mock, loginfo_mock, helper_mock):
     team_id = '10'
     team = 'some team'
     test_team = {
@@ -47,12 +48,12 @@ def test_threadfix_create_app_failed_no_team_id_team_not_exist(log_mock, helper_
     tfc = ThreadFixCreate(None, fakeTeam, app_name, url)
     assert helper_mock.call_count == 1
     assert tfc.helper.get_team_list.call_count == 1
-    log_mock.log_error_no_team_with_application.assert_called_once_with(fakeTeam)
-    assert log_mock.log_info_application_created_with_id.call_count == 0
+    logex_mock.LogErrorNoTeamWithApplication.assert_called_once_with(fakeTeam)
+    assert loginfo_mock.LogInfoApplicationCreatedWithId.call_count == 0
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_failed_no_team_id(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+def test_threadfix_create_app_failed_no_team_id(loginfo_mock, helper_mock):
     team_id = '10'
     team = 'some team'
     test_team = {
@@ -69,11 +70,11 @@ def test_threadfix_create_app_failed_no_team_id(log_mock, helper_mock):
     with pytest.raises(SystemExit):
         ThreadFixCreate(None, team, app_name, url)
     assert helper_mock.call_count == 1
-    assert log_mock.log_info_application_created_with_id.call_count == 0
+    assert loginfo_mock.LogInfoApplicationCreatedWithId.call_count == 0
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_successful_no_team(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+def test_threadfix_create_app_successful_no_team(loginfo_mock, helper_mock):
     team_id = '10'
     app_name = 'new app'
     url = 'someurl.com'
@@ -88,11 +89,11 @@ def test_threadfix_create_app_successful_no_team(log_mock, helper_mock):
     tfc = ThreadFixCreate(team_id, None, app_name, url)
     assert helper_mock.call_count == 1
     assert tfc.helper.get_team_list.call_count == 0
-    log_mock.log_info_application_created_with_id.assert_called_once_with(new_app['id'])
+    loginfo_mock.LogInfoApplicationCreatedWithId.assert_called_once_with(new_app['id'])
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_failed_no_team(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+def test_threadfix_create_app_failed_no_team(loginfo_mock, helper_mock):
     team_id = '10'
     app_name = 'new app'
     url = 'someurl.com'
@@ -102,11 +103,11 @@ def test_threadfix_create_app_failed_no_team(log_mock, helper_mock):
     with pytest.raises(SystemExit):
         ThreadFixCreate(team_id, None, app_name, url)
     assert helper_mock.call_count == 1
-    assert log_mock.log_info_application_created_with_id.call_count == 0
+    assert loginfo_mock.LogInfoApplicationCreatedWithId.call_count == 0
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_successful_all_params(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+def test_threadfix_create_app_successful_all_params(loginfo_mock, helper_mock):
     team_id = '10'
     team = 'some team'
     app_name = 'new app'
@@ -122,11 +123,11 @@ def test_threadfix_create_app_successful_all_params(log_mock, helper_mock):
     tfc = ThreadFixCreate(team_id, team, app_name, url)
     assert helper_mock.call_count == 1
     assert tfc.helper.get_team_list.call_count == 0
-    log_mock.log_info_application_created_with_id.assert_called_once_with(new_app['id'])
+    loginfo_mock.LogInfoApplicationCreatedWithId.assert_called_once_with(new_app['id'])
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_failed_all_params(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+def test_threadfix_create_app_failed_all_params(loginfo_mock, helper_mock):
     team_id = '10'
     team = 'some team'
     app_name = 'new app'
@@ -138,16 +139,17 @@ def test_threadfix_create_app_failed_all_params(log_mock, helper_mock):
     with pytest.raises(SystemExit):
         ThreadFixCreate(team_id, team, app_name, url)
     assert helper_mock.call_count == 1
-    assert log_mock.log_info_application_created_with_id.call_count == 0
+    assert loginfo_mock.LogInfoApplicationCreatedWithId.call_count == 0
 
 @mock.patch('webbreaker.threadfix.create.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.create.threadfixloghelper')
-def test_threadfix_create_app_failed_no_team_nor_team_id(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.create.loginfohelper')
+@mock.patch('webbreaker.threadfix.create.logexceptionhelper')
+def test_threadfix_create_app_failed_no_team_nor_team_id(logex_mock, loginfo_mock, helper_mock):
     app_name = 'new app'
     url = 'someurl.com'
 
     tfc = ThreadFixCreate(None, None, app_name, url)
     assert helper_mock.call_count == 1
     assert tfc.helper.get_team_list.call_count == 0
-    assert log_mock.log_error_specify_team.call_count == 1
-    assert log_mock.log_info_application_created_with_id.call_count == 0
+    assert logex_mock.LogErrorSpecifyTeam.call_count == 1
+    assert loginfo_mock.LogInfoApplicationCreatedWithId.call_count == 0

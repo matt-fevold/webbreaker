@@ -3,7 +3,10 @@
 
 import os
 import json
-from pybreaker import CircuitBreaker
+
+import os
+import json
+from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
@@ -15,7 +18,7 @@ from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webinspectapi.webinspect import WebInspectApi
 import ntpath
 
-#from webbreaker.common.api_response_helper import APIHelper
+from webbreaker.common.api_response_helper import APIHelper
 
 import sys
 from exitstatus import ExitStatus
@@ -25,7 +28,7 @@ webinspect_logexceptionhelp = WebInspectLogHelper()
 
 
 class WebInspectAPIHelper(object):
-    def __init__(self, host=None, username=None, password=None, webinspect_setting_overrides=None, silent=False):
+    def __init__(self, host=None, username=None, password=None, webinspect_setting_overrides=None):
         # If a host is passed then we are doing a download or a list,  otherwise a scan.
         self.host = host
         self.username = username
@@ -38,8 +41,8 @@ class WebInspectAPIHelper(object):
             self.host = self.setting_overrides.endpoint
 
         self._set_api()
-        if silent is False:  # want to be able to hide this output for multithreading
-            Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
+
+        Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
 
     def _set_api(self):
         self.api = WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
@@ -49,7 +52,21 @@ class WebInspectAPIHelper(object):
     def _trim_ext(file):
         return os.path.splitext(os.path.basename(file))[0]
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
+    def __settings_exists__(self):
+        try:
+            response = self.api.list_settings()
+
+            APIHelper().check_for_response_errors(response)
+
+            for setting in response.data:
+                if setting in self.setting_overrides.settings:
+                    return True
+
+        except (ValueError, UnboundLocalError) as e:
+            Logger.app.error("Unable to determine if setting file exists, scan will continue without setting!"
+                             "Error: {}".format(e))
+        return False
+
     def create_scan(self):
         """
         Launches and monitors a scan
@@ -69,7 +86,7 @@ class WebInspectAPIHelper(object):
                                                                              self.setting_overrides.workflow_macros,
                                                                              self.setting_overrides.allowed_hosts))
             response = self.api.create_scan(overrides)
-            #APIHelper().check_for_response_errors(response)
+            APIHelper().check_for_response_errors(response)
 
             logger_response = json.dumps(response, default=lambda o: o.__dict__, sort_keys=True)
             Logger.app.debug("Request sent to {0}:\n{1}".format(self.setting_overrides.endpoint, overrides))
@@ -83,7 +100,6 @@ class WebInspectAPIHelper(object):
         except (ValueError, UnboundLocalError) as e:
             Logger.app.error("Creating the WebInspect scan failed! {}".format(e))
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def export_scan_results(self, scan_id, extension, scan_name=None):
         """
         Save scan results to file, if you pass a scan name it will have that name, otherwise it will read from the
@@ -97,9 +113,9 @@ class WebInspectAPIHelper(object):
         Logger.app.info('Exporting scan: {} as {}'.format(scan_id, extension))
         detail_type = 'Full' if extension == 'xml' else None
         response = self.api.export_scan_format(scan_id, extension, detail_type)
-        #APIHelper().check_for_response_errors(response)
+        APIHelper().check_for_response_errors(response)
 
-	# setting_overrides is on a webinspect scan
+        # setting_overrides is on a webinspect scan
         if scan_name == None:
             scan_name = self.setting_overrides.scan_name
 
@@ -108,25 +124,21 @@ class WebInspectAPIHelper(object):
                 Logger.app.debug(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
                 f.write(response.data)
                 print(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
-        except (UnboundLocalError, IOError) as e:
+        except UnboundLocalError as e:
             Logger.app.error('Error saving file locally! {}'.format(e))
-	
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_policy_by_guid(self, policy_guid):
         response = self.api.get_policy_by_guid(policy_guid)
-        #APIHelper().check_for_response_errors(response)
+        APIHelper().check_for_response_errors(response)
 
         return response.data
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_policy_by_name(self, policy_name):
         response = self.api.get_policy_by_name(policy_name)
-        #APIHelper().check_for_response_errors(response)
+        APIHelper().check_for_response_errors(response)
 
         return response.data
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_scan_by_name(self, scan_name):
         """
         Search Webinspect server for a scan matching scan_name
@@ -136,11 +148,11 @@ class WebInspectAPIHelper(object):
         # scan_name = self._trim_ext(scan_name)
 
         response = self.api.get_scan_by_name(scan_name)
-        #APIHelper().check_for_response_errors(response)
+
+        APIHelper().check_for_response_errors(response)
 
         return response.data
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_scan_status(self, scan_guid):
         """
         Get scan status from the Webinspect server
@@ -149,7 +161,7 @@ class WebInspectAPIHelper(object):
         """
         try:
             response = self.api.get_current_status(scan_guid)
-            #APIHelper().check_for_response_errors(response)
+            APIHelper().check_for_response_errors(response)
 
             status = json.loads(response.data_json())['ScanStatus']
             return status
@@ -157,7 +169,6 @@ class WebInspectAPIHelper(object):
             Logger.app.error("There was an error getting scan status: {}".format(e))
             return None
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def list_scans(self):
         """
         List all scans found on host
@@ -165,37 +176,25 @@ class WebInspectAPIHelper(object):
         """
         try:
             response = self.api.list_scans()
-            #APIHelper().check_for_response_errors(response)
+            APIHelper().check_for_response_errors(response)
 
             return response.data
 
         except (ValueError, UnboundLocalError, NameError) as e:
             Logger.app.error("There was an error listing WebInspect scans! {}".format(e))
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
-    def list_running_scans(self):
-        """
-        List all running scans on host
-        :return:
-        """
-        response = self.api.list_running_scans()
-
-        return response
-
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def policy_exists(self, policy_guid):
         # true if policy exists
         response = self.api.get_policy_by_guid(policy_guid)
-        #APIHelper().check_for_response_errors(response)
+        APIHelper().check_for_response_errors(response)
+
         return response.success
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def stop_scan(self, scan_guid):
         response = self.api.stop_scan(scan_guid)
-        #APIHelper().check_for_response_errors(response)
+        APIHelper().check_for_response_errors(response)
         return response.success
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def upload_policy(self):
         # if a policy of the same name already exists, delete it prior to upload
         try:
@@ -203,11 +202,11 @@ class WebInspectAPIHelper(object):
             # so find it in the full path
             # TODO: Verify split here
             response = self.api.get_policy_by_name(ntpath.basename(self.setting_overrides.webinspect_upload_policy).split('.')[0])
-            #APIHelper().check_for_response_errors(response)
+            APIHelper().check_for_response_errors(response)
 
             if response.success and response.response_code == 200:  # the policy exists on the server already
                 response = self.api.delete_policy(response.data['uniqueId'])
-                #APIHelper().check_for_response_errors(response)
+                APIHelper().check_for_response_errors(response)
 
                 Logger.app.debug("Deleted policy {} from server".format(
                     ntpath.basename(self.setting_overrides.webinspect_upload_policy).split('.')[0]))
@@ -216,19 +215,18 @@ class WebInspectAPIHelper(object):
 
         try:
             response = self.api.upload_policy(self.setting_overrides.webinspect_upload_policy)
-            #APIHelper().check_for_response_errors(response)
+            APIHelper().check_for_response_errors(response)
             Logger.console.debug("Uploaded policy {} to server.".format(self.setting_overrides.webinspect_upload_policy))
 
         except (ValueError, UnboundLocalError, TypeError, NameError) as e:
             webinspect_logexceptionhelp.log_error_uploading("policy", e)
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def upload_settings(self):
 
         try:
             response = self.api.upload_settings(self.setting_overrides.webinspect_upload_settings)
-            #APIHelper().check_for_response_errors(response)
+            APIHelper().check_for_response_errors(response)
 
             Logger.console.debug("Uploaded settings {} to server.".format(self.setting_overrides.webinspect_upload_settings))
 
@@ -236,19 +234,29 @@ class WebInspectAPIHelper(object):
             webinspect_logexceptionhelp.log_error_uploading("settings", e)
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def upload_webmacros(self):
         try:
             for webmacro in self.setting_overrides.webinspect_upload_webmacros:
                 response = self.api.upload_webmacro(webmacro)
-                #APIHelper().check_for_response_errors(response)
+                APIHelper().check_for_response_errors(response)
                 Logger.console.debug("Uploaded webmacro {} to server.".format(webmacro))
 
         except (ValueError, UnboundLocalError) as e:
             webinspect_logexceptionhelp.log_error_uploading("webmacro", e)
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
+    def wait_for_scan_status_change(self, scan_id):
+        """
+        Blocking call, will remain in this method until status of scan changes
+        :param scan_id:
+        :return:
+        """
+        # WebInspect Scan has started, wait here until it's done
+        response = self.api.wait_for_status_change(scan_id)  # this line is the blocker
+        APIHelper().check_for_response_errors(response)
+
+        Logger.console.debug('Scan status {}'.format(response.data))
+
     def verify_scan_policy(self, config):
         try:
             if self.setting_overrides.scan_policy:
@@ -340,7 +348,6 @@ class Overrides:
             webinspect_logexceptionhelp.log_error_settings(self.settings, e)
             raise
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_endpoint(self):
         config = WebInspectConfig()
         lb = WebInspectJitScheduler(endpoints=config.endpoints,

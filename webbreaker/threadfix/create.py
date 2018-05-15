@@ -1,8 +1,10 @@
 from webbreaker.threadfix.common.helper import ThreadFixHelper
+from webbreaker.common.logexceptionhelper import LogExceptionHelper
+from webbreaker.common.logexceptionhelper import LogInfoHelper
 from webbreaker.common.api_response_helper import APIHelper
-from webbreaker.threadfix.common.loghelper import ThreadFixLogHelper
 
-threadfixloghelper = ThreadFixLogHelper()
+logexceptionhelper = LogExceptionHelper()
+loginfohelper = LogInfoHelper()
 
 class ThreadFixCreate(object):
     def __init__(self, team_id, team, application, url):
@@ -11,15 +13,15 @@ class ThreadFixCreate(object):
 
     def _create_application_wrapper(self, team_id, team, application, url):
         if not team_id and not team:
-            threadfixloghelper.log_error_specify_team()
+            logexceptionhelper.LogErrorSpecifyTeam()
             return
         if team and not team_id:
             team_id = self._get_team_id_by_name(team)
         if team_id is None:
-            threadfixloghelper.log_error_no_team_with_application(team)
+            logexceptionhelper.LogErrorNoTeamWithApplication(team)
             return
         created_app = self._create_application(team_id, application, url)
-        threadfixloghelper.log_info_application_created_with_id((created_app['id']))
+        loginfohelper.LogInfoApplicationCreatedWithId((created_app['id']))
 
     def _create_application(self, team_id, name, url):
         response = self.helper.api.create_application(team_id, name, url)

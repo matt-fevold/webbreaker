@@ -40,8 +40,6 @@ class FortifyLogHelper(object):
     def log_error_credentials_not_stored(self):
         Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
 
-    def log_error_invalid_ssl_credentials(self):
-        Logger.app.error("Invalid SSL credentials")
 
     # INFO
     def log_info_version_successful_written_to_file(self, args, filename):

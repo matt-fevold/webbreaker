@@ -9,7 +9,6 @@ GitPython
 httplib2
 ndg-httpsclient
 pyasn1
-pybreaker
 pyOpenSSL
 requests>=2.18.4
 threadfixproapi>=1.0.2

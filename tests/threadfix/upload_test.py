@@ -5,8 +5,9 @@ from webbreaker.threadfix.upload import ThreadFixUpload
 from threadfixproapi.threadfixpro import ThreadFixProResponse
 
 @mock.patch('webbreaker.threadfix.upload.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.upload.threadfixloghelper')
-def test_threadfix_upload_scan_successful_app_id(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.upload.loginfohelper')
+@mock.patch('webbreaker.threadfix.upload.logexceptionhelper')
+def test_threadfix_upload_scan_successful_app_id(logex_mock, loginfo_mock, helper_mock):
     app_id = '100'
     app_name = 'new app'
     scan_file = 'WEBINSPECT_test_2011-11-11.fpr'
@@ -17,7 +18,7 @@ def test_threadfix_upload_scan_successful_app_id(log_mock, helper_mock):
     tfu = ThreadFixUpload(app_id, app_name, scan_file)
     assert helper_mock.call_count == 1
     tfu.helper.api.upload_scan.assert_called_once_with(app_id, scan_file)
-    log_mock.log_info_upload_response.assert_called_once_with(mockedResponseData)
+    loginfo_mock.LogInfoUploadResp.assert_called_once_with(mockedResponseData)
 
 @mock.patch('webbreaker.threadfix.upload.ThreadFixHelper')
 def test_threadfix_upload_scan_failed_app_id(helper_mock):
@@ -33,8 +34,9 @@ def test_threadfix_upload_scan_failed_app_id(helper_mock):
     assert helper_mock.call_count == 1
 
 @mock.patch('webbreaker.threadfix.upload.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.upload.threadfixloghelper')
-def test_threadfix_upload_scan_successful_no_app_id(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.upload.loginfohelper')
+@mock.patch('webbreaker.threadfix.upload.logexceptionhelper')
+def test_threadfix_upload_scan_successful_no_app_id(logex_mock, loginfo_mock, helper_mock):
     app_id = '100'
     app_name = 'new app'
     scan_file = 'WEBINSPECT_test_2011-11-11.fpr'
@@ -46,12 +48,13 @@ def test_threadfix_upload_scan_successful_no_app_id(log_mock, helper_mock):
     tfu = ThreadFixUpload(None, app_name, scan_file)
     assert helper_mock.call_count == 1
     assert tfu.helper.list_all_apps.call_count == 1
-    assert log_mock.log_error_threadfix_retrieve_fail.call_count == 0
-    log_mock.log_info_upload_response.assert_called_once_with(mockedResponseData)
+    assert logex_mock.LogErrorThreadfixRetrieveFail.call_count == 0
+    loginfo_mock.LogInfoUploadResp.assert_called_once_with(mockedResponseData)
 
 @mock.patch('webbreaker.threadfix.upload.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.upload.threadfixloghelper')
-def test_threadfix_upload_scan_failed_no_app_id_no_match(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.upload.loginfohelper')
+@mock.patch('webbreaker.threadfix.upload.logexceptionhelper')
+def test_threadfix_upload_scan_failed_no_app_id_no_match(logex_mock, loginfo_mock, helper_mock):
     app_name = 'new app'
     scan_file = 'WEBINSPECT_test_2011-11-11.fpr'
 
@@ -60,12 +63,14 @@ def test_threadfix_upload_scan_failed_no_app_id_no_match(log_mock, helper_mock):
     tfu = ThreadFixUpload(None, app_name, scan_file)
     assert helper_mock.call_count == 1
     assert tfu.helper.list_all_apps.call_count == 1
-    assert log_mock.log_error_threadfix_retrieve_fail.call_count == 0
-    assert log_mock.log_info_upload_response.call_count == 0
+    assert logex_mock.LogErrorThreadfixRetrieveFail.call_count == 0
+    logex_mock.LogErrorNoApplicationWithMatchingName.assert_called_with(app_name)
+    assert loginfo_mock.LogInfoUploadResp.call_count == 0
 
 @mock.patch('webbreaker.threadfix.upload.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.upload.threadfixloghelper')
-def test_threadfix_upload_scan_failed_no_app_id_multiple_matches(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.upload.loginfohelper')
+@mock.patch('webbreaker.threadfix.upload.logexceptionhelper')
+def test_threadfix_upload_scan_failed_no_app_id_multiple_matches(logex_mock, loginfo_mock, helper_mock):
     app_name = 'new app'
     scan_file = 'WEBINSPECT_test_2011-11-11.fpr'
 
@@ -75,13 +80,14 @@ def test_threadfix_upload_scan_failed_no_app_id_multiple_matches(log_mock, helpe
     tfu = ThreadFixUpload(None, app_name, scan_file)
     assert helper_mock.call_count == 1
     assert tfu.helper.list_all_apps.call_count == 1
-    assert log_mock.log_error_threadfix_retrieve_fail.call_count == 0
-    log_mock.log_error_multiple_application_found.assert_called_with(app_name)
-    assert log_mock.log_info_upload_response.call_count == 0
+    assert logex_mock.LogErrorThreadfixRetrieveFail.call_count == 0
+    logex_mock.LogErrorMultipleApplicationFound.assert_called_with(app_name)
+    assert loginfo_mock.LogInfoUploadResp.call_count == 0
 
 @mock.patch('webbreaker.threadfix.upload.ThreadFixHelper')
-@mock.patch('webbreaker.threadfix.upload.threadfixloghelper')
-def test_threadfix_upload_scan_failed_no_app_id_empty_list(log_mock, helper_mock):
+@mock.patch('webbreaker.threadfix.upload.loginfohelper')
+@mock.patch('webbreaker.threadfix.upload.logexceptionhelper')
+def test_threadfix_upload_scan_failed_no_app_id_empty_list(logex_mock, loginfo_mock, helper_mock):
     app_name = 'new app'
     scan_file = 'WEBINSPECT_test_2011-11-11.fpr'
 
@@ -90,5 +96,5 @@ def test_threadfix_upload_scan_failed_no_app_id_empty_list(log_mock, helper_mock
     tfu = ThreadFixUpload(None, app_name, scan_file)
     assert helper_mock.call_count == 1
     assert tfu.helper.list_all_apps.call_count == 1
-    assert log_mock.log_error_threadfix_retrieve_fail.call_count == 1
-    assert log_mock.log_info_upload_response.call_count == 0
+    assert logex_mock.LogErrorThreadfixRetrieveFail.call_count == 1
+    assert loginfo_mock.LogInfoUploadResp.call_count == 0
