@@ -51,3 +51,6 @@ class WebInspectLogHelper(object):
 
     def log_error_invalid_ssl(self):
         Logger.app.error("'verify_ssl' must be either 'False' or a full valid CA Path.")
+
+    def log_error_not_running_scan(self):
+        Logger.app.error("This scan has entered a non-running state, Exiting now!")

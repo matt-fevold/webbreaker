@@ -9,6 +9,7 @@ from pybreaker import CircuitBreaker
 import requests
 from signal import getsignal, SIGINT, SIGABRT,SIGTERM, signal
 import sys
+import time
 import urllib3
 
 from webbreaker.common.webbreakerlogger import Logger
@@ -174,8 +175,12 @@ class WebInspectScan:
                 self.webinspect_api.export_scan_results(scan_id, 'xml')
                 self._results_queue.put('complete', block=False)
                 # TODO add json export
-            # TODO add in support for 'NotRunning' state
-            # TODO add in a wait so we don't absolutely hammer the server.
+
+            elif current_status.lower() == 'notrunning':
+                webinspectloghelper.log_error_not_running_scan()
+                self._stop_scan(scan_id)
+                sys.exit(ExitStatus.failure)
+            time.sleep(2)
 
     def _stop_scan(self, scan_id):
         self.webinspect_api.stop_scan(scan_id)
