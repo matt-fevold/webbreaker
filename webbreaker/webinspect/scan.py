@@ -7,30 +7,24 @@ from exitstatus import ExitStatus
 from multiprocessing.dummy import Pool as ThreadPool
 import requests
 from signal import getsignal, SIGINT, SIGABRT,SIGTERM, signal
+from subprocess import CalledProcessError, check_output
 import sys
 import time
 import urllib3
-
-from webbreaker.webinspect.authentication import WebInspectAuth
-from webbreaker.webinspect.common.helper import WebInspectAPIHelper
-
-
+import os
 import random
 import string
 import argparse
 import xml.etree.ElementTree as ElementTree
+import re
+from pybreaker import CircuitBreaker
 
+from webbreaker.webinspect.authentication import WebInspectAuth
+from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 from webbreaker.common.confighelper import Config
-import re
-from subprocess import CalledProcessError, check_output
-
-
-import os
-from pybreaker import CircuitBreaker
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
-
 from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 
@@ -80,11 +74,12 @@ class WebInspectScan:
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
         """
-        Start a scan for webinspect.
-        TODO flesh out this better
+        Start a scan for webinspect. It is multithreaded in that it uses a thread to handle checking on the scan status
+        and a queue in the main execution to wait for a repsonse from the thread.
         :return:
         """
 
+        # handle the authentication
         auth_config = WebInspectAuth()
         username, password = auth_config.authenticate(self.scan_overrides.username, self.scan_overrides.password)
 
@@ -96,23 +91,14 @@ class WebInspectScan:
 
         self.webinspect_api = WebInspectAPIHelper(username=username, password=password, webinspect_setting_overrides=formatted_overrides)
 
-        # if a scan policy has been specified, we need to make sure we can find/use it
-        self.webinspect_api.verify_scan_policy(self.config)
-
-        # Upload whatever overrides have been provided, skipped unless explicitly declared
-        if self.webinspect_api.setting_overrides.webinspect_upload_settings:
-            self.webinspect_api.upload_settings()
-
-        if self.webinspect_api.setting_overrides.webinspect_upload_webmacros:
-            self.webinspect_api.upload_webmacros()
-
-        # if there was a provided scan policy, we've already uploaded so don't bother doing it again.
-        if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
-            self.webinspect_api.upload_policy()
+        # abstract out a bunch of conditional uploads
+        self._upload_settings_and_policies()
 
         try:
             Logger.app.info("Running WebInspect Scan")
-            self.scan_id = self.webinspect_api.create_scan()  # it is self.scan to properly handle an exit event - find a better way
+
+            # make this class variable so the multithreading and context management can use the scan_id
+            self.scan_id = self.webinspect_api.create_scan()
 
             # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
@@ -126,12 +112,18 @@ class WebInspectScan:
             # kill thread
             pool.terminate()
 
-        # TODO go through and make sure that all these exceptions happen - way too many
-        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError, TypeError, NameError, KeyError,
-                IndexError) as e:
+        # Since 2.1.24 removing excepts that don't make sense
+        # removed: IndexError, KeyError, NameError
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
             Logger.app.error(
                 "WebInspect scan was not properly configured, unable to launch!! see also: {}".format(e))
             raise
+        except TypeError as e:
+            Logger.app.error("Something went wrong, please submit a bug report on github.com/Target/webbreaker/issues "
+                             "{}".format(e))
+            # Not necessarily the best way to handle this, but at least attempt to stop the running scan and exit.
+            self._stop_scan(self.scan_id)
+            exit(ExitStatus.failure)
         except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
             Logger.app.error("The WebInspect server is unreachable after several retries: {}!".format(e))
             self._stop_scan(self.scan_id)
@@ -143,8 +135,35 @@ class WebInspectScan:
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
 
+    def _upload_settings_and_policies(self):
+        """
+        upload any settings, policies or macros that need to be uploaded
+        :return:
+        """
+
+        # if a scan policy has been specified, we need to make sure we can find/use it on the server
+        self.webinspect_api.verify_scan_policy(self.config)
+
+        # Upload whatever overrides have been provided, skipped unless explicitly declared
+        if self.webinspect_api.setting_overrides.webinspect_upload_settings:
+            self.webinspect_api.upload_settings()
+
+        if self.webinspect_api.setting_overrides.webinspect_upload_webmacros:
+            self.webinspect_api.upload_webmacros()
+
+        # if there was a provided scan policy, we've already uploaded so don't bother doing it again.
+        if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
+            self.webinspect_api.upload_policy()
+
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def _scan(self, scan_id):
+        """
+        Used by a thread to handle querying the webinspect endpoint for the scan status. If it returns complete we are
+        happy and download the results files. If we enter NotRunning then something has gone wrong and we want to
+        exit with a failure.
+        :param scan_id: the id on the webinspect server for the running scan
+        :return: no return but upon completion sends a "complete" message back to the queue that is waiting for it.
+        """
         # for multithreading we want to use the same server each request
         self.webinspect_server = self.webinspect_api.setting_overrides.endpoint
         self.webinspect_api.host = self.webinspect_server
@@ -204,104 +223,74 @@ class WebInspectScan:
 
     def _webinspect_git_clone(self):
         """
-        # ...as well as pulling down webinspect server config files from github...
-        # TODO flesh out
+        If local file exist, it will use that file. If not, it will go to gihub and clone the config files
         :return:
         """
         try:
-            self._fetch_webinspect_configs()
-        except (CalledProcessError, TypeError):
+            config_helper = Config()
+            etc_dir = config_helper.etc
+            git_dir = os.path.join(config_helper.git, '.git')
+            try:
+                if self.scan_overrides.settings == 'Default':
+                    Logger.app.debug("Default settings were used")
+
+                    if os.path.isfile(self.scan_overrides.webinspect_upload_settings + '.xml'):
+                        self.scan_overrides.webinspect_upload_settings = self.scan_overrides.webinspect_upload_settings + '.xml'
+                    # if os.path.isfile(self.scan_overrides.webinspect_upload_settings):
+                    #     pass
+                    #     # removed 2.1.24 because this override was never used
+                    #     # options['upload_scan_settings'] = self.scan_overrides.webinspect_upload_settings
+                    # else:
+                    #     try:
+                    #         pass
+                    #         # removed 2.1.24 becuase this override was never used
+                    #         #options['upload_scan_settings'] = os.path.join(etc_dir,
+                    #         #                                               'settings',
+                    #         #                                               self.scan_overrides.webinspect_upload_settings + '.xml')
+                    #     except (AttributeError, TypeError) as e:
+                    #         pass
+                    #         # removed 2.1.24 becuase this override was never used
+                    # webinspectloghelper.log_error_settings(options['upload_settings'], e)
+
+                elif os.path.exists(git_dir):
+                    Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
+                    check_output(['git', 'init', etc_dir])
+                    check_output(
+                        ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'reset', '--hard'])
+                    check_output(
+                        ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'pull', '--rebase'])
+                    sys.stdout.flush()
+                elif not os.path.exists(git_dir):
+                    Logger.app.info("Cloning your specified WebInspect configurations to {}".format(config_helper.git))
+                    check_output(['git', 'clone', self.config.webinspect_git, config_helper.git])
+
+                else:
+                    Logger.app.error(
+                        "No GIT Repo was declared in your config.ini, therefore nothing will be cloned!")
+            except (CalledProcessError, AttributeError) as e:
+                webinspectloghelper.log_webinspect_config_issue(e)
+                raise
+            except GitCommandError as e:
+                webinspectloghelper.log_git_access_error(self.config.webinspect_git, e)
+                exit(ExitStatus.failure)
+                # removed 2.1.24 - doesn't appear to be very useful
+                # raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
+            except IndexError as e:
+                webinspectloghelper.log_config_file_unavailable(e)
+                exit(ExitStatus.failure)
+                # removed 2.1.24 - doesn't appear to be very useful
+                # raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
+
+            Logger.app.debug("Completed webinspect config fetch")
+            
+        except (TypeError):
             Logger.app.error("Retrieving WebInspect configurations from GIT repo...")
 
-
-    # TODO - move this to scan along with the other functions that only are used there.
-    def _fetch_webinspect_configs(self):
-        config_helper = Config()
-        etc_dir = config_helper.etc
-        git_dir = os.path.join(config_helper.git, '.git')
-        try:
-            if self.scan_overrides.settings == 'Default':
-                Logger.app.debug("Default settings were used")
-
-                if os.path.isfile(self.scan_overrides.webinspect_upload_settings + '.xml'):
-                    self.scan_overrides.webinspect_upload_settings = self.scan_overrides.webinspect_upload_settings + '.xml'
-                if os.path.isfile(self.scan_overrides.webinspect_upload_settings):
-                    pass
-                    # removed 2.1.24 because this override was never used
-                    # options['upload_scan_settings'] = self.scan_overrides.webinspect_upload_settings
-                else:
-                    try:
-                        pass
-                        # removed 2.1.24 becuase this override was never used
-                        #options['upload_scan_settings'] = os.path.join(etc_dir,
-                        #                                               'settings',
-                        #                                               self.scan_overrides.webinspect_upload_settings + '.xml')
-                    except (AttributeError, TypeError) as e:
-                        pass
-                        # removed 2.1.24 becuase this override was never used
-                        # webinspectloghelper.log_error_settings(options['upload_settings'], e)
-
-            elif os.path.exists(git_dir):
-                Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
-                check_output(['git', 'init', etc_dir])
-                check_output(
-                    ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'reset', '--hard'])
-                check_output(
-                    ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'pull', '--rebase'])
-                sys.stdout.flush()
-            elif not os.path.exists(git_dir):
-                Logger.app.info("Cloning your specified WebInspect configurations to {}".format(config_helper.git))
-                check_output(['git', 'clone', self.config.webinspect_git, config_helper.git])
-
-            else:
-                Logger.app.error(
-                    "No GIT Repo was declared in your config.ini, therefore nothing will be cloned!")
-        except (CalledProcessError, AttributeError) as e:
-            webinspectloghelper.log_webinspect_config_issue(e)
-            raise
-        except GitCommandError as e:
-            webinspectloghelper.log_git_access_error(self.config.webinspect_git, e)
-            raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
-        except IndexError as e:
-            webinspectloghelper.log_config_file_unavailable(e)
-            raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
-
-        Logger.app.debug("Completed webinspect config fetch")
-
-    @staticmethod
-    def _get_scan_targets(settings_file_path):
-        """
-        Given a settings file at the provided path, return a set containing
-        the targets for the scan.
-        :param settings_file_path: Path to WebInspect settings file
-        :return: unordered set of targets
-        """
-        # TODO: Validate settings_file_path
-        targets = set()
-        try:
-            tree = ElementTree.parse(settings_file_path)
-            root = tree.getroot()
-            for target in root.findall("xmlns:HostFolderRules/"
-                                       "xmlns:List/"
-                                       "xmlns:HostFolderRuleData/"
-                                       "xmlns:HostMatch/"
-                                       "xmlns:List/"
-                                       "xmlns:LookupList/"
-                                       "xmlns:string",
-                                       namespaces={'xmlns': 'http://spidynamics.com/schemas/scanner/1.0'}):
-                targets.add(target.text)
-        except FileNotFoundError:
-            Logger.app.error("Unable to read the settings file {0}".format(settings_file_path))
-            exit(1)
-        except ElementTree.ParseError:
-            Logger.app.error("Settings file is not configured properly")
-            exit(1)
-        return targets
 
 
 class ScanOverrides:
     """
-    This class is meant to handle all the ugliness that is webinspect scan optional arguements overrides.
+    This class is meant to handle all the ugliness that is webinspect scan optional arguments overrides.
     """
     def __init__(self, override_dict):
         try:
@@ -322,6 +311,7 @@ class ScanOverrides:
             self.login_macro = override_dict['login_macro']
             self.scan_policy = override_dict['scan_policy']
             self.scan_start = override_dict['scan_start']
+            # need to convert tuple to list
             self.start_urls = list(override_dict['start_urls'])
             self.workflow_macros = list(override_dict['workflow_macros'])
             self.allowed_hosts = list(override_dict['allowed_hosts'])
@@ -456,63 +446,63 @@ class ScanOverrides:
             if os.path.isfile(self.webinspect_upload_settings + '.xml'):
                 self.webinspect_upload_settings = self.webinspect_upload_settings + '.xml'
             if os.path.isfile(self.webinspect_upload_settings):
-                self.options.upload_scan_settings = self.webinspect_upload_settings
+                self.upload_scan_settings = self.webinspect_upload_settings
             else:
                 try:
-                    self.options.upload_scan_settings = os.path.join(self.webinspect_dir,
+                    self.upload_scan_settings = os.path.join(self.webinspect_dir,
                                                                    'settings',
                                                                         self.webinspect_upload_settings + '.xml')
                 except (AttributeError, TypeError) as e:
                     webinspectloghelper.log_error_settings(self.webinspect_upload_settings, e)
 
         else:
-            if os.path.isfile(self.options.settings + '.xml'):
-                self.options.settings = self.options.settings + '.xml'
+            if os.path.isfile(self.settings + '.xml'):
+                self.settings = self.settings + '.xml'
 
-            if not os.path.isfile(self.options.settings) and self.options.settings != 'Default':
+            if not os.path.isfile(self.settings) and self.settings != 'Default':
                 self.webinspect_upload_settings = os.path.join(self.webinspect_dir,
                                                           'settings',
-                                                               self.options.settings + '.xml')
+                                                               self.settings + '.xml')
 
-            elif self.options.settings == 'Default':
+            elif self.settings == 'Default':
                 # All WebInspect servers come with a Default.xml settings file, no need to upload it
                 self.webinspect_upload_settings = None
             else:
-                self.webinspect_upload_settings = self.options.settings
+                self.webinspect_upload_settings = self.settings
                 try:
 
-                    self.options.settings = re.search('(.*)\.xml', self.options.settings).group(1)
+                    self.settings = re.search('(.*)\.xml', self.settings).group(1)
                 except AttributeError as e:
                     Logger.app.error("There was an issue finding you settings file {}, verify it exists and make "
                                      "sure you pass in the path to the file (relative path okay): {}".format(
-                        self.options.settings, e))
+                        self.settings, e))
 
     def _parse_login_macro_overrides(self):
         """
         # if login macro has been specified, ensure it's uploaded.
         :return:
         """
-        if self.options.login_macro:
-            if self.options.upload_webmacros:
+        if self.login_macro:
+            if self.upload_webmacros:
                 # add macro to existing list.
-                self.options.upload_webmacros.append(self.options.login_macro)
+                self.upload_webmacros.append(self.login_macro)
             else:
                 # add macro to new list
-                self.options.upload_webmacros = []
-                self.options.upload_webmacros.append(self.options.login_macro)
+                self.upload_webmacros = []
+                self.upload_webmacros.append(self.login_macro)
 
     def _parse_workflow_macros_overrides(self):
         """
         # if workflow macros have been provided, ensure they are uploaded
         :return:
         """
-        if self.options.workflow_macros:
-            if self.options.upload_webmacros:
+        if self.workflow_macros:
+            if self.upload_webmacros:
                 # add macros to existing list
-                self.options.upload_webmacros.extend(self.options.workflow_macros)
+                self.upload_webmacros.extend(self.workflow_macros)
             else:
                 # add macro to new list
-                self.options.upload_webmacros = list(self.options.workflow_macros)
+                self.upload_webmacros = list(self.workflow_macros)
 
     def _parse_upload_webmacros_overrides(self):
         """
@@ -520,12 +510,12 @@ class ScanOverrides:
         This function will then trim .webmacro off, if file exist then upload to server, otherwise raise an error
         :return:
         """
-        if self.options.upload_webmacros:
+        if self.upload_webmacros:
             try:
                 # trying to be clever, remove any duplicates from our upload list
-                self.options.upload_webmacros = list(set(self.options.upload_webmacros))
+                self.upload_webmacros = list(set(self.upload_webmacros))
                 corrected_paths = []
-                for webmacro in self.options.upload_webmacros:
+                for webmacro in self.upload_webmacros:
                     if os.path.isfile(webmacro + '.webmacro'):
                         webmacro = webmacro + '.webmacro'
                     if not os.path.isfile(webmacro):
@@ -534,10 +524,10 @@ class ScanOverrides:
                                                             webmacro + '.webmacro'))
                     else:
                         corrected_paths.append(webmacro)
-                self.options.upload_webmacros = corrected_paths
+                self.upload_webmacros = corrected_paths
 
             except (AttributeError, TypeError) as e:
-                webinspectloghelper.log_error_settings(self.options.upload_webmacros, e)
+                webinspectloghelper.log_error_settings(self.upload_webmacros, e)
 
     def _parse_upload_policy_overrides(self):
         """
@@ -545,21 +535,21 @@ class ScanOverrides:
         :return:
         """
         try:
-            if self.options.upload_policy:
-                if os.path.isfile(self.options.upload_policy + '.policy'):
-                    self.options.upload_policy = self.options.upload_policy + '.policy'
-                if not os.path.isfile(self.options.upload_policy):
-                    self.options.upload_policy = os.path.join(self.webinspect_dir, 'policies',
-                                                                 self.options.upload_policy + '.policy')
+            if self.upload_policy:
+                if os.path.isfile(self.upload_policy + '.policy'):
+                    self.upload_policy = self.upload_policy + '.policy'
+                if not os.path.isfile(self.upload_policy):
+                    self.upload_policy = os.path.join(self.webinspect_dir, 'policies',
+                                                                 self.upload_policy + '.policy')
 
-            elif self.options.scan_policy:
-                if os.path.isfile(self.options.scan_policy + '.policy'):
-                    self.options.scan_policy = self.options.scan_policy + '.policy'
-                if not os.path.isfile(self.options.scan_policy):
-                    self.options.upload_policy = os.path.join(self.webinspect_dir, 'policies',
-                                                                 self.options.scan_policy + '.policy')
+            elif self.scan_policy:
+                if os.path.isfile(self.scan_policy + '.policy'):
+                    self.scan_policy = self.scan_policy + '.policy'
+                if not os.path.isfile(self.scan_policy):
+                    self.upload_policy = os.path.join(self.webinspect_dir, 'policies',
+                                                                 self.scan_policy + '.policy')
             else:
-                self.options.upload_policy = self.options.scan_policy
+                self.upload_policy = self.scan_policy
 
         except TypeError as e:
             webinspectloghelper.log_error_scan_policy(e)
@@ -575,8 +565,9 @@ class ScanOverrides:
             else:
                 targets = None
         except NameError as e:
-            # TODO should I break here? Or should I assign targets=None?
             webinspectloghelper.log_no_settings_file(e)
+            exit(ExitStatus.failure)
+
 
         return targets
 
@@ -585,11 +576,12 @@ class ScanOverrides:
         # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
         :return:
         """
-        if not self.options.allowed_hosts:
-            self.options.allowed_hosts = self.options.start_urls
+        if not self.allowed_hosts:
+            self.allowed_hosts = self.start_urls
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_endpoint(self):
+        # TODO this needs to be abstracted back to the jit scheduler class - left in due to time considerations
         config = WebInspectConfig()
         lb = WebInspectJitScheduler(endpoints=config.endpoints,
                                     server_size_needed=self.scan_size,
@@ -604,7 +596,8 @@ class ScanOverrides:
             Logger.app.error("No servers are available to handle this request! {}".format(e))
             sys.exit(ExitStatus.failure)
 
-    def _trim_ext(self, file):
+    @staticmethod
+    def _trim_ext(file):
         if type(file) is list:
             result = []
             for f in file:
@@ -625,14 +618,44 @@ class ScanOverrides:
         strips off the extension from the options in self.options
         """
         # Trim .xml
-        self.options.settings = self._trim_ext(self.options.settings)
+        self.settings = self._trim_ext(self.settings)
         self.webinspect_upload_settings = self._trim_ext(self.webinspect_upload_settings)
 
         # Trim .webmacro
-        self.options.upload_webmacros = self._trim_ext(self.options.upload_webmacros)
-        self.options.workflow_macros = self._trim_ext(self.options.workflow_macros)
-        self.options.login_macro = self._trim_ext(self.options.login_macro)
+        self.upload_webmacros = self._trim_ext(self.upload_webmacros)
+        self.workflow_macros = self._trim_ext(self.workflow_macros)
+        self.login_macro = self._trim_ext(self.login_macro)
 
         # Trim .policy
-        self.options.upload_policy = self._trim_ext(self.options.upload_policy)
-        self.options.scan_policy = self._trim_ext(self.options.scan_policy)
+        self.upload_policy = self._trim_ext(self.upload_policy)
+        self.scan_policy = self._trim_ext(self.scan_policy)
+
+    @staticmethod
+    def _get_scan_targets(settings_file_path):
+        """
+        Given a settings file at the provided path, return a set containing
+        the targets for the scan.
+        :param settings_file_path: Path to WebInspect settings file
+        :return: unordered set of targets
+        """
+        # TODO: Validate settings_file_path
+        targets = set()
+        try:
+            tree = ElementTree.parse(settings_file_path)
+            root = tree.getroot()
+            for target in root.findall("xmlns:HostFolderRules/"
+                                       "xmlns:List/"
+                                       "xmlns:HostFolderRuleData/"
+                                       "xmlns:HostMatch/"
+                                       "xmlns:List/"
+                                       "xmlns:LookupList/"
+                                       "xmlns:string",
+                                       namespaces={'xmlns': 'http://spidynamics.com/schemas/scanner/1.0'}):
+                targets.add(target.text)
+        except FileNotFoundError:
+            Logger.app.error("Unable to read the settings file {0}".format(settings_file_path))
+            exit(ExitStatus.failure)
+        except ElementTree.ParseError:
+            Logger.app.error("Settings file is not configured properly")
+            exit(ExitStatus.failure)
+        return targets
