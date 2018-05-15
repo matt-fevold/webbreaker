@@ -16,19 +16,15 @@ def main():
 
     # initialize python
     try:
-        if distro == "darwin":
-            # Use Mac OS Python Standard
-            python_exe = os.path.abspath(os.path.join('/System', 'Library', 'Frameworks', 'Python.framework', 'Versions', '2.7',
-                                                  'bin', 'python2.7'))
-        else:
+        if os.path.isfile(sys.executable):
             python_exe = sys.executable
+        else:
+            print("No python executable was found!")
 
     except (NameError, OSError, AttributeError) as e:
         # Every other OS use this
         print("No python executable was found: {}".format(e))
 
-    # Declare exe and install deps
-    #requirements_install = ['pip', "install", "--user", "-r", requirements_file]
     # Declare site-packages and user bin for console scripts on modules
     user_site = [python_exe, '-m', 'site', '--user-site']
     # Set user bin directory for py modules installed
@@ -41,9 +37,10 @@ def main():
             stderr=STDOUT
         )
         output = str(process.communicate()[0].decode('utf-8')).rstrip()
-        if process.returncode != 0:
-            sys.stderr.write("An error occurred while executing {0} command.".format(command))
-            raise SystemExit
+        print("RETURN CODE{}".format(process.returncode))
+        #if process.returncode != 0:
+        #    sys.stderr.write("An error occurred while executing {0} command.".format(command))
+        #    raise SystemExit
         return output
 
     try:
