@@ -87,14 +87,11 @@ class WebInspectScan:
         # handle github setup
         self._webinspect_git_clone()
 
-        # get a formatted dictionary to pass to the webinspect api
-        formatted_overrides = self.scan_overrides.get_formatted_overrides()
-
         # Doing it kind of ugly - it removes a circular dependency issue, it's functionally the same as other uses of
         #  WebInspectAPIHelper.
         self.webinspect_api = webbreaker.webinspect.common.helper.WebInspectAPIHelper(username=username,
                                                                                       password=password,
-                                                                                      webinspect_setting_overrides=formatted_overrides)
+                                                                                      webinspect_setting_overrides=self.scan_overrides)
 
         # abstract out a bunch of conditional uploads
         self._upload_settings_and_policies()
@@ -127,7 +124,6 @@ class WebInspectScan:
             Logger.app.error("Something went wrong, please submit a bug report on github.com/Target/webbreaker/issues "
                              "{}".format(e))
             # Not necessarily the best way to handle this, but at least attempt to stop the running scan and exit.
-            self._stop_scan(self.scan_id)
             exit(ExitStatus.failure)
         except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
             Logger.app.error("The WebInspect server is unreachable after several retries: {}!".format(e))
@@ -292,7 +288,6 @@ class WebInspectScan:
             Logger.app.error("Retrieving WebInspect configurations from GIT repo...")
 
 
-
 class ScanOverrides:
     """
     This class is meant to handle all the ugliness that is webinspect scan optional arguments overrides.
@@ -320,8 +315,9 @@ class ScanOverrides:
             self.start_urls = list(override_dict['start_urls'])
             self.workflow_macros = list(override_dict['workflow_macros'])
             self.allowed_hosts = list(override_dict['allowed_hosts'])
-            self.scan_size = override_dict['size'] 
+            self.scan_size = override_dict['size']
             self.fortify_user = override_dict['fortify_user']
+            self.targets = None  # to be set in a parse function
 
             self.endpoint = self.get_endpoint()
             self.runenv = WebBreakerHelper.check_run_env()
@@ -410,13 +406,14 @@ class ScanOverrides:
             self._parse_upload_policy_overrides()
 
             # Determine the targets specified in a settings file
-            self.targets = self._parse_upload_settings_option_for_scan_target()
+            self._parse_upload_settings_option_for_scan_target()
 
             # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
             self._parse_assigned_hosts_option()
 
-        except (AttributeError, UnboundLocalError, KeyError):
-            webinspectloghelper.log_configuration_incorrect(Logger.app_logfile)
+        except (AttributeError, UnboundLocalError, KeyError) as e:
+            Logger.app.error("{}".format(e))
+            # webinspectloghelper.log_configuration_incorrect(Logger.app_logfile)
             # raise
 
         Logger.app.debug("Completed webinspect settings parse")
@@ -488,13 +485,13 @@ class ScanOverrides:
         :return:
         """
         if self.login_macro:
-            if self.upload_webmacros:
+            if self.webinspect_upload_webmacros:
                 # add macro to existing list.
-                self.upload_webmacros.append(self.login_macro)
+                self.webinspect_upload_webmacros.append(self.login_macro)
             else:
                 # add macro to new list
-                self.upload_webmacros = []
-                self.upload_webmacros.append(self.login_macro)
+                self.webinspect_upload_webmacros = []
+                self.webinspect_upload_webmacros.append(self.login_macro)
 
     def _parse_workflow_macros_overrides(self):
         """
@@ -515,12 +512,12 @@ class ScanOverrides:
         This function will then trim .webmacro off, if file exist then upload to server, otherwise raise an error
         :return:
         """
-        if self.upload_webmacros:
+        if self.webinspect_upload_webmacros:
             try:
                 # trying to be clever, remove any duplicates from our upload list
-                self.upload_webmacros = list(set(self.upload_webmacros))
+                self.webinspect_upload_webmacros = list(set(self.webinspect_upload_webmacros))
                 corrected_paths = []
-                for webmacro in self.upload_webmacros:
+                for webmacro in self.webinspect_upload_webmacros:
                     if os.path.isfile(webmacro + '.webmacro'):
                         webmacro = webmacro + '.webmacro'
                     if not os.path.isfile(webmacro):
@@ -529,10 +526,10 @@ class ScanOverrides:
                                                             webmacro + '.webmacro'))
                     else:
                         corrected_paths.append(webmacro)
-                self.upload_webmacros = corrected_paths
+                self.webinspect_upload_webmacros = corrected_paths
 
             except (AttributeError, TypeError) as e:
-                webinspectloghelper.log_error_settings(self.upload_webmacros, e)
+                webinspectloghelper.log_error_settings(self.webinspect_upload_webmacros, e)
 
     def _parse_upload_policy_overrides(self):
         """
@@ -540,21 +537,21 @@ class ScanOverrides:
         :return:
         """
         try:
-            if self.upload_policy:
-                if os.path.isfile(self.upload_policy + '.policy'):
-                    self.upload_policy = self.upload_policy + '.policy'
-                if not os.path.isfile(self.upload_policy):
-                    self.upload_policy = os.path.join(self.webinspect_dir, 'policies',
-                                                                 self.upload_policy + '.policy')
+            if self.webinspect_upload_policy:
+                if os.path.isfile(self.webinspect_upload_policy + '.policy'):
+                    self.webinspect_upload_policy = self.webinspect_upload_policy + '.policy'
+                if not os.path.isfile(self.webinspect_upload_policy):
+                    self.webinspect_upload_policy = os.path.join(self.webinspect_dir, 'policies',
+                                                                 self.webinspect_upload_policy + '.policy')
 
             elif self.scan_policy:
                 if os.path.isfile(self.scan_policy + '.policy'):
                     self.scan_policy = self.scan_policy + '.policy'
                 if not os.path.isfile(self.scan_policy):
-                    self.upload_policy = os.path.join(self.webinspect_dir, 'policies',
+                    self.webinspect_upload_policy = os.path.join(self.webinspect_dir, 'policies',
                                                                  self.scan_policy + '.policy')
             else:
-                self.upload_policy = self.scan_policy
+                self.webinspect_upload_policy = self.scan_policy
 
         except TypeError as e:
             webinspectloghelper.log_error_scan_policy(e)
@@ -566,15 +563,14 @@ class ScanOverrides:
         """
         try:
             if self.webinspect_upload_settings:
-                targets = self._get_scan_targets(self.webinspect_upload_settings)
+
+                self.targets = self._get_scan_targets(self.webinspect_upload_settings)
             else:
-                targets = None
+                self.targets = None
         except NameError as e:
             webinspectloghelper.log_no_settings_file(e)
             exit(ExitStatus.failure)
 
-
-        return targets
 
     def _parse_assigned_hosts_option(self):
         """
@@ -627,12 +623,12 @@ class ScanOverrides:
         self.webinspect_upload_settings = self._trim_ext(self.webinspect_upload_settings)
 
         # Trim .webmacro
-        self.upload_webmacros = self._trim_ext(self.upload_webmacros)
+        self.webinspect_upload_webmacros = self._trim_ext(self.webinspect_upload_webmacros)
         self.workflow_macros = self._trim_ext(self.workflow_macros)
         self.login_macro = self._trim_ext(self.login_macro)
 
         # Trim .policy
-        self.upload_policy = self._trim_ext(self.upload_policy)
+        self.webinspect_upload_policy = self._trim_ext(self.webinspect_upload_policy)
         self.scan_policy = self._trim_ext(self.scan_policy)
 
     @staticmethod
