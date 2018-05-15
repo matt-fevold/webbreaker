@@ -389,22 +389,22 @@ class ScanOverrides:
             self._trim_options()
 
             # name the scan
-            self._parse_scan_name_option()
+            self._parse_scan_name_overrides()
 
             # parse and trim .xml
-            self._parse_upload_settings_option()
+            self._parse_upload_settings_overrides()
 
             # if login macro has been specified, ensure it's uploaded.
-            self._parse_login_macro_option()
+            self._parse_login_macro_overrides()
 
             # if workflow macros have been provided, ensure they are uploaded
-            self._parse_workflow_macros_option()
+            self._parse_workflow_macros_overrides()
 
             # parse and trim .webmacros
-            self._parse_upload_webmacros_option()
+            self._parse_upload_webmacros_overrides()
 
             # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
-            self._parse_upload_policy_option()
+            self._parse_upload_policy_overrides()
 
             # Determine the targets specified in a settings file
             targets = self._parse_upload_settings_option_for_scan_target()
@@ -441,7 +441,7 @@ class ScanOverrides:
         Logger.app.debug("Completed webinspect settings parse")
         return settings_dict
 
-    def _parse_scan_name_option(self):
+    def _parse_scan_name_overrides(self):
         """
         Use self.options and depending on the run environment name the scan.
         Jenkins - either BUILD_TAG or JOB_NAME
@@ -460,7 +460,7 @@ class ScanOverrides:
             except AttributeError as e:
                 webinspectloghelper.log_scan_error(self.scan_name, e)
 
-    def _parse_upload_settings_option(self):
+    def _parse_upload_settings_overrides(self):
         """
         Check for a .xml settings file. Relative path for files are okay
         This function will then trim .xml. If file exist, upload to the server. Else raise an error.
@@ -502,7 +502,7 @@ class ScanOverrides:
                                      "sure you pass in the path to the file (relative path okay): {}".format(
                         self.options.settings, e))
 
-    def _parse_login_macro_option(self):
+    def _parse_login_macro_overrides(self):
         """
         # if login macro has been specified, ensure it's uploaded.
         :return:
@@ -516,7 +516,7 @@ class ScanOverrides:
                 self.options.upload_webmacros = []
                 self.options.upload_webmacros.append(self.options.login_macro)
 
-    def _parse_workflow_macros_option(self):
+    def _parse_workflow_macros_overrides(self):
         """
         # if workflow macros have been provided, ensure they are uploaded
         :return:
@@ -529,7 +529,7 @@ class ScanOverrides:
                 # add macro to new list
                 self.options.upload_webmacros = list(self.options.workflow_macros)
 
-    def _parse_upload_webmacros_option(self):
+    def _parse_upload_webmacros_overrides(self):
         """
         Check and vaildate for a .webmacro settings file. Relative paths for files are okay
         This function will then trim .webmacro off, if file exist then upload to server, otherwise raise an error
@@ -554,7 +554,7 @@ class ScanOverrides:
             except (AttributeError, TypeError) as e:
                 webinspectloghelper.log_error_settings(self.options.upload_webmacros, e)
 
-    def _parse_upload_policy_option(self):
+    def _parse_upload_policy_overrides(self):
         """
         # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
         :return:
