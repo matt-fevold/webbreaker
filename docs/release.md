@@ -1,3 +1,15 @@
+# Release 2.1.17
+
+| Category | Feature |
+| -------- | ------- |
+| API Support | Improved performance and reliability on WebInspect, Fortify SSC, and ThreadFix connections. |
+| Runtime Support | Added Circuit Breaker logic for greater reliability | 
+| Integration | Large, medium, and small logical lanes for WebInspect scan load balancing |
+| API Support | Configurable SSL validation on WebInspect, Fortify SSC, and ThreadFix Connections |
+| Product Support | Increase test coverage greater than 50% as well as a complete refactor of nearly all methods and classes |
+| Administration | Re-write User Guide. |
+| API Support | Added WebInspect `wiswag` support for ingesting of Swagger `.json` files for scanning RESTFul APIs |
+
 # Release 1.99
 
 | Category | Feature |
