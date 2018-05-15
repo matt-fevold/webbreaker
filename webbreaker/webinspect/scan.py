@@ -320,7 +320,7 @@ class ScanOverrides:
             self.start_urls = list(override_dict['start_urls'])
             self.workflow_macros = list(override_dict['workflow_macros'])
             self.allowed_hosts = list(override_dict['allowed_hosts'])
-            self.scan_size = override_dict['scan_size']
+            self.scan_size = override_dict['size'] 
             self.fortify_user = override_dict['fortify_user']
 
             self.endpoint = self.get_endpoint()
