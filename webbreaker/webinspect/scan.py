@@ -456,75 +456,75 @@ class ScanOverrides:
             if os.path.isfile(self.webinspect_upload_settings + '.xml'):
                 self.webinspect_upload_settings = self.webinspect_upload_settings + '.xml'
             if os.path.isfile(self.webinspect_upload_settings):
-                self.options['upload_scan_settings'] = self.webinspect_upload_settings
+                self.options.upload_scan_settings = self.webinspect_upload_settings
             else:
                 try:
-                    self.options['upload_scan_settings'] = os.path.join(self.webinspect_dir,
+                    self.options.upload_scan_settings = os.path.join(self.webinspect_dir,
                                                                    'settings',
                                                                         self.webinspect_upload_settings + '.xml')
                 except (AttributeError, TypeError) as e:
                     webinspectloghelper.log_error_settings(self.webinspect_upload_settings, e)
 
         else:
-            if os.path.isfile(self.options['settings'] + '.xml'):
-                self.options['settings'] = self.options['settings'] + '.xml'
+            if os.path.isfile(self.options.settings + '.xml'):
+                self.options.settings = self.options.settings + '.xml'
 
-            if not os.path.isfile(self.options['settings']) and self.options['settings'] != 'Default':
+            if not os.path.isfile(self.options.settings) and self.options.settings != 'Default':
                 self.webinspect_upload_settings = os.path.join(self.webinspect_dir,
                                                           'settings',
-                                                               self.options['settings'] + '.xml')
+                                                               self.options.settings + '.xml')
 
-            elif self.options['settings'] == 'Default':
+            elif self.options.settings == 'Default':
                 # All WebInspect servers come with a Default.xml settings file, no need to upload it
                 self.webinspect_upload_settings = None
             else:
-                self.webinspect_upload_settings = self.options['settings']
+                self.webinspect_upload_settings = self.options.settings
                 try:
 
-                    self.options['settings'] = re.search('(.*)\.xml', self.options['settings']).group(1)
+                    self.options.settings = re.search('(.*)\.xml', self.options.settings).group(1)
                 except AttributeError as e:
                     Logger.app.error("There was an issue finding you settings file {}, verify it exists and make "
                                      "sure you pass in the path to the file (relative path okay): {}".format(
-                        self.options['settings'], e))
+                        self.options.settings, e))
 
     def _parse_login_macro_option(self):
         """
         # if login macro has been specified, ensure it's uploaded.
         :return:
         """
-        if self.options['login_macro']:
-            if self.options['upload_webmacros']:
+        if self.options.login_macro:
+            if self.options.upload_webmacros:
                 # add macro to existing list.
-                self.options['upload_webmacros'].append(self.options['login_macro'])
+                self.options.upload_webmacros.append(self.options.login_macro)
             else:
                 # add macro to new list
-                self.options['upload_webmacros'] = []
-                self.options['upload_webmacros'].append(self.options['login_macro'])
+                self.options.upload_webmacros = []
+                self.options.upload_webmacros.append(self.options.login_macro)
 
     def _parse_workflow_macros_option(self):
         """
         # if workflow macros have been provided, ensure they are uploaded
         :return:
         """
-        if self.options['workflow_macros']:
-            if self.options['upload_webmacros']:
+        if self.options.workflow_macros:
+            if self.options.upload_webmacros:
                 # add macros to existing list
-                self.options['upload_webmacros'].extend(self.options['workflow_macros'])
+                self.options.upload_webmacros.extend(self.options.workflow_macros)
             else:
                 # add macro to new list
-                self.options['upload_webmacros'] = list(self.options['workflow_macros'])
+                self.options.upload_webmacros = list(self.options.workflow_macros)
 
     def _parse_upload_webmacros_option(self):
         """
         ? TODO
         :return:
         """
-        if self.options['upload_webmacros']:
+        if self.options.upload_webmacros:
             try:
                 # trying to be clever, remove any duplicates from our upload list
-                self.options['upload_webmacros'] = list(set(self.options['upload_webmacros']))
+                self.options.upload_webmacros = list(set(self.options.upload_webmacros))
                 corrected_paths = []
-                for webmacro in self.options['upload_webmacros']:
+                for webmacro in self.options.upload_webmacros:
                     if os.path.isfile(webmacro + '.webmacro'):
                         webmacro = webmacro + '.webmacro'
                     if not os.path.isfile(webmacro):
@@ -533,10 +533,10 @@ class ScanOverrides:
                                                             webmacro + '.webmacro'))
                     else:
                         corrected_paths.append(webmacro)
-                self.options['upload_webmacros'] = corrected_paths
+                self.options.upload_webmacros = corrected_paths
 
             except (AttributeError, TypeError) as e:
-                webinspectloghelper.log_error_settings(self.options['upload_webmacros'], e)
+                webinspectloghelper.log_error_settings(self.options.upload_webmacros, e)
 
     def _parse_upload_policy_option(self):
         """
@@ -544,21 +544,21 @@ class ScanOverrides:
         :return:
         """
         try:
-            if self.options['upload_policy']:
-                if os.path.isfile(self.options['upload_policy'] + '.policy'):
-                    self.options['upload_policy'] = self.options['upload_policy'] + '.policy'
-                if not os.path.isfile(self.options['upload_policy']):
-                    self.options['upload_policy'] = os.path.join(self.webinspect_dir, 'policies',
-                                                                 self.options['upload_policy'] + '.policy')
+            if self.options.upload_policy:
+                if os.path.isfile(self.options.upload_policy + '.policy'):
+                    self.options.upload_policy = self.options.upload_policy + '.policy'
+                if not os.path.isfile(self.options.upload_policy):
+                    self.options.upload_policy = os.path.join(self.webinspect_dir, 'policies',
+                                                                 self.options.upload_policy + '.policy')
 
-            elif self.options['scan_policy']:
-                if os.path.isfile(self.options['scan_policy'] + '.policy'):
-                    self.options['scan_policy'] = self.options['scan_policy'] + '.policy'
-                if not os.path.isfile(self.options['scan_policy']):
-                    self.options['upload_policy'] = os.path.join(self.webinspect_dir, 'policies',
-                                                                 self.options['scan_policy'] + '.policy')
+            elif self.options.scan_policy:
+                if os.path.isfile(self.options.scan_policy + '.policy'):
+                    self.options.scan_policy = self.options.scan_policy + '.policy'
+                if not os.path.isfile(self.options.scan_policy):
+                    self.options.upload_policy = os.path.join(self.webinspect_dir, 'policies',
+                                                                 self.options.scan_policy + '.policy')
             else:
-                self.options['upload_policy'] = self.options['scan_policy']
+                self.options.upload_policy = self.options.scan_policy
 
         except TypeError as e:
             webinspectloghelper.log_error_scan_policy(e)
@@ -584,8 +584,8 @@ class ScanOverrides:
         # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
         :return:
         """
-        if not self.options['allowed_hosts']:
-            self.options['allowed_hosts'] = self.options['start_urls']
+        if not self.options.allowed_hosts:
+            self.options.allowed_hosts = self.options.start_urls
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_endpoint(self):
@@ -624,14 +624,14 @@ class ScanOverrides:
         strips off the extension from the options in self.options
         """
         # Trim .xml
-        self.options['settings'] = self._trim_ext(self.options['settings'])
+        self.options.settings = self._trim_ext(self.options.settings)
         self.webinspect_upload_settings = self._trim_ext(self.webinspect_upload_settings)
 
         # Trim .webmacro
-        self.options['upload_webmacros'] = self._trim_ext(self.options['upload_webmacros'])
-        self.options['workflow_macros'] = self._trim_ext(self.options['workflow_macros'])
-        self.options['login_macro'] = self._trim_ext(self.options['login_macro'])
+        self.options.upload_webmacros = self._trim_ext(self.options.upload_webmacros)
+        self.options.workflow_macros = self._trim_ext(self.options.workflow_macros)
+        self.options.login_macro = self._trim_ext(self.options.login_macro)
 
         # Trim .policy
-        self.options['upload_policy'] = self._trim_ext(self.options['upload_policy'])
-        self.options['scan_policy'] = self._trim_ext(self.options['scan_policy'])
+        self.options.upload_policy = self._trim_ext(self.options.upload_policy)
+        self.options.scan_policy = self._trim_ext(self.options.scan_policy)
