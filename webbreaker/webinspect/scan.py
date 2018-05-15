@@ -98,6 +98,7 @@ class WebInspectScan:
         overrides['start_urls'] = list(overrides['start_urls'])
         overrides['workflow_macros'] = list(overrides['workflow_macros'])
 
+        self._webinspect_git_clone()
         # ...as well as pulling down webinspect server config files from github...
         try:
             self._fetch_webinspect_configs(overrides)
@@ -211,24 +212,32 @@ class WebInspectScan:
         signal(SIGINT, original_sigint_handler)
         signal(SIGTERM, original_sigterm_handler)
 
+    def _webinspect_git_clone(self):
+        # ...as well as pulling down webinspect server config files from github...
+        try:
+            self._fetch_webinspect_configs()
+        except (CalledProcessError, TypeError):
+            Logger.app.error("Retrieving WebInspect configurations from GIT repo...")
+            # ...and settings...
+
     # TODO - move this to scan along with the other functions that only are used there.
-    def _fetch_webinspect_configs(self, options):
+    def _fetch_webinspect_configs(self):
         config_helper = Config()
         etc_dir = config_helper.etc
         git_dir = os.path.join(config_helper.git, '.git')
         try:
-            if options['settings'] == 'Default':
+            if self.scan_overrides.settings == 'Default':
                 Logger.app.debug("Default settings were used")
 
-                if os.path.isfile(options['upload_settings'] + '.xml'):
-                    options['upload_settings'] = options['upload_settings'] + '.xml'
-                if os.path.isfile(options['upload_settings']):
-                    options['upload_scan_settings'] = options['upload_settings']
+                if os.path.isfile(self.scan_overrides.webinspect_upload_settings + '.xml'):
+                    self.scan_overrides.webinspect_upload_settings = self.scan_overrides.webinspect_upload_settings + '.xml'
+                if os.path.isfile(self.scan_overrides.webinspect_upload_settings):
+                    options['upload_scan_settings'] = self.scan_overrides.webinspect_upload_settings
                 else:
                     try:
                         options['upload_scan_settings'] = os.path.join(etc_dir,
                                                                        'settings',
-                                                                       options['upload_settings'] + '.xml')
+                                                                       self.scan_overrides.webinspect_upload_settings + '.xml')
                     except (AttributeError, TypeError) as e:
                         webinspectloghelper.log_error_settings(options['upload_settings'], e)
 
