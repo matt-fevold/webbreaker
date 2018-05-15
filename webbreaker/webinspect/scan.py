@@ -5,15 +5,12 @@
 from contextlib import contextmanager
 from exitstatus import ExitStatus
 from multiprocessing.dummy import Pool as ThreadPool
-from pybreaker import CircuitBreaker
 import requests
 from signal import getsignal, SIGINT, SIGABRT,SIGTERM, signal
 import sys
 import time
 import urllib3
 
-from webbreaker.common.webbreakerlogger import Logger
-from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 
@@ -24,11 +21,18 @@ import argparse
 import xml.etree.ElementTree as ElementTree
 
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
-from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.confighelper import Config
-import os
 import re
 from subprocess import CalledProcessError, check_output
+
+
+import os
+from pybreaker import CircuitBreaker
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webbreaker.common.webbreakerlogger import Logger
+
+from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
+from webbreaker.webinspect.webinspect_config import WebInspectConfig
 
 
 runenv = WebBreakerHelper.check_run_env()
@@ -65,18 +69,13 @@ class WebInspectScan:
         # used for multi threading the _is_available API call
         self._results_queue = queue.Queue()
 
-        self.scan_overrides = ScanOverrides(cli_overrides)
+        self.config = WebInspectConfig()
 
-        # used in some of the parse_option functions
-        self.webinspect_dir = Config().git
+        # handle all the overrides
+        self.scan_overrides = ScanOverrides(cli_overrides)
 
         # run the scan
         self.scan()
-
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
-    def _set_config(self):
-        self.config = WebInspectConfig()
-        Logger.app.debug("Webinspect Config: {}".format(self.config))
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
@@ -85,31 +84,17 @@ class WebInspectScan:
         TODO flesh out this better
         :return:
         """
-        self._set_config()
-        self.scan_overrides.parse_overrides()
-
-        username = scan_overrides['username']
-        password = scan_overrides['password']
 
         auth_config = WebInspectAuth()
-        username, password = auth_config.authenticate(username, password)
+        username, password = auth_config.authenticate(self.scan_overrides.username, self.scan_overrides.password)
 
-        # Convert multiple args from tuples to lists
-        overrides['allowed_hosts'] = list(overrides['allowed_hosts'])
-        overrides['start_urls'] = list(overrides['start_urls'])
-        overrides['workflow_macros'] = list(overrides['workflow_macros'])
-
+        # handle github setup
         self._webinspect_git_clone()
-        # ...as well as pulling down webinspect server config files from github...
-        try:
-            self._fetch_webinspect_configs(overrides)
-        except (CalledProcessError, TypeError):
-            Logger.app.error("Retrieving WebInspect configurations from GIT repo...")
-            # ...and settings...
-        webinspect_settings = self._parse_webinspect_options(overrides)
 
-        # The webinspect client is our point of interaction with the webinspect server farm
-        self.webinspect_api = WebInspectAPIHelper(username=username, password=password, webinspect_setting_overrides=webinspect_settings)
+        # get a formatted dictionary to pass to the webinspect api
+        formatted_overrides = self.scan_overrides.get_formatted_overrides()
+
+        self.webinspect_api = WebInspectAPIHelper(username=username, password=password, webinspect_setting_overrides=formatted_overrides)
 
         # if a scan policy has been specified, we need to make sure we can find/use it
         self.webinspect_api.verify_scan_policy(self.config)
@@ -218,12 +203,16 @@ class WebInspectScan:
         signal(SIGTERM, original_sigterm_handler)
 
     def _webinspect_git_clone(self):
+        """
         # ...as well as pulling down webinspect server config files from github...
+        # TODO flesh out
+        :return:
+        """
         try:
             self._fetch_webinspect_configs()
         except (CalledProcessError, TypeError):
             Logger.app.error("Retrieving WebInspect configurations from GIT repo...")
-            # ...and settings...
+
 
     # TODO - move this to scan along with the other functions that only are used there.
     def _fetch_webinspect_configs(self):
@@ -237,14 +226,20 @@ class WebInspectScan:
                 if os.path.isfile(self.scan_overrides.webinspect_upload_settings + '.xml'):
                     self.scan_overrides.webinspect_upload_settings = self.scan_overrides.webinspect_upload_settings + '.xml'
                 if os.path.isfile(self.scan_overrides.webinspect_upload_settings):
-                    options['upload_scan_settings'] = self.scan_overrides.webinspect_upload_settings
+                    pass
+                    # removed 2.1.24 because this override was never used
+                    # options['upload_scan_settings'] = self.scan_overrides.webinspect_upload_settings
                 else:
                     try:
-                        options['upload_scan_settings'] = os.path.join(etc_dir,
-                                                                       'settings',
-                                                                       self.scan_overrides.webinspect_upload_settings + '.xml')
+                        pass
+                        # removed 2.1.24 becuase this override was never used
+                        #options['upload_scan_settings'] = os.path.join(etc_dir,
+                        #                                               'settings',
+                        #                                               self.scan_overrides.webinspect_upload_settings + '.xml')
                     except (AttributeError, TypeError) as e:
-                        webinspectloghelper.log_error_settings(options['upload_settings'], e)
+                        pass
+                        # removed 2.1.24 becuase this override was never used
+                        # webinspectloghelper.log_error_settings(options['upload_settings'], e)
 
             elif os.path.exists(git_dir):
                 Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
@@ -272,8 +267,6 @@ class WebInspectScan:
             raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
 
         Logger.app.debug("Completed webinspect config fetch")
-
-
 
     @staticmethod
     def _get_scan_targets(settings_file_path):
@@ -305,48 +298,41 @@ class WebInspectScan:
             exit(1)
         return targets
 
-    # TODO find a permanent home for this function
-
-
-
-
-# TODO clean up
-import os
-from pybreaker import CircuitBreaker
-from webbreaker.common.webbreakerhelper import WebBreakerHelper
-from webbreaker.common.webbreakerlogger import Logger
-
-from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
-from webbreaker.webinspect.webinspect_config import WebInspectConfig
-
 
 class ScanOverrides:
     """
     This class is meant to handle all the ugliness that is webinspect scan optional arguements overrides.
     """
-    def __init__(self, override_dict, username=None, password=None):
+    def __init__(self, override_dict):
         try:
-            self.username = username
-            self.password = password
 
-            self.settings = override_dict['webinspect_settings']
-            self.scan_name = override_dict['webinspect_scan_name']
-            self.webinspect_upload_settings = override_dict['webinspect_upload_settings']
-            self.webinspect_upload_policy = override_dict['webinspect_upload_policy']
-            self.webinspect_upload_webmacros = override_dict['webinspect_upload_webmacros']
-            self.scan_mode = override_dict['webinspect_overrides_scan_mode']
-            self.scan_scope = override_dict['webinspect_overrides_scan_scope']
-            self.login_macro = override_dict['webinspect_overrides_login_macro']
-            self.scan_policy = override_dict['webinspect_overrides_scan_policy']
-            self.scan_start = override_dict['webinspect_overrides_scan_start']
-            self.start_urls = override_dict['webinspect_overrides_start_urls']
-            self.workflow_macros = override_dict['webinspect_workflow_macros']
-            self.allowed_hosts = override_dict['webinspect_allowed_hosts']
-            self.scan_size = override_dict['webinspect_scan_size']
+            # used in some of the parse_option functions
+            self.webinspect_dir = Config().git
+
+            self.username = override_dict['username']
+            self.password = override_dict['password']
+
+            self.settings = override_dict['settings']
+            self.scan_name = override_dict['scan_name']
+            self.webinspect_upload_settings = override_dict['upload_settings']
+            self.webinspect_upload_policy = override_dict['upload_policy']
+            self.webinspect_upload_webmacros = override_dict['upload_webmacros']
+            self.scan_mode = override_dict['scan_mode']
+            self.scan_scope = override_dict['scan_scope']
+            self.login_macro = override_dict['login_macro']
+            self.scan_policy = override_dict['scan_policy']
+            self.scan_start = override_dict['scan_start']
+            self.start_urls = list(override_dict['start_urls'])
+            self.workflow_macros = list(override_dict['workflow_macros'])
+            self.allowed_hosts = list(override_dict['allowed_hosts'])
+            self.scan_size = override_dict['scan_size']
             self.fortify_user = override_dict['fortify_user']
 
             self.endpoint = self.get_endpoint()
             self.runenv = WebBreakerHelper.check_run_env()
+
+            # prepare the options
+            self._parse_webinspect_options()
 
             Logger.app.debug("Completed webinspect client initialization")
             Logger.app.debug("url: {}".format(self.endpoint))
@@ -369,21 +355,43 @@ class ScanOverrides:
             # TODO clean up
             # webinspect_logexceptionhelper.log_error_settings(self.settings, e)
             raise
+        except argparse.ArgumentError as e:
+            webinspectloghelper.log_error_in_options(e)
+
+    def get_formatted_overrides(self):
+        """
+        Prepares the ScanOverrides object to be passed to the webinspect api as a dictionary.
+        :return: a dictionary of webinspect scan overrides
+        """
+        settings_dict = {}
+
+        # prepares the return value for use in api call.
+        settings_dict['webinspect_settings'] = self.settings
+        settings_dict['webinspect_scan_name'] = self.scan_name
+        settings_dict['webinspect_upload_settings'] = self.webinspect_upload_settings
+        settings_dict['webinspect_upload_policy'] = self.webinspect_upload_policy
+        settings_dict['webinspect_upload_webmacros'] = self.webinspect_upload_webmacros
+        settings_dict['webinspect_overrides_scan_mode'] = self.scan_mode
+        settings_dict['webinspect_overrides_scan_scope'] = self.scan_scope
+        settings_dict['webinspect_overrides_login_macro'] = self.login_macro
+        settings_dict['webinspect_overrides_scan_policy'] = self.scan_policy
+        settings_dict['webinspect_overrides_scan_start'] = self.scan_start
+        settings_dict['webinspect_overrides_start_urls'] = self.start_urls
+        settings_dict['webinspect_scan_targets'] = self.targets
+        settings_dict['webinspect_workflow_macros'] = self.workflow_macros
+        settings_dict['webinspect_allowed_hosts'] = self.allowed_hosts
+        settings_dict['webinspect_scan_size'] = self.scan_size
+        settings_dict['fortify_user'] = self.fortify_user
+
+        return settings_dict
 
     def _parse_webinspect_options(self):
         """
         The purpose is to go through and handle all the different optional arguments. The flow is that there is a
-        self.options and we manipulate it in each of the functions. The return value ends up being used in the api
-        call to start a scan.
-        :param options: The dictionary of click arguments that are all optional.
-        :return: a dictionary to be used in the scan api call.
+        self.options and we manipulate it in each of the functions.
+        :return:
         """
         try:
-            # value to return.
-            settings_dict = {}
-
-            # TODO move to init and fix conflict with overrides.
-
 
             # trim extensions off the options.
             self._trim_options()
@@ -407,39 +415,16 @@ class ScanOverrides:
             self._parse_upload_policy_overrides()
 
             # Determine the targets specified in a settings file
-            targets = self._parse_upload_settings_option_for_scan_target()
+            self.targets = self._parse_upload_settings_option_for_scan_target()
 
             # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
             self._parse_assigned_hosts_option()
 
-            try:
-                # prepares the return value for use in api call.
-                settings_dict['webinspect_settings'] = self.settings  # options['settings']
-                settings_dict['webinspect_scan_name'] = self.scan_name  # options['scan_name']
-                settings_dict['webinspect_upload_settings'] = self.webinspect_upload_settings  # options['upload_settings']
-                settings_dict['webinspect_upload_policy'] = self.webinspect_upload_policy  # options['upload_policy']
-                settings_dict['webinspect_upload_webmacros'] = self.webinspect_upload_webmacros  # options['upload_webmacros']
-                settings_dict['webinspect_overrides_scan_mode'] = self.scan_mode  # options['scan_mode']
-                settings_dict['webinspect_overrides_scan_scope'] = self.scan_scope  # options['scan_scope']
-                settings_dict['webinspect_overrides_login_macro'] = self.login_macro  # options['login_macro']
-                settings_dict['webinspect_overrides_scan_policy'] = self.scan_policy  # options['scan_policy']
-                settings_dict['webinspect_overrides_scan_start'] = self.scan_start  # options['scan_start']
-                settings_dict['webinspect_overrides_start_urls'] = self.start_urls  # options['start_urls']
-                settings_dict['webinspect_scan_targets'] = targets
-                settings_dict['webinspect_workflow_macros'] = self.workflow_macros  # options['workflow_macros']
-                settings_dict['webinspect_allowed_hosts'] = self.allowed_hosts  # options['allowed_hosts']
-                settings_dict['webinspect_scan_size'] = self.scan_size  # options['size']
-
-                settings_dict['fortify_user'] = self.fortify_user  # options['fortify_user']
-
-            except argparse.ArgumentError as e:
-                webinspectloghelper.log_error_in_options(e)
         except (AttributeError, UnboundLocalError, KeyError):
             webinspectloghelper.log_configuration_incorrect(Logger.app_logfile)
             # raise
 
         Logger.app.debug("Completed webinspect settings parse")
-        return settings_dict
 
     def _parse_scan_name_overrides(self):
         """
