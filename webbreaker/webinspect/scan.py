@@ -72,6 +72,17 @@ class WebInspectScan:
         # run the scan
         self.scan()
 
+        #xml parsing
+        self.xml_parsing()
+
+
+    def xml_parsing(self):
+        # TODO if scan complete, parse through the xml and output <host>, <severity>, <vulnerability>, <CWE>
+
+        print("hello world")
+        print("{0:80} {1:10} {2:20} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:80} {1:10} {2:20} {3:10}\n".format('-' * 80, '-' * 10, '-' * 20, '-' * 10))
+
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
         """
