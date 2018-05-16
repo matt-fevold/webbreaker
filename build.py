@@ -75,7 +75,6 @@ def main():
                         try:
                             # Use scripts from user_base
                             pyinstaller_exe = os.path.abspath(os.path.join(cmdline(user_bin), 'bin', 'pyinstaller'))
-                            print("pyinstaller: {}".format(pyinstaller_exe))
 
                             if not os.path.exists(pyinstaller_exe):
                                 pyinstaller_exe = os.path.abspath(os.path.join('/usr', 'bin', 'pyinstaller'))
