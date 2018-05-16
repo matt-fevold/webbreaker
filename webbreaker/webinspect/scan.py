@@ -58,6 +58,11 @@ try:  # python 2
 except (ImportError, AttributeError):  # Python3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+try:
+    import xml.etree.cElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+    
 
 class WebInspectScan:
     def __init__(self, cli_overrides):
@@ -75,13 +80,33 @@ class WebInspectScan:
         #xml parsing
         self.xml_parsing()
 
+    def xml_parsing(self, scan_name):
+        """
+        if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
+        :return:
+        """
+        # TODO read in xml file that was just created from the scan
+        print("scan name: ", scan_name)
+        # if file_name == "":
+        file_name = self.scan_overrides.scan_name + '.xml'
+        # else:
+        #     file_name = file_name
+        print(" file_name: ", file_name)
+        tree = ET.ElementTree(file=file_name)
 
-    def xml_parsing(self):
-        # TODO if scan complete, parse through the xml and output <host>, <severity>, <vulnerability>, <CWE>
+        # TODO parse through the xml for specific tag
+        for elem in tree.iter(tag='Host'):
+            print(" elem tag: ", elem.tag)
+            print(" elem text: ", elem.text)
 
-        print("hello world")
-        print("{0:80} {1:10} {2:20} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-        print("{0:80} {1:10} {2:20} {3:10}\n".format('-' * 80, '-' * 10, '-' * 20, '-' * 10))
+        # TODO output in console
+        print("Webbreaker WebInpsect scan results:\n")
+        print("\n{0:80} {1:10} {2:30} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:80} {1:10} {2:30} {3:10}\n".format('-' * 80, '-' * 10, '-' * 30, '-' * 10))
+        for match in elem:
+            print("{0:80} {1:10} {2:30} {3:10}".format(match['Host'], match['Severity'], match['Vnlnerability'], match['CWE']))
+
+        # TODO output into a json file
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
