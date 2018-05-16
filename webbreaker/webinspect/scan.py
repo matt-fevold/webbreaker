@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*-coding:utf-8-*-
 
-import click
 from contextlib import contextmanager
 from exitstatus import ExitStatus
 from multiprocessing.dummy import Pool as ThreadPool
 from pybreaker import CircuitBreaker
+from webbreaker.common.circuitbreakerhelper import APIListener, LogListener
 import requests
 from signal import getsignal, SIGINT, SIGABRT,SIGTERM, signal
 from sys import exit
@@ -33,6 +33,8 @@ try:  # python 2
 except (ImportError, AttributeError):  # Python3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+api_breaker = CircuitBreaker(listeners=[APIListener(), LogListener()])
+
 
 class WebInspectScan:
     def __init__(self, overrides):
@@ -47,7 +49,7 @@ class WebInspectScan:
         self.config = WebInspectConfig()
         Logger.app.debug("Webinspect Config: {}".format(self.config))
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
+    @api_breaker
     def scan(self, overrides):
         self._set_config_()
 
@@ -90,7 +92,6 @@ class WebInspectScan:
         try:
             Logger.app.info("Running WebInspect Scan")
             self.scan_id = self.webinspect_api.create_scan()  # it is self.scan to properly handle an exit event - find a better way
-
             # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
             pool.imap_unordered(self._scan, [self.scan_id])
@@ -129,8 +130,12 @@ class WebInspectScan:
         scan_complete = False
         while not scan_complete:
             current_status = self.webinspect_api.get_scan_status(scan_id)
+            Logger.app.info("FAIL COUNTER: {}".format(api_breaker.fail_counter))
+            Logger.app.info("CURRENT STATE: {}".format(api_breaker.current_state))
 
             if current_status.lower() == 'complete':
+                print("FAIL COUNTER: {}".format(api_breaker.fail_counter))
+                print("CURRENT STATE: {}".format(api_breaker.current_state))
                 scan_complete = True
                 # Now let's download or export the scan artifact in two formats
                 self.webinspect_api.export_scan_results(scan_id, 'fpr')

@@ -37,10 +37,9 @@ def main():
             stderr=STDOUT
         )
         output = str(process.communicate()[0].decode('utf-8')).rstrip()
-        print("RETURN CODE{}".format(process.returncode))
-        #if process.returncode != 0:
-        #    sys.stderr.write("An error occurred while executing {0} command.".format(command))
-        #    raise SystemExit
+        if process.returncode >= 2:
+            sys.stderr.write("An error occurred while executing {0} command.".format(command))
+            raise SystemExit
         return output
 
     try:
@@ -76,6 +75,7 @@ def main():
                         try:
                             # Use scripts from user_base
                             pyinstaller_exe = os.path.abspath(os.path.join(cmdline(user_bin), 'bin', 'pyinstaller'))
+                            print("pyinstaller: {}".format(pyinstaller_exe))
 
                             if not os.path.exists(pyinstaller_exe):
                                 pyinstaller_exe = os.path.abspath(os.path.join('/usr', 'bin', 'pyinstaller'))
