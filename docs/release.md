@@ -3,13 +3,13 @@
 | Category | Feature |
 | -------- | ------- |
 | API Support | Improved performance and reliability on WebInspect, Fortify SSC, and ThreadFix connections. |
-| API Support | Added WebInspect `wiswag` support for ingesting of Swagger `.json` files for scanning RESTFul APIs |
-| Runtime Support | Added Circuit Breaker logic for greater reliability | 
-| Runtime Support | Large, medium, and small logical lanes for WebInspect scan load balancing |
-| Runtime Support | Configurable SSL validation on WebInspect, Fortify SSC, and ThreadFix Connections |
-| Runtime Support | Scan multithreading support and load balancing with `JITSchecduler` |
-| Product Support | Increase test coverage greater than 50% as well as a complete refactor of nearly all methods and classes |
-| Administration | Re-write User Guide and help menu content. |
+| API Support | Added WebInspect `wiswag` scan support for ingesting Swagger `.json` files for scanning RESTFul APIs |
+| Runtime Support | Added Circuit Breaker logic from the `pybreaker` module for greater API reliability | 
+| Runtime Support | Refactored large, medium, and small logical lanes and load-balance 2 or greater WebInspect scan servers |
+| Runtime Support | Configurable SSL validation on `verify_ssl` with WebInspect, Fortify SSC, and ThreadFix Connections |
+| Runtime Support | Added multi-threading support for WebInspect functionality |
+| Product Support | Increase test coverage to greater than 50% as well as a complete refactor of nearly all methods and classes |
+| Administration | Re-write User Guide and CLI help menu content. |
 
 # Release 1.99
 
