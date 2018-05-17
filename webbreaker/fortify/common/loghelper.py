@@ -22,8 +22,6 @@ class FortifyLogHelper(object):
     def log_error_reading(self, args, e):
         Logger.app.error("Error reading {} {}".format(args, e))
 
-    def log_error_invalid_ssl(self):
-        Logger.app.error("'verify_ssl' must be either 'False' or a full valid CA Path.")
 
     def log_error_duplicate_ssc_project_versioin(self):
         Logger.app.error("There are duplicate Fortify SSC Project Version names.  Please choose another one.")
@@ -39,9 +37,6 @@ class FortifyLogHelper(object):
 
     def log_error_credentials_not_stored(self):
         Logger.app.error("Unable to validate Fortify credentials. Credentials were not stored")
-
-    def log_error_invalid_ssl_credentials(self):
-        Logger.app.error("Invalid SSL credentials")
 
     # INFO
     def log_info_version_successful_written_to_file(self, args, filename):

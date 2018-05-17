@@ -19,7 +19,7 @@ class WebInspectLogHelper(object):
         Logger.app.error(
             "Your configuration or settings are incorrect see log: ERROR: {}!!!".format(args))
 
-    def log_error_in_options(self, e):
+    def log_error_in_overrides(self, e):
         Logger.app.error("There was an error in the options provided!: ".format(e))
 
     def log_no_settings_file(self, e):
@@ -48,3 +48,6 @@ class WebInspectLogHelper(object):
 
     def log_error_fetch_webinspect_configs(self):
         Logger.app.error("Fetching webinspect config")
+
+    def log_error_not_running_scan(self):
+        Logger.app.error("This scan has entered a non-running state, Exiting now!")
