@@ -281,7 +281,6 @@ def fortify_list_application_versions(fortify_user, fortify_password, applicatio
               required=True,
               help="Specify Fortify app version")
 def fortify_download_scan(fortify_user, fortify_password, application, version):
-    # TODO
     FortifyDownload(fortify_user, fortify_password, application, version)
 
 

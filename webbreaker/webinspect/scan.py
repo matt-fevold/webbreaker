@@ -343,9 +343,8 @@ class ScanOverrides:
             Logger.app.debug("fortify_user: {}".format(self.fortify_user))
             # Breakour exception handling into better messages
         except (EnvironmentError, UnboundLocalError, NameError, TypeError, AttributeError) as e:
-            # TODO clean up
-            # webinspect_logexceptionhelper.log_error_settings(self.settings, e)
-            raise
+            Logger.app.error("Something went wrong processing the scan overrides: {}".format(e))
+            exit(ExitStatus.failure)
         except argparse.ArgumentError as e:
             webinspectloghelper.log_error_in_options(e)
 
