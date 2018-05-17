@@ -14,7 +14,6 @@ import urllib3
 import os
 import random
 import string
-import argparse
 import xml.etree.ElementTree as ElementTree
 import re
 
@@ -290,13 +289,14 @@ class ScanOverrides:
             self.login_macro = override_dict['login_macro']
             self.scan_policy = override_dict['scan_policy']
             self.scan_start = override_dict['scan_start']
+            self.scan_size = override_dict['size']
+            self.fortify_user = override_dict['fortify_user']
+            self.targets = None  # to be set in a parse function
+
             # need to convert tuple to list
             self.start_urls = list(override_dict['start_urls'])
             self.workflow_macros = list(override_dict['workflow_macros'])
             self.allowed_hosts = list(override_dict['allowed_hosts'])
-            self.scan_size = override_dict['size']
-            self.fortify_user = override_dict['fortify_user']
-            self.targets = None  # to be set in a parse function
 
             self.endpoint = self.get_endpoint()
             self.runenv = WebBreakerHelper.check_run_env()
@@ -320,12 +320,9 @@ class ScanOverrides:
             Logger.app.debug("scan_start: {}".format(self.scan_start))
             Logger.app.debug("start_urls: {}".format(self.start_urls))
             Logger.app.debug("fortify_user: {}".format(self.fortify_user))
-            # Breakour exception handling into better messages
-        except (EnvironmentError, UnboundLocalError, NameError, TypeError, AttributeError) as e:
-            Logger.app.error("Something went wrong processing the scan overrides: {}".format(e))
+        except (EnvironmentError, TypeError) as e:
+            webinspectloghelper.log_error_scan_overrides_parsing_error(e)
             exit(ExitStatus.failure)
-        except argparse.ArgumentError as e:
-            webinspectloghelper.log_error_in_overrides(e)
 
     def get_formatted_overrides(self):
         """

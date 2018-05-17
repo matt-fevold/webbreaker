@@ -12,6 +12,7 @@ except ImportError:  # Python3
     config = configparser.ConfigParser(allow_no_value=True)
 
 class Config(object):
+    # TODO test Congig().git
     def __init__(self):
         self.home = os.path.expanduser('~')
         self.install = None
