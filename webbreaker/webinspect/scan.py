@@ -17,18 +17,16 @@ import string
 import argparse
 import xml.etree.ElementTree as ElementTree
 import re
-from pybreaker import CircuitBreaker
 
+from webbreaker.common.confighelper import Config
+from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.authentication import WebInspectAuth
 # deviating from standard style to remove circular dependency problem.
 import webbreaker.webinspect.common.helper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
-from webbreaker.common.confighelper import Config
-from webbreaker.common.webbreakerhelper import WebBreakerHelper
-from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
-
 
 runenv = WebBreakerHelper.check_run_env()
 webinspectloghelper = WebInspectLogHelper()
@@ -39,8 +37,6 @@ except (ImportError, AttributeError) as e:  # module will fail if git is not ins
     Logger.app.error("Please install the git client or add it to your PATH variable ->"
                      " https://git-scm.com/download.  See log {}!!!".format
                      (Logger.app_logfile, e.message))
-
-
 
 try:
     import urlparse as urlparse
@@ -212,7 +208,6 @@ class WebInspectScan:
         if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
             self.webinspect_api.upload_policy()
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def _scan(self, scan_id):
         """
         Used by a thread to handle querying the webinspect endpoint for the scan status. If it returns complete we are
@@ -293,21 +288,6 @@ class WebInspectScan:
 
                     if os.path.isfile(self.scan_overrides.webinspect_upload_settings + '.xml'):
                         self.scan_overrides.webinspect_upload_settings = self.scan_overrides.webinspect_upload_settings + '.xml'
-                    # if os.path.isfile(self.scan_overrides.webinspect_upload_settings):
-                    #     pass
-                    #     # removed 2.1.24 because this override was never used
-                    #     # options['upload_scan_settings'] = self.scan_overrides.webinspect_upload_settings
-                    # else:
-                    #     try:
-                    #         pass
-                    #         # removed 2.1.24 becuase this override was never used
-                    #         #options['upload_scan_settings'] = os.path.join(etc_dir,
-                    #         #                                               'settings',
-                    #         #                                               self.scan_overrides.webinspect_upload_settings + '.xml')
-                    #     except (AttributeError, TypeError) as e:
-                    #         pass
-                    #         # removed 2.1.24 becuase this override was never used
-                    # webinspectloghelper.log_error_settings(options['upload_settings'], e)
 
                 elif os.path.exists(git_dir):
                     Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
@@ -351,7 +331,7 @@ class ScanOverrides:
     def __init__(self, override_dict):
         try:
 
-            # used in some of the parse_option functions
+            # used in some of the parse_overrides functions
             self.webinspect_dir = Config().git
 
             self.username = override_dict['username']
@@ -379,7 +359,7 @@ class ScanOverrides:
             self.runenv = WebBreakerHelper.check_run_env()
 
             # prepare the options
-            self._parse_webinspect_options()
+            self._parse_webinspect_overrides()
 
             Logger.app.debug("Completed webinspect client initialization")
             Logger.app.debug("url: {}".format(self.endpoint))
@@ -399,11 +379,10 @@ class ScanOverrides:
             Logger.app.debug("fortify_user: {}".format(self.fortify_user))
             # Breakour exception handling into better messages
         except (EnvironmentError, UnboundLocalError, NameError, TypeError, AttributeError) as e:
-            # TODO clean up
-            # webinspect_logexceptionhelper.log_error_settings(self.settings, e)
-            raise
+            Logger.app.error("Something went wrong processing the scan overrides: {}".format(e))
+            exit(ExitStatus.failure)
         except argparse.ArgumentError as e:
-            webinspectloghelper.log_error_in_options(e)
+            webinspectloghelper.log_error_in_overrides(e)
 
     def get_formatted_overrides(self):
         """
@@ -432,7 +411,7 @@ class ScanOverrides:
 
         return settings_dict
 
-    def _parse_webinspect_options(self):
+    def _parse_webinspect_overrides(self):
         """
         The purpose is to go through and handle all the different optional arguments. The flow is that there is a
         self.options and we manipulate it in each of the functions.
@@ -441,7 +420,7 @@ class ScanOverrides:
         try:
 
             # trim extensions off the options.
-            self._trim_options()
+            self._trim_overrides()
 
             # name the scan
             self._parse_scan_name_overrides()
@@ -462,10 +441,10 @@ class ScanOverrides:
             self._parse_upload_policy_overrides()
 
             # Determine the targets specified in a settings file
-            self._parse_upload_settings_option_for_scan_target()
+            self._parse_upload_settings_overrides_for_scan_target()
 
             # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
-            self._parse_assigned_hosts_option()
+            self._parse_assigned_hosts_overrides()
 
         except (AttributeError, UnboundLocalError, KeyError) as e:
             Logger.app.error("{}".format(e))
@@ -612,7 +591,7 @@ class ScanOverrides:
         except TypeError as e:
             webinspectloghelper.log_error_scan_policy(e)
 
-    def _parse_upload_settings_option_for_scan_target(self):
+    def _parse_upload_settings_overrides_for_scan_target(self):
         """
         # Determine the targets specified in a settings file
         :return:
@@ -627,8 +606,7 @@ class ScanOverrides:
             webinspectloghelper.log_no_settings_file(e)
             exit(ExitStatus.failure)
 
-
-    def _parse_assigned_hosts_option(self):
+    def _parse_assigned_hosts_overrides(self):
         """
         # Unless explicitly stated --allowed_hosts by default will use all values from --start_urls
         :return:
@@ -636,7 +614,6 @@ class ScanOverrides:
         if not self.allowed_hosts:
             self.allowed_hosts = self.start_urls
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_endpoint(self):
         # TODO this needs to be abstracted back to the jit scheduler class - left in due to time considerations
         config = WebInspectConfig()
@@ -655,6 +632,13 @@ class ScanOverrides:
 
     @staticmethod
     def _trim_ext(file):
+        """
+        This function removes the extension from a settings file. It has NOT been tested and this code is seemingly
+        duplicated somewhere else, but the code is different so without figuring out which does what exactly, will
+        leave in place.
+        :param file:
+        :return:
+        """
         if type(file) is list:
             result = []
             for f in file:
@@ -670,9 +654,9 @@ class ScanOverrides:
                 return os.path.splitext(file)[0]
             return os.path.splitext(os.path.basename(file))[0]
 
-    def _trim_options(self):
+    def _trim_overrides(self):
         """
-        strips off the extension from the options in self.options
+        strips off the extension from some of the overrides
         """
         # Trim .xml
         self.settings = self._trim_ext(self.settings)

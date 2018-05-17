@@ -8,6 +8,7 @@ from subprocess import CalledProcessError
 import re
 from exitstatus import ExitStatus
 
+from webbreaker.common.webbreakerconfig import convert_verify_ssl_config
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.confighelper import Config
@@ -38,7 +39,6 @@ except NameError:  # Python 2
 runenv = WebBreakerHelper.check_run_env()
 webinspectloghelper = WebInspectLogHelper()
 
-
 class WebInspectConfig(object):
     def __init__(self):
         Logger.app.debug("Starting webinspect config initialization")
@@ -48,7 +48,7 @@ class WebInspectConfig(object):
             self.endpoints = webinspect_dict['endpoints']
             self.webinspect_git = webinspect_dict['git']
             self.mapped_policies = webinspect_dict['mapped_policies']
-            self.verify_ssl = self._convert_verify_ssl_config(webinspect_dict['verify_ssl'])
+            self.verify_ssl = convert_verify_ssl_config(webinspect_dict['verify_ssl'])
         except KeyError as e:
             Logger.app.error("Your configurations file or scan setting is incorrect : {}!!!".format(e))
         Logger.app.debug("Completed webinspect config initialization")
@@ -96,20 +96,6 @@ class WebInspectConfig(object):
         Logger.app.debug("Initializing webinspect settings from config.ini")
         return settings_dict
 
-    @staticmethod
-    def _convert_verify_ssl_config(verify_ssl):
-        """
-        if config ssl value is False return False, otherwise it should be a valid path to the cert to be used for ssl
-        :param verify_ssl:
-        :return: either False or the path to the CA cert
-        """
-        path = os.path.abspath(os.path.realpath(verify_ssl))
-        if os.path.exists(path):
-            return path
-        elif verify_ssl.upper() == 'FALSE':
-            return False
-        else:
-            webinspectloghelper.log_error_invalid_ssl()
-            sys.exit(ExitStatus.failure)
+
 
 
