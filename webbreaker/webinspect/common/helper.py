@@ -15,6 +15,8 @@ from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webinspectapi.webinspect import WebInspectApi
 import ntpath
 
+from webbreaker.webinspect.scan import ScanOverrides
+
 #from webbreaker.common.api_response_helper import APIHelper
 
 import sys
@@ -33,7 +35,7 @@ class WebInspectAPIHelper(object):
 
         # if - we are running a webinspect scan
         if webinspect_setting_overrides is not None:
-            self.setting_overrides = Overrides(webinspect_setting_overrides, username, password)
+            self.setting_overrides = webinspect_setting_overrides
             # set the host to be the available endpoint
             self.host = self.setting_overrides.endpoint
 
@@ -294,72 +296,3 @@ class WebInspectAPIHelper(object):
 
         except (UnboundLocalError, NameError) as e:
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
-
-
-class Overrides:
-    def __init__(self, override_dict, username=None, password=None):
-        try:
-            self.username = username
-            self.password = password
-
-            self.settings = override_dict['webinspect_settings']
-            self.scan_name = override_dict['webinspect_scan_name']
-            self.webinspect_upload_settings = override_dict['webinspect_upload_settings']
-            self.webinspect_upload_policy = override_dict['webinspect_upload_policy']
-            self.webinspect_upload_webmacros = override_dict['webinspect_upload_webmacros']
-            self.scan_mode = override_dict['webinspect_overrides_scan_mode']
-            self.scan_scope = override_dict['webinspect_overrides_scan_scope']
-            self.login_macro = override_dict['webinspect_overrides_login_macro']
-            self.scan_policy = override_dict['webinspect_overrides_scan_policy']
-            self.scan_start = override_dict['webinspect_overrides_scan_start']
-            self.start_urls = override_dict['webinspect_overrides_start_urls']
-            self.workflow_macros = override_dict['webinspect_workflow_macros']
-            self.allowed_hosts = override_dict['webinspect_allowed_hosts']
-            self.scan_size = override_dict['webinspect_scan_size']
-
-            self.endpoint = self.get_endpoint()
-            self.runenv = WebBreakerHelper.check_run_env()
-
-            Logger.app.debug("Completed webinspect client initialization")
-            Logger.app.debug("url: {}".format(self.endpoint))
-            Logger.app.debug("settings: {}".format(self.settings))
-            Logger.app.debug("scan_name: {}".format(self.scan_name))
-            Logger.app.debug("upload_settings: {}".format(self.webinspect_upload_settings))
-            Logger.app.debug("upload_policy: {}".format(self.webinspect_upload_policy))
-            Logger.app.debug("upload_webmacros: {}".format(self.webinspect_upload_webmacros))
-            Logger.app.debug("workflow_macros: {}".format(self.workflow_macros))
-            Logger.app.debug("allowed_hosts: {}".format(self.allowed_hosts))
-            Logger.app.debug("scan_mode: {}".format(self.scan_mode))
-            Logger.app.debug("scan_scope: {}".format(self.scan_scope))
-            Logger.app.debug("login_macro: {}".format(self.login_macro))
-            Logger.app.debug("scan_policy: {}".format(self.scan_policy))
-            Logger.app.debug("scan_start: {}".format(self.scan_start))
-            Logger.app.debug("start_urls: {}".format(self.start_urls))
-            # Breakour exception handling into better messages
-        except (EnvironmentError, UnboundLocalError, NameError, TypeError, AttributeError) as e:
-            webinspect_logexceptionhelp.log_error_settings(self.settings, e)
-            raise
-
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
-    def get_endpoint(self):
-        config = WebInspectConfig()
-        lb = WebInspectJitScheduler(endpoints=config.endpoints,
-                                    server_size_needed=self.scan_size,
-                                    username=self.username,
-                                    password=self.password)
-        Logger.app.info("Querying WebInspect scan engines for availability.")
-        try:
-            endpoint = lb.get_endpoint()
-            return endpoint
-
-        except NoServersAvailableError as e:
-            Logger.app.error("No servers are available to handle this request! {}".format(e))
-            sys.exit(ExitStatus.failure)
-
-
-
-
-
-
-
-
