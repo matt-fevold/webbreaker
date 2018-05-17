@@ -43,11 +43,16 @@ class WebBreakerConfig(object):
 
 
 def convert_verify_ssl_config(verify_ssl):
+    """
+    if config ssl value is False return False, otherwise it should be a valid path to the cert to be used for ssl
+    :param verify_ssl:
+    :return: either False or the path to the CA cert
+    """
     path = os.path.abspath(os.path.realpath(verify_ssl))
     if os.path.exists(path):
         return path
     elif verify_ssl.upper() == 'FALSE':
         return False
     else:
-        fortifyloghelper.log_error_invalid_ssl_credentials()
+        logexceptionhelper.log_error_invalid_ssl_credentials()
         sys.exit(ExitStatus.failure)
