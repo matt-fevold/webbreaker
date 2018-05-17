@@ -16,19 +16,15 @@ def main():
 
     # initialize python
     try:
-        if distro == "darwin":
-            # Use Mac OS Python Standard
-            python_exe = os.path.abspath(os.path.join('/System', 'Library', 'Frameworks', 'Python.framework', 'Versions', '2.7',
-                                                  'bin', 'python2.7'))
-        else:
+        if os.path.isfile(sys.executable):
             python_exe = sys.executable
+        else:
+            print("No python executable was found!")
 
     except (NameError, OSError, AttributeError) as e:
         # Every other OS use this
         print("No python executable was found: {}".format(e))
 
-    # Declare exe and install deps
-    requirements_install = ['pip', "install", "--user", "-r", requirements_file]
     # Declare site-packages and user bin for console scripts on modules
     user_site = [python_exe, '-m', 'site', '--user-site']
     # Set user bin directory for py modules installed
@@ -41,7 +37,7 @@ def main():
             stderr=STDOUT
         )
         output = str(process.communicate()[0].decode('utf-8')).rstrip()
-        if process.returncode != 0:
+        if process.returncode >= 2:
             sys.stderr.write("An error occurred while executing {0} command.".format(command))
             raise SystemExit
         return output
@@ -52,13 +48,28 @@ def main():
                 try:
                     # Install openssl, wheel and pyinstaller
                     print("Validating and installing from pip open_ssl, wheel, and pyinstaller modules...")
-                    cmdline(['pip', 'install', '--user', 'pyOpenSSL'])
-                    cmdline(['pip', 'install', '--user', 'wheel'])
-                    cmdline(['pip', 'install', '--user', 'pyinstaller==3.3'])
+                    # Added condition for virtual environments
+                    retcode_pyopenssl = cmdline(['pip', 'install', '--user', 'pyOpenSSL'])
+                    if retcode_pyopenssl != 0:
+                        cmdline(['pip', 'install', 'pyOpenSSL'])
+
+                    # Added condition for virtual environments
+                    retcode_wheel = cmdline(['pip', 'install', '--user', 'wheel'])
+                    if retcode_wheel != 0:
+                        cmdline(['pip', 'install', 'wheel'])
+
+                    # Added condition for virtual environments
+                    retcode_pyinstaller = cmdline(['pip', 'install', '--user', 'pyinstaller==3.3'])
+                    if retcode_pyinstaller != 0:
+                        cmdline(['pip', 'install', 'pyinstaller==3.3'])
+                        
                     # Run requirements
                     print("Installing requirements.txt...")
                     if os.path.isfile(requirements_file):
-                        cmdline(requirements_install)
+                        retcode_requirements = cmdline(['pip', "install", "--user", "-r", requirements_file])
+                        if retcode_requirements !=0:
+                            cmdline(['pip', "install", "-r", requirements_file])
+                            
                         # Install and run pyinstaller
                         print("Starting pyinstaller build...")
                         try:
@@ -120,3 +131,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
