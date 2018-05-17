@@ -237,21 +237,6 @@ class WebInspectScan:
 
                     if os.path.isfile(self.scan_overrides.webinspect_upload_settings + '.xml'):
                         self.scan_overrides.webinspect_upload_settings = self.scan_overrides.webinspect_upload_settings + '.xml'
-                    # if os.path.isfile(self.scan_overrides.webinspect_upload_settings):
-                    #     pass
-                    #     # removed 2.1.24 because this override was never used
-                    #     # options['upload_scan_settings'] = self.scan_overrides.webinspect_upload_settings
-                    # else:
-                    #     try:
-                    #         pass
-                    #         # removed 2.1.24 becuase this override was never used
-                    #         #options['upload_scan_settings'] = os.path.join(etc_dir,
-                    #         #                                               'settings',
-                    #         #                                               self.scan_overrides.webinspect_upload_settings + '.xml')
-                    #     except (AttributeError, TypeError) as e:
-                    #         pass
-                    #         # removed 2.1.24 becuase this override was never used
-                    # webinspectloghelper.log_error_settings(options['upload_settings'], e)
 
                 elif os.path.exists(git_dir):
                     Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
