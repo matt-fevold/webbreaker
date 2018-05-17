@@ -92,11 +92,21 @@ class WebInspectScan:
         root = tree.getroot()
 
         # TODO parse through the xml for specific tag
-        p = root.find("Session/Issues/Issue")
-            #get the first attrib
-        print("TROUBLESHOOT: p ", p.attrib)
-        tag = p.iter("CheckTypeID")
-        print("TROBLESHOOT: tag: ", tag.text)
+        # for elem in tree.iter(tag=None):
+        #     payload_url = root.find("Session/URL").text
+        #     severity = root.find("Session/Issues/Issue/Severity").text
+        #
+        #     print("INFO: payload url: ", payload_url)
+        #     print("INFO: severity: ", severity)
+        #     print("INFO: vulnerability: ")
+
+        for issue in root.findall('Session/Issues/Issue'):
+            print("TROUBLESHOOT: issues: ", issue.text)
+            # for vulnerability in issue:
+            #     print("INFO: dont know what this is: ", vulnerability)
+            name = issue.find('Name')
+            print("INFO: vulnerability: ", name.text)
+
 
         # for elem in tree.iter(tag='Issues', attrib='_id'):
         #     print("OUTPUT: elem tag: ", elem.tag)
