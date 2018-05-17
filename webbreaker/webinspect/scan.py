@@ -78,9 +78,10 @@ class WebInspectScan:
         self.scan()
 
         #xml parsing
-        self.xml_parsing()
+        # if self.scan_overrides.settings.lower() == 'Default':
+        #     self.xml_parsing(self.scan_overrides.settings)
 
-    def xml_parsing(self):
+    def xml_parsing(self, file_name):
         """
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
         :return:
@@ -89,26 +90,28 @@ class WebInspectScan:
         print("INFO: settings ", self.scan_overrides.settings)
         print("INFO: scan_name:", self.scan_overrides.scan_name)
         file_name = self.scan_overrides.scan_name + '.xml'
-        # if file_name:
-        #     file_name = file_name
-        # else:
-        #     file_name = self.scan_overrides.scan_name + '.xml'
+
         print("INFO: file_name (aka scan name): ", file_name)
         tree = ET.ElementTree(file=file_name)
+        root = tree.getroot()
 
         # TODO parse through the xml for specific tag
-        for elem in tree.iter(tag='Host'):
-            print(" elem tag: ", elem.tag)
-            print(" elem text: ", elem.text)
+        p = root.find("Session/Issues/Issue")
+        print("TROUBLESHOOT: p ", p.text)
+
+        # for elem in tree.iter(tag='Issues', attrib='_id'):
+        #     print("OUTPUT: elem tag: ", elem.tag)
+        #     print("OUTPUT: elem attrib: ", elem.attrib)
+        #     print("OUTPUT: elem text: ", elem.text)
 
         # TODO output in console
         print("Webbreaker WebInpsect scan results:\n")
         print("\n{0:80} {1:10} {2:30} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
         print("{0:80} {1:10} {2:30} {3:10}\n".format('-' * 80, '-' * 10, '-' * 30, '-' * 10))
-        for match in elem:
-            print(" elem: ", elem)
-            print(" match: ", match)
-            print("{0:80} {1:10} {2:30} {3:10}".format(match['Host'], match['Severity'], match['Vnlnerability'], match['CWE']))
+        # for match in elem:
+        #     print(" elem: ", elem)
+        #     print(" match: ", match)
+        #     print("{0:80} {1:10} {2:30} {3:10}".format(match['Host'], match['Severity'], match['Vnlnerability'], match['CWE']))
 
         # TODO output into a json file
 
@@ -141,7 +144,7 @@ class WebInspectScan:
 
             # make this class variable so the multithreading and context management can use the scan_id
             self.scan_id = self.webinspect_api.create_scan()
-            print(("Here"))
+            print(("DEBUG: Here"))
 
             # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
@@ -172,11 +175,22 @@ class WebInspectScan:
             self._stop_scan(self.scan_id)
             exit(ExitStatus.failure)
 
-        Logger.app.info("WebInspect Scan Complete.")
+        # Logger.app.info("WebInspect Scan Complete.")
 
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
+
+
+        if self.scan_overrides.settings.lower() == 'default':
+            self.xml_parsing(self.scan_overrides.settings)
+        else:
+
+            # local = self.scan_overrides.settings + '.xml'
+            # print("DEBUG: local file ", local)
+            # if os.path.exists(local):
+            #     self.xml_parsing(local)
+            Logger.app.info("WebInspect Scan Complete.")
 
     def _upload_settings_and_policies(self):
         """
