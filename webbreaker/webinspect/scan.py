@@ -80,18 +80,20 @@ class WebInspectScan:
         #xml parsing
         self.xml_parsing()
 
-    def xml_parsing(self, scan_name):
+    def xml_parsing(self):
         """
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
         :return:
         """
         # TODO read in xml file that was just created from the scan
-        print("scan name: ", scan_name)
-        # if file_name == "":
+        print("INFO: settings ", self.scan_overrides.settings)
+        print("INFO: scan_name:", self.scan_overrides.scan_name)
         file_name = self.scan_overrides.scan_name + '.xml'
-        # else:
+        # if file_name:
         #     file_name = file_name
-        print(" file_name: ", file_name)
+        # else:
+        #     file_name = self.scan_overrides.scan_name + '.xml'
+        print("INFO: file_name (aka scan name): ", file_name)
         tree = ET.ElementTree(file=file_name)
 
         # TODO parse through the xml for specific tag
@@ -104,6 +106,8 @@ class WebInspectScan:
         print("\n{0:80} {1:10} {2:30} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
         print("{0:80} {1:10} {2:30} {3:10}\n".format('-' * 80, '-' * 10, '-' * 30, '-' * 10))
         for match in elem:
+            print(" elem: ", elem)
+            print(" match: ", match)
             print("{0:80} {1:10} {2:30} {3:10}".format(match['Host'], match['Severity'], match['Vnlnerability'], match['CWE']))
 
         # TODO output into a json file
@@ -137,6 +141,7 @@ class WebInspectScan:
 
             # make this class variable so the multithreading and context management can use the scan_id
             self.scan_id = self.webinspect_api.create_scan()
+            print(("Here"))
 
             # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
@@ -147,6 +152,7 @@ class WebInspectScan:
                 # block until scan completion.
                 self._results_queue.get(block=True)
 
+            print("Killing it")
             # kill thread
             pool.terminate()
 

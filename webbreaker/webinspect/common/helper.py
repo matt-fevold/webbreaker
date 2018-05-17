@@ -57,6 +57,7 @@ class WebInspectAPIHelper(object):
         Launches and monitors a scan
         :return: If scan was able to launch, scan_id. Otherwise none.
         """
+        print("in create_scan")
         try:
             Logger.app.debug("Creating Scan in webinspect client")
             overrides = json.dumps(webinspectjson.formatted_settings_payload(self.setting_overrides.settings,
@@ -71,6 +72,10 @@ class WebInspectAPIHelper(object):
                                                                              self.setting_overrides.workflow_macros,
                                                                              self.setting_overrides.allowed_hosts))
             response = self.api.create_scan(overrides)
+            print("DEBUG: overrides: ", overrides)
+            print("DEBUG: settings ", self.setting_overrides.settings)
+            print("DEBUG: scan_name: ", self.setting_overrides.scan_name)
+            print("DEBUG: response ", response)
             #APIHelper().check_for_response_errors(response)
 
             logger_response = json.dumps(response, default=lambda o: o.__dict__, sort_keys=True)
