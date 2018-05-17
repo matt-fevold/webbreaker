@@ -93,7 +93,10 @@ class WebInspectScan:
 
         # TODO parse through the xml for specific tag
         p = root.find("Session/Issues/Issue")
-        print("TROUBLESHOOT: p ", p.text)
+            #get the first attrib
+        print("TROUBLESHOOT: p ", p.attrib)
+        tag = p.iter("CheckTypeID")
+        print("TROBLESHOOT: tag: ", tag.text)
 
         # for elem in tree.iter(tag='Issues', attrib='_id'):
         #     print("OUTPUT: elem tag: ", elem.tag)
@@ -111,7 +114,7 @@ class WebInspectScan:
 
         # TODO output into a json file
 
-    @CircuitBreaker(fail_max=5, reset_timeout=60)
+    # @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
         """
         Start a scan for webinspect. It is multithreaded in that it uses a thread to handle checking on the scan status
