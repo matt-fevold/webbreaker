@@ -90,25 +90,25 @@ class WebInspectScan:
 
         # TODO parse through the xml for specific tag
         for elem in tree.iter(tag='Host'):
-            payload_url = root.find("Session/URL").text
-            print("INFO: payload url: ", payload_url)
+            self.payload_url = root.find("Session/URL").text
+            print("INFO: payload url: ", self.payload_url)
 
             for issue in root.findall('Session/Issues/Issue'):
-                vulnerability_name = issue.find('Name').text
-                severity = issue.find('Severity').text
-                print("INFO: vulnerability: ", vulnerability_name)
-                print("INFO: severity: ", severity)
+                self.vulnerability_name = issue.find('Name').text
+                self.severity = issue.find('Severity').text
+                print("INFO: vulnerability: ", self.vulnerability_name)
+                print("INFO: severity: ", self.severity)
 
                 for classification in root.findall('Session/Issues/Issue/Classifications'):
-                    cwe = classification.find('Classification').text
-                    print("INFO: CWE: ", cwe)
+                    self.cwe = classification.find('Classification').text
+                    print("INFO: CWE: ", self.cwe)
                 
-
 
         # TODO output in console
         print("Webbreaker WebInpsect scan results:\n")
         print("\n{0:80} {1:10} {2:30} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
         print("{0:80} {1:10} {2:30} {3:10}\n".format('-' * 80, '-' * 10, '-' * 30, '-' * 10))
+        print("{0:80} {1:10} {2:30} {3:10}\n".format(self.payload_url, self.severity, self.vulnerability_name, self.cwe))
         # for match in elem:
         #     print(" elem: ", elem)
         #     print(" match: ", match)
@@ -186,10 +186,10 @@ class WebInspectScan:
             self.xml_parsing(self.scan_overrides.settings)
         else:
 
-            # local = self.scan_overrides.settings + '.xml'
-            # print("DEBUG: local file ", local)
-            # if os.path.exists(local):
-            #     self.xml_parsing(local)
+            local = self.scan_overrides.settings + '.xml'
+            print("DEBUG: local file ", local)
+            if os.path.exists(local):
+                self.xml_parsing(local)
             Logger.app.info("WebInspect Scan Complete.")
 
     def _upload_settings_and_policies(self):
