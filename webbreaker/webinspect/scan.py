@@ -80,38 +80,30 @@ class WebInspectScan:
     def xml_parsing(self, file_name):
         """
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
-        :return:
+        :return: JSON file
         """
         # TODO read in xml file that was just created from the scan
-        print("INFO: settings ", self.scan_overrides.settings)
-        print("INFO: scan_name:", self.scan_overrides.scan_name)
         file_name = self.scan_overrides.scan_name + '.xml'
 
-        print("INFO: file_name (aka scan name): ", file_name)
         tree = ET.ElementTree(file=file_name)
         root = tree.getroot()
 
         # TODO parse through the xml for specific tag
-        # for elem in tree.iter(tag=None):
-        #     payload_url = root.find("Session/URL").text
-        #     severity = root.find("Session/Issues/Issue/Severity").text
-        #
-        #     print("INFO: payload url: ", payload_url)
-        #     print("INFO: severity: ", severity)
-        #     print("INFO: vulnerability: ")
+        for elem in tree.iter(tag='Host'):
+            payload_url = root.find("Session/URL").text
+            print("INFO: payload url: ", payload_url)
 
-        for issue in root.findall('Session/Issues/Issue'):
-            print("TROUBLESHOOT: issues: ", issue.text)
-            # for vulnerability in issue:
-            #     print("INFO: dont know what this is: ", vulnerability)
-            name = issue.find('Name')
-            print("INFO: vulnerability: ", name.text)
+            for issue in root.findall('Session/Issues/Issue'):
+                vulnerability_name = issue.find('Name').text
+                severity = issue.find('Severity').text
+                print("INFO: vulnerability: ", vulnerability_name)
+                print("INFO: severity: ", severity)
 
+                for classification in root.findall('Session/Issues/Issue/Classifications'):
+                    cwe = classification.find('Classification').text
+                    print("INFO: CWE: ", cwe)
+                
 
-        # for elem in tree.iter(tag='Issues', attrib='_id'):
-        #     print("OUTPUT: elem tag: ", elem.tag)
-        #     print("OUTPUT: elem attrib: ", elem.attrib)
-        #     print("OUTPUT: elem text: ", elem.text)
 
         # TODO output in console
         print("Webbreaker WebInpsect scan results:\n")
@@ -190,8 +182,7 @@ class WebInspectScan:
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
 
-
-        if self.scan_overrides.settings.lower() == 'default':
+        if self.scan_overrides.settings.lower() == 'litecart':
             self.xml_parsing(self.scan_overrides.settings)
         else:
 
