@@ -62,6 +62,9 @@ class WebInspectScan:
         self.config = WebInspectConfig()
 
         # handle all the overrides
+        if 'git' not in cli_overrides:  # it shouldn't be in the overrides, but here for potential future support of cli passed git paths
+            cli_overrides['git'] = Config().git
+
         self.scan_overrides = ScanOverrides(cli_overrides)
 
         # run the scan
@@ -274,7 +277,7 @@ class ScanOverrides:
         try:
 
             # used in some of the parse_overrides functions
-            self.webinspect_dir = Config().git
+            self.webinspect_dir = override_dict['git']
 
             self.username = override_dict['username']
             self.password = override_dict['password']
@@ -399,7 +402,7 @@ class ScanOverrides:
         Jenkins - either BUILD_TAG or JOB_NAME
         Others - webinspect-[5 random ascii characters]
         """
-        if not self.scan_name:
+        if self.scan_name is None:  # no cli passed scan_name
             try:
                 if runenv == "jenkins":
                     if "/" in os.getenv("JOB_NAME"):
