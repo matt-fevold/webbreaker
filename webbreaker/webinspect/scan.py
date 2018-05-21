@@ -27,7 +27,7 @@ from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 
-runenv = WebBreakerHelper.check_run_env()
+
 webinspectloghelper = WebInspectLogHelper()
 
 try:
@@ -403,17 +403,15 @@ class ScanOverrides:
         Others - webinspect-[5 random ascii characters]
         """
         if self.scan_name is None:  # no cli passed scan_name
-            try:
-                if runenv == "jenkins":
-                    if "/" in os.getenv("JOB_NAME"):
-                        self.scan_name = os.getenv("BUILD_TAG")
-                    else:
-                        self.scan_name = os.getenv("JOB_NAME")
+            if self.runenv == "jenkins":
+                if "/" in os.getenv("JOB_NAME"):
+                    self.scan_name = os.getenv("BUILD_TAG")
                 else:
-                    self.scan_name = "webinspect" + "-" + "".join(
-                        random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
-            except AttributeError as e:
-                webinspectloghelper.log_scan_error(self.scan_name, e)
+                    self.scan_name = os.getenv("JOB_NAME")
+            else:
+                self.scan_name = "webinspect" + "-" + "".join(
+                    random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
 
     def _parse_upload_settings_overrides(self):
         """
@@ -422,6 +420,7 @@ class ScanOverrides:
         All webInspect server come with a Default.xml settings file
         :return:
         """
+        # if cli supplied upload_settings
         if self.webinspect_upload_settings:
             if os.path.isfile(self.webinspect_upload_settings + '.xml'):
                 self.webinspect_upload_settings = self.webinspect_upload_settings + '.xml'
@@ -436,26 +435,30 @@ class ScanOverrides:
                     webinspectloghelper.log_error_settings(self.webinspect_upload_settings, e)
 
         else:
+            # if the settings file is provided and is a file - add an xml file extension...
+            #    more or less a quality of life thing for the cli.
             if os.path.isfile(self.settings + '.xml'):
                 self.settings = self.settings + '.xml'
 
+            # if it is not a file and it is not Default
             if not os.path.isfile(self.settings) and self.settings != 'Default':
-                self.webinspect_upload_settings = os.path.join(self.webinspect_dir,
-                                                          'settings',
-                                                               self.settings + '.xml')
 
+                self.webinspect_upload_settings = os.path.join(self.webinspect_dir,
+                                                               'settings',
+                                                               self.settings + '.xml')
+            # it is using the default settings file
             elif self.settings == 'Default':
                 # All WebInspect servers come with a Default.xml settings file, no need to upload it
                 self.webinspect_upload_settings = None
-            else:
+            else:  # it is a file and not using the default
                 self.webinspect_upload_settings = self.settings
                 try:
-
+                    # grab everything but .xml
                     self.settings = re.search('(.*)\.xml', self.settings).group(1)
                 except AttributeError as e:
-                    Logger.app.error("There was an issue finding you settings file {}, verify it exists and make "
-                                     "sure you pass in the path to the file (relative path okay): {}".format(
-                        self.settings, e))
+                        Logger.app.error("There was an issue finding you settings file {}, verify it exists and make "
+                             "sure you pass in the path to the file (relative path okay): {}".format(
+                            self.settings, e))
 
     def _parse_login_macro_overrides(self):
         """

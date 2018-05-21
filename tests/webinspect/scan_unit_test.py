@@ -6,9 +6,11 @@ from webbreaker.webinspect.scan import ScanOverrides
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 import os
+import mock
+
 
 def _setup_overrides(expected_username=None, expected_password=None, expected_allowed_hosts=(), expected_start_urls=(),
-                     expected_timeout=0, expected_settings='default', expected_upload_settings=None,
+                     expected_timeout=0, expected_settings='Default', expected_upload_settings=None,
                      expected_upload_macro=None, expected_upload_webmacro=None, expected_login_macro=None,
                      expected_upload_policy=None, expected_scan_policy=None, expected_scan_name=None,
                      expected_scan_mode=None, expected_fortify_user=None, expected_size='large',
@@ -71,7 +73,7 @@ def test_ScanOverrides_init_success():
     assert scan_override_object.username is None
     assert scan_override_object.password is None
 
-    assert scan_override_object.settings is 'default'
+    assert scan_override_object.settings is 'Default'
     assert scan_override_object.scan_name is None
     assert scan_override_object.webinspect_upload_settings is None
     assert scan_override_object.webinspect_upload_policy is None
@@ -166,8 +168,6 @@ def test_ScanOverrides_get_formatted_overrides_success():
 
 
 def test_ScanOverrides_parse_webinspect_overrides_success():
-    # TODO not working but this is the general flow - I want to make sure each is called.
-
     # Given
 
     # can't use setup_mocks sadly - can't mock parse_webinspect_options
@@ -204,6 +204,8 @@ def test_ScanOverrides_parse_scan_name_overrides_success():
     # Given
     _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
     overrides = _setup_overrides()
+    WebInspectLogHelper.log_error_scan_overrides_parsing_error = MagicMock()
+
 
     # When
     scan_overrides_object = ScanOverrides(overrides)
@@ -211,6 +213,25 @@ def test_ScanOverrides_parse_scan_name_overrides_success():
 
     # Expect
     assert scan_overrides_object.scan_name[0:11] in ['webinspect-']  # the randomly generated scan name
+
+
+# def test_ScanOverrides_parse_scan_name_overrides_AttributeError_failure():
+#     # Not 100% sure this exception can't be called anymore, but might as well test handling it somewhere.
+#
+#     # Given
+#     _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
+#     WebInspectLogHelper.log_scan_error = MagicMock
+#
+#     overrides = _setup_overrides()
+#     os.getenv = MagicMock(return_value=None)
+#
+#     # When
+#     with pytest.raises(AttributeError):
+#         scan_overrides_object = ScanOverrides(overrides)
+#         scan_overrides_object._parse_scan_name_overrides()
+#
+#     # Expect
+#     assert WebInspectLogHelper.log_scan_error.call_count == 1
 
 
 def test_ScanOverrides_parse_scan_name_overrides_cli_passed_scan_name_success():
@@ -223,7 +244,7 @@ def test_ScanOverrides_parse_scan_name_overrides_cli_passed_scan_name_success():
     scan_overrides_object._parse_scan_name_overrides()
 
     # Expect
-    assert scan_overrides_object.scan_name in ["Expected_Scan_Name"]  
+    assert scan_overrides_object.scan_name in ["Expected_Scan_Name"]
 
 
 def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success():
@@ -231,8 +252,8 @@ def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success()
     _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
     WebBreakerHelper.check_run_env = MagicMock(return_value="jenkins")
     # _parse_scan_name_overrides makes 2 calls to getevn, first one checks if there is a / in the return value and
-    #   follows 2 different paths. We want to test both pathsf
-    os.getenv = MagicMock(side_effect=["JOB_NAME//", "EXPECTED_BUILD_TAG"])
+    #   follows 2 different paths. We want to test both paths
+    os.getenv = MagicMock(side_effect=["/JOB_NAME/", "EXPECTED_BUILD_TAG"])
 
     overrides = _setup_overrides()
 
@@ -242,3 +263,66 @@ def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success()
 
     # Expect
     assert scan_overrides_object.scan_name in ['EXPECTED_BUILD_TAG']
+
+
+def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_JOB_NAME_success():
+    # Given
+    _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
+    WebBreakerHelper.check_run_env = MagicMock(return_value="jenkins")
+    # _parse_scan_name_overrides makes 2 calls to getevn, first one checks if there is a / in the return value and
+    #   follows 2 different paths. We want to test both paths
+    os.getenv = MagicMock(side_effect=["JOB_NAME", "EXPECTED_JOB_NAME"])
+
+    overrides = _setup_overrides()
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_scan_name_overrides()
+
+    # Expect
+    assert scan_overrides_object.scan_name in ['EXPECTED_JOB_NAME']
+
+
+def test_ScanOverrides_parse_upload_settings_overrides_success():
+    # Given
+    _setup_mocks()
+    # a bit of magic since this is called multiple times and it needs to be certain values.
+    os.path.isfile = MagicMock(return_value=False)
+    overrides = _setup_overrides()
+    scan_overrides_object = ScanOverrides(overrides)
+
+    # When
+    scan_overrides_object._parse_upload_settings_overrides()
+
+    # Expect
+    assert scan_overrides_object.webinspect_upload_settings is None
+
+
+def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_settings_success():
+    # Given
+    _setup_mocks()
+    os.path.isfile = MagicMock(return_value=False)
+    overrides = _setup_overrides(expected_settings="NotDefault")
+    scan_overrides_object = ScanOverrides(overrides)
+
+    # When
+    scan_overrides_object._parse_upload_settings_overrides()
+
+    # Expect
+    assert scan_overrides_object.webinspect_upload_settings in '/path/to/git/settings/NotDefault.xml'
+
+
+def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_settings_found_file_success():
+    # Given
+    _setup_mocks()
+    # a bit of magic since this is called multiple times and it needs to be certain values.
+    os.path.isfile = MagicMock(side_effect=[False, True, True, True, True])
+    overrides = _setup_overrides(expected_settings="/valid/path/NotDefault.xml")
+    scan_overrides_object = ScanOverrides(overrides)
+
+    # When
+    scan_overrides_object._parse_upload_settings_overrides()
+
+    # Expect
+    assert scan_overrides_object.webinspect_upload_settings in "/valid/path/NotDefault.xml"
+    assert scan_overrides_object.settings in "/valid/path/NotDefault"
