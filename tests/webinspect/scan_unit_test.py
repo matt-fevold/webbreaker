@@ -167,37 +167,50 @@ def test_ScanOverrides_get_formatted_overrides_success():
     assert formatted_overrides_dict['fortify_user'] is None
 
 
-def test_ScanOverrides_parse_webinspect_overrides_success():
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._trim_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_scan_name_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_upload_settings_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_login_macro_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_workflow_macros_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_upload_webmacros_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_upload_policy_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_upload_settings_overrides_for_scan_target')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_assigned_hosts_overrides')
+def test_ScanOverrides_parse_webinspect_overrides_success(trim_mock, scan_name_mock, upload_settings_mock,
+                                                          login_macro_mock, workflow_macro_mock, upload_webmacro_mock,
+                                                          upload_policy_mock, upload_settings_scan_target_mock,
+                                                          assigned_hosts_mock):
     # Given
 
     # can't use setup_mocks sadly - can't mock parse_webinspect_options
     ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+
     WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
     overrides = _setup_overrides()
 
-    ScanOverrides._trim_overrides = MagicMock()
-    ScanOverrides._parse_scan_name_overrides = MagicMock()
-    ScanOverrides._parse_upload_settings_overrides = MagicMock()
-    ScanOverrides._parse_login_macro_overrides = MagicMock()
-    ScanOverrides._parse_workflow_macros_overrides = MagicMock()
-    ScanOverrides._parse_upload_webmacros_overrides = MagicMock()
-    ScanOverrides._parse_upload_policy_overrides = MagicMock()
-    ScanOverrides._parse_upload_settings_overrides_for_scan_target = MagicMock()
-    ScanOverrides._parse_assigned_hosts_overrides = MagicMock()
+    # ScanOverrides._trim_overrides = MagicMock()
+    # ScanOverrides._parse_scan_name_overrides = MagicMock()
+    # ScanOverrides._parse_upload_settings_overrides = MagicMock()
+    # ScanOverrides._parse_login_macro_overrides = MagicMock()
+    # ScanOverrides._parse_workflow_macros_overrides = MagicMock()
+    # ScanOverrides._parse_upload_webmacros_overrides = MagicMock()
+    # ScanOverrides._parse_upload_policy_overrides = MagicMock()
+    # ScanOverrides._parse_upload_settings_overrides_for_scan_target = MagicMock()
+    # ScanOverrides._parse_assigned_hosts_overrides = MagicMock()
 
     # When
     ScanOverrides(overrides)  # this will call _parse_webinspect_overrides
 
     # Expect
-    assert ScanOverrides._trim_overrides.call_count == 1
-    assert ScanOverrides._parse_scan_name_overrides.call_count == 1
-    assert ScanOverrides._parse_upload_settings_overrides.call_count == 1
-    assert ScanOverrides._parse_login_macro_overrides.call_count == 1
-    assert ScanOverrides._parse_workflow_macros_overrides.call_count == 1
-    assert ScanOverrides._parse_upload_webmacros_overrides.call_count == 1
-    assert ScanOverrides._parse_upload_policy_overrides.call_count == 1
-    assert ScanOverrides._parse_upload_settings_overrides_for_scan_target.call_count == 1
-    assert ScanOverrides._parse_assigned_hosts_overrides.call_count == 1
+    assert trim_mock.call_count == 1
+    assert scan_name_mock.call_count == 1
+    assert upload_settings_mock.call_count == 1
+    assert login_macro_mock.call_count == 1
+    assert workflow_macro_mock.call_count == 1
+    assert upload_webmacro_mock.call_count == 1
+    assert upload_policy_mock.call_count == 1
+    assert upload_settings_mock.call_count == 1
+    assert upload_settings_scan_target_mock.call_count == 1
 
 
 def test_ScanOverrides_parse_scan_name_overrides_success():
@@ -301,7 +314,6 @@ def test_ScanOverrides_parse_upload_settings_overrides_success():
     ScanOverrides._parse_webinspect_overrides = MagicMock()
     WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
 
-    # a bit of magic since this is called multiple times and it needs to be certain values.
     os.path.isfile = MagicMock(return_value=False)
     overrides = _setup_overrides()
     scan_overrides_object = ScanOverrides(overrides)
@@ -313,7 +325,7 @@ def test_ScanOverrides_parse_upload_settings_overrides_success():
     assert scan_overrides_object.webinspect_upload_settings is None
 
 
-def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_settings_success():
+def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_success():
     # Given
     ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
     ScanOverrides._parse_webinspect_overrides = MagicMock()
@@ -330,14 +342,15 @@ def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_setting
     assert scan_overrides_object.webinspect_upload_settings in '/path/to/git/settings/NotDefault.xml'
 
 
-def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_settings_found_file_success():
+@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
+def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_found_file_success(isfile_mock):
     # Given
     ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
     ScanOverrides._parse_webinspect_overrides = MagicMock()
     WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
 
-    # a bit of magic since this is called multiple times and it needs to be certain values.
-    os.path.isfile = MagicMock(side_effect=[False, True, True, True, True])
+    # os.path.isfile is tricky have to mock it this way or there are odd side effects
+    isfile_mock.side_effect = [False, True]
     overrides = _setup_overrides(expected_settings="/valid/path/NotDefault.xml")
     scan_overrides_object = ScanOverrides(overrides)
 
@@ -347,3 +360,295 @@ def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_setting
     # Expect
     assert scan_overrides_object.webinspect_upload_settings in "/valid/path/NotDefault.xml"
     assert scan_overrides_object.settings in "/valid/path/NotDefault"
+
+
+@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
+def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(isfile_mock):
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_upload_settings="/valid/path/NotDefault.xml")
+    scan_overrides_object = ScanOverrides(overrides)
+    # os.path.isfile is tricky have to mock it this way or there are odd side effects
+    isfile_mock.side_effect = [False, True]
+
+    # When
+    scan_overrides_object._parse_upload_settings_overrides()
+
+    # Expect
+    assert scan_overrides_object.webinspect_upload_settings == "/valid/path/NotDefault.xml"
+
+
+@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
+def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings__success(isfile_mock):
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_upload_settings="/valid/path/NotDefault.xml")
+    scan_overrides_object = ScanOverrides(overrides)
+    # os.path.isfile is tricky have to mock it this way or there are odd side effects
+    isfile_mock.side_effect = [True, False]
+
+    # When
+    scan_overrides_object._parse_upload_settings_overrides()
+    # TODO  this needs some love - look back after a bit because the isfile thing is making me go insane.
+    assert 0
+    # Expect
+    #assert scan_overrides_object.webinspect_upload_settings == "/valid/path/NotDefault.xml"
+
+
+def test_ScanOverrides_parse_login_macro_overrides_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides()
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_login_macro_overrides()
+
+    # Expect
+    assert scan_overrides_object.login_macro is None
+
+
+def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_login_macro="macro.xml")
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_login_macro_overrides()
+
+    # Expect
+    assert scan_overrides_object.login_macro is "macro.xml"
+    assert scan_overrides_object.webinspect_upload_webmacros == ["macro.xml"]
+
+
+def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_2_upload_webmacros_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_login_macro="macro.xml", expected_upload_webmacro=["different_macro.xml"])
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_login_macro_overrides()
+
+    # Expect
+    assert scan_overrides_object.login_macro is "macro.xml"
+    assert scan_overrides_object.webinspect_upload_webmacros == ["different_macro.xml", "macro.xml"]
+
+
+def test_ScanOverrides_parse_workflow_macros_overrides_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides()
+
+    # When
+    scan_override_object = ScanOverrides(overrides)
+    scan_override_object._parse_workflow_macros_overrides()
+
+    # Expect
+    assert scan_override_object.workflow_macros is []
+
+
+def test_ScanOverrides_parse_workflow_macros_overrides_cli_passed_workflow_macros_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_workflow_macro=("workflow_macro.xml",))
+
+    # When
+    scan_override_object = ScanOverrides(overrides)
+    scan_override_object._parse_workflow_macros_overrides()
+
+    # Expect
+    assert scan_override_object.workflow_macros == ["workflow_macro.xml"]
+    assert scan_override_object.webinspect_upload_webmacros == ["workflow_macro.xml"]
+
+
+def test_ScanOverrides_parse_upload_webmacros_overrides_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides()
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_upload_webmacros_overrides()
+
+    # Expect
+    assert scan_overrides_object.webinspect_upload_webmacros is None
+
+
+@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
+def test_ScanOverrides_parse_upload_webmacros_overrides_cli_passed_upload_webmacro_success(isfile_mock):
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    isfile_mock.return_value = False
+    overrides = _setup_overrides(expected_upload_webmacro="some.webmacro")
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_upload_webmacros_overrides()
+
+    # Expect
+    # assert scan_overrides_object.webinspect_upload_webmacros is None
+    assert 0
+    # TODO I'm pretty sure this is borked.
+
+
+def test_ScanOverrides_parse_upload_policy_overrides():
+    assert 0
+    # TODO before writing this test I want to validate this override is actually used...
+
+
+def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides()
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_upload_settings_overrides_for_scan_target()
+
+    # Expect
+    assert scan_overrides_object.targets is None
+
+
+def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_cli_passed_upload_settings_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    # mock this because we aren't testing this here.
+    ScanOverrides._get_scan_targets = MagicMock(return_value={"some.site.com", "some.other.site"})
+
+    overrides = _setup_overrides(expected_upload_settings="settings.xml")
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_upload_settings_overrides_for_scan_target()
+
+    # Expect
+    assert scan_overrides_object.targets == {'some.other.site', 'some.site.com'}
+
+
+def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_failure_NameError_exception():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    # a file that can't be found
+    overrides = _setup_overrides(expected_upload_settings="settings.xml")
+    ScanOverrides._get_scan_targets = MagicMock(side_effect=NameError)
+    WebInspectLogHelper.log_no_settings_file = MagicMock()
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    with pytest.raises(SystemExit):
+        scan_overrides_object._parse_upload_settings_overrides_for_scan_target()
+
+    # Expect
+    assert WebInspectLogHelper.log_no_settings_file.call_count == 1
+
+
+def test_ScanOverrides_parse_assigned_hosts_overrides_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides()
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_assigned_hosts_overrides()
+
+    # Expect
+    assert scan_overrides_object.allowed_hosts is None  # nothing passed
+
+
+def test_ScanOverrides_parse_assigned_hosts_overrides_with_start_urls_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_start_urls=["some.site.com"])
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_assigned_hosts_overrides()
+
+    # Expect
+    assert scan_overrides_object.allowed_hosts == ["some.site.com"]
+
+
+def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_allowed_hosts=["some.site.com"])
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_assigned_hosts_overrides()
+
+    # Expect
+    assert scan_overrides_object.allowed_hosts == ["some.site.com"]
+
+
+def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_and_start_urls_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    overrides = _setup_overrides(expected_allowed_hosts=["some.site.com"], expected_start_urls=["wrong.site.com"])
+
+    # When
+    scan_overrides_object = ScanOverrides(overrides)
+    scan_overrides_object._parse_assigned_hosts_overrides()
+
+    # Expect
+    assert scan_overrides_object.allowed_hosts == ["some.site.com"]
+
+
+def test_ScanOverrides_get_endpoint_success():
+    # Given
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
+    assert 0
+    # TODO this will be have to be redone/abstracted when I work on proxy

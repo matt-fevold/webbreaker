@@ -412,7 +412,6 @@ class ScanOverrides:
                 self.scan_name = "webinspect" + "-" + "".join(
                     random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
-
     def _parse_upload_settings_overrides(self):
         """
         Check for a .xml settings file. Relative path for files are okay
@@ -422,8 +421,11 @@ class ScanOverrides:
         """
         # if cli supplied upload_settings
         if self.webinspect_upload_settings:
+            # if the settings file is provided and is a file - add an xml file extension...
+            #    more or less a quality of life thing for the cli.
             if os.path.isfile(self.webinspect_upload_settings + '.xml'):
                 self.webinspect_upload_settings = self.webinspect_upload_settings + '.xml'
+
             if os.path.isfile(self.webinspect_upload_settings):
                 self.upload_scan_settings = self.webinspect_upload_settings
             else:
@@ -450,15 +452,11 @@ class ScanOverrides:
             elif self.settings == 'Default':
                 # All WebInspect servers come with a Default.xml settings file, no need to upload it
                 self.webinspect_upload_settings = None
-            else:  # it is a file and not using the default
+            # it is a file and not using the default
+            else:
                 self.webinspect_upload_settings = self.settings
-                try:
-                    # grab everything but .xml
-                    self.settings = re.search('(.*)\.xml', self.settings).group(1)
-                except AttributeError as e:
-                        Logger.app.error("There was an issue finding you settings file {}, verify it exists and make "
-                             "sure you pass in the path to the file (relative path okay): {}".format(
-                            self.settings, e))
+                # grab everything but .xml
+                self.settings = re.search('(.*)\.xml', self.settings).group(1)
 
     def _parse_login_macro_overrides(self):
         """
@@ -480,13 +478,14 @@ class ScanOverrides:
         :return:
         """
         if self.workflow_macros:
-            if self.upload_webmacros:
+            if self.webinspect_upload_webmacros:
                 # add macros to existing list
-                self.upload_webmacros.extend(self.workflow_macros)
+                self.webinspect_upload_webmacros.extend(self.workflow_macros)
             else:
                 # add macro to new list
-                self.upload_webmacros = list(self.workflow_macros)
+                self.webinspect_upload_webmacros = list(self.workflow_macros)
 
+    # TODO does this work?
     def _parse_upload_webmacros_overrides(self):
         """
         Check and vaildate for a .webmacro settings file. Relative paths for files are okay
@@ -498,6 +497,7 @@ class ScanOverrides:
                 # trying to be clever, remove any duplicates from our upload list
                 self.webinspect_upload_webmacros = list(set(self.webinspect_upload_webmacros))
                 corrected_paths = []
+                # add .webmacro and verify it is a file
                 for webmacro in self.webinspect_upload_webmacros:
                     if os.path.isfile(webmacro + '.webmacro'):
                         webmacro = webmacro + '.webmacro'
@@ -512,6 +512,7 @@ class ScanOverrides:
             except (AttributeError, TypeError) as e:
                 webinspectloghelper.log_error_settings(self.webinspect_upload_webmacros, e)
 
+    # TODO does this work?
     def _parse_upload_policy_overrides(self):
         """
         # if upload_policy provided explicitly, follow that. otherwise, default to scan_policy if provided
