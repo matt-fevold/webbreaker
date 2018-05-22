@@ -47,21 +47,15 @@ def _setup_overrides(expected_username=None, expected_password=None, expected_al
     return overrides
 
 
-def _setup_mocks():
-    """
-    Avoids redundant mock setup. Can still be overwritten as necessary.
-    These mocks prevent ScanOverrides.__init__ from calling some outside functions - speeding up tests
-    :return:
-    """
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
 
 
 def test_ScanOverrides_init_success():
     # Given
     # mock function calls within init so we can focus the test.
-    _setup_mocks()
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     overrides = _setup_overrides()
 
     # When
@@ -100,7 +94,8 @@ def test_ScanOverrides_init_failure_environment_error_exception():
 
     # Given
     # mock function calls within init so we can focus the test
-    _setup_mocks()
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
 
     WebInspectLogHelper.log_error_scan_overrides_parsing_error = MagicMock()
     WebBreakerHelper.check_run_env = MagicMock(side_effect=EnvironmentError)
@@ -124,7 +119,8 @@ def test_ScanOverrides_init_failure_type_error_exception():
     # Given
 
     # mock function calls within init so we can focus the test
-    _setup_mocks()
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
 
     ScanOverrides._parse_webinspect_overrides = MagicMock(side_effect=TypeError)
     WebInspectLogHelper.log_error_scan_overrides_parsing_error = MagicMock()
@@ -139,9 +135,13 @@ def test_ScanOverrides_init_failure_type_error_exception():
 
 def test_ScanOverrides_get_formatted_overrides_success():
     # Test will fail for now - I want to test this after parse_webinspect_overrides to ensure everything is all good.
+    # TODO
 
     # Given
-    _setup_mocks()
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     overrides = _setup_overrides()
 
     # When
@@ -149,7 +149,7 @@ def test_ScanOverrides_get_formatted_overrides_success():
     formatted_overrides_dict = scan_overrides_object.get_formatted_overrides()
 
     # Expect
-    assert formatted_overrides_dict['webinspect_settings'] == 'default'
+    assert formatted_overrides_dict['webinspect_settings'] == 'Default'
     assert formatted_overrides_dict['webinspect_scan_name'] is None
     assert formatted_overrides_dict['webinspect_upload_settings'] is None
     assert formatted_overrides_dict['webinspect_upload_policy'] is None
@@ -161,8 +161,8 @@ def test_ScanOverrides_get_formatted_overrides_success():
     assert formatted_overrides_dict['webinspect_overrides_scan_start'] is None
     assert formatted_overrides_dict['webinspect_overrides_start_urls'] == []
     assert formatted_overrides_dict['webinspect_scan_targets'] is None
-    assert formatted_overrides_dict['webinspect_workflow_macros'] is None
-    assert formatted_overrides_dict['webinspect_allowed_hosts'] is None
+    assert formatted_overrides_dict['webinspect_workflow_macros'] is []
+    assert formatted_overrides_dict['webinspect_allowed_hosts'] is []
     assert formatted_overrides_dict['webinspect_scan_size'] is None
     assert formatted_overrides_dict['fortify_user'] is None
 
@@ -202,7 +202,10 @@ def test_ScanOverrides_parse_webinspect_overrides_success():
 
 def test_ScanOverrides_parse_scan_name_overrides_success():
     # Given
-    _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     overrides = _setup_overrides()
     WebInspectLogHelper.log_error_scan_overrides_parsing_error = MagicMock()
 
@@ -236,7 +239,10 @@ def test_ScanOverrides_parse_scan_name_overrides_success():
 
 def test_ScanOverrides_parse_scan_name_overrides_cli_passed_scan_name_success():
     # Given
-    _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     overrides = _setup_overrides(expected_scan_name="Expected_Scan_Name")
 
     # When
@@ -249,7 +255,10 @@ def test_ScanOverrides_parse_scan_name_overrides_cli_passed_scan_name_success():
 
 def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success():
     # Given
-    _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     WebBreakerHelper.check_run_env = MagicMock(return_value="jenkins")
     # _parse_scan_name_overrides makes 2 calls to getevn, first one checks if there is a / in the return value and
     #   follows 2 different paths. We want to test both paths
@@ -267,7 +276,10 @@ def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success()
 
 def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_JOB_NAME_success():
     # Given
-    _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+#     WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     WebBreakerHelper.check_run_env = MagicMock(return_value="jenkins")
     # _parse_scan_name_overrides makes 2 calls to getevn, first one checks if there is a / in the return value and
     #   follows 2 different paths. We want to test both paths
@@ -285,7 +297,10 @@ def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_JOB_NAME_success():
 
 def test_ScanOverrides_parse_upload_settings_overrides_success():
     # Given
-    _setup_mocks()
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     # a bit of magic since this is called multiple times and it needs to be certain values.
     os.path.isfile = MagicMock(return_value=False)
     overrides = _setup_overrides()
@@ -300,7 +315,10 @@ def test_ScanOverrides_parse_upload_settings_overrides_success():
 
 def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_settings_success():
     # Given
-    _setup_mocks()
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     os.path.isfile = MagicMock(return_value=False)
     overrides = _setup_overrides(expected_settings="NotDefault")
     scan_overrides_object = ScanOverrides(overrides)
@@ -314,7 +332,10 @@ def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_setting
 
 def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_upload_settings_found_file_success():
     # Given
-    _setup_mocks()
+    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+    ScanOverrides._parse_webinspect_overrides = MagicMock()
+    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+
     # a bit of magic since this is called multiple times and it needs to be certain values.
     os.path.isfile = MagicMock(side_effect=[False, True, True, True, True])
     overrides = _setup_overrides(expected_settings="/valid/path/NotDefault.xml")
