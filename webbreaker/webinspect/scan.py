@@ -87,32 +87,32 @@ class WebInspectScan:
 
         tree = ET.ElementTree(file=file_name)
         root = tree.getroot()
+        result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
+
+        print("Webbreaker WebInpsect scan results:\n")
+        print("\n{0:50} {1:10} {2:30} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:50} {1:10} {2:30} {3:80}\n".format('-' * 80, '-' * 10, '-' * 30, '-' * 80))
 
         # TODO parse through the xml for specific tag
-        for elem in tree.iter(tag='Host'):
-            self.payload_url = root.find("Session/URL").text
+        # TODO output in console
+        # TODO store the result into dict
+        for elem in root.findall('Session'):
+            self.payload_url = elem.find('URL').text
             print("INFO: payload url: ", self.payload_url)
+            # print("{0:50}\n".format(self.payload_url))
 
             for issue in root.findall('Session/Issues/Issue'):
                 self.vulnerability_name = issue.find('Name').text
                 self.severity = issue.find('Severity').text
                 print("INFO: vulnerability: ", self.vulnerability_name)
                 print("INFO: severity: ", self.severity)
+                # print("{0:50} {1:10} {2:30}\n".format(self.payload_url, self.severity, self.vulnerability_name))
 
                 for classification in root.findall('Session/Issues/Issue/Classifications'):
+                    # print("DEBUG: classification: ", classification)
                     self.cwe = classification.find('Classification').text
                     print("INFO: CWE: ", self.cwe)
-                
 
-        # TODO output in console
-        print("Webbreaker WebInpsect scan results:\n")
-        print("\n{0:80} {1:10} {2:30} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-        print("{0:80} {1:10} {2:30} {3:10}\n".format('-' * 80, '-' * 10, '-' * 30, '-' * 10))
-        print("{0:80} {1:10} {2:30} {3:10}\n".format(self.payload_url, self.severity, self.vulnerability_name, self.cwe))
-        # for match in elem:
-        #     print(" elem: ", elem)
-        #     print(" match: ", match)
-        #     print("{0:80} {1:10} {2:30} {3:10}".format(match['Host'], match['Severity'], match['Vnlnerability'], match['CWE']))
 
         # TODO output into a json file
 
@@ -145,7 +145,6 @@ class WebInspectScan:
 
             # make this class variable so the multithreading and context management can use the scan_id
             self.scan_id = self.webinspect_api.create_scan()
-            print(("DEBUG: Here"))
 
             # Start a single thread so we can have a timeout functionality added.
             pool = ThreadPool(1)
@@ -182,14 +181,15 @@ class WebInspectScan:
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
 
-        if self.scan_overrides.settings.lower() == 'litecart':
+        #parse through xml file after scan
+        if self.scan_overrides.settings.lower() == 'default':
             self.xml_parsing(self.scan_overrides.settings)
         else:
-
             local = self.scan_overrides.settings + '.xml'
             print("DEBUG: local file ", local)
             if os.path.exists(local):
                 self.xml_parsing(local)
+            self.xml_parsing(local)
             Logger.app.info("WebInspect Scan Complete.")
 
     def _upload_settings_and_policies(self):
