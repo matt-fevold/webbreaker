@@ -32,18 +32,22 @@ class WebInspectAPIHelper(object):
             self.setting_overrides = webinspect_setting_overrides
             # set the host to be the available endpoint
             self.host = self.setting_overrides.endpoint
+        else:
+            self.setting_overrides = None
 
         self._set_api()
-        if silent is False:  # want to be able to hide this output for multithreading
-            Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
+        self.silent = silent
+
+        if self.silent is False:  # want to be able to hide this output for multithreading
+            webinspect_logexceptionhelp.log_info_using_webinspect_server(self.host)
 
     def _set_api(self):
         self.api = WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
 
 
-    @staticmethod
-    def _trim_ext(file):
-        return os.path.splitext(os.path.basename(file))[0]
+    # @staticmethod
+    # def _trim_ext(file):
+    #     return os.path.splitext(os.path.basename(file))[0]
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def create_scan(self):

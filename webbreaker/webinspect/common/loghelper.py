@@ -51,3 +51,6 @@ class WebInspectLogHelper(object):
 
     def log_error_scan_overrides_parsing_error(self, e):
         Logger.app.error("Something went wrong processing the scan overrides: {}".format(e))
+
+    def log_info_using_webinspect_server(self, server):
+        Logger.app.info("Using webinspect server: -->{}<-- for query".format(server))
