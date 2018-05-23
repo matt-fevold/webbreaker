@@ -5,6 +5,7 @@
 from contextlib import contextmanager
 from exitstatus import ExitStatus
 from multiprocessing.dummy import Pool as ThreadPool
+from pybreaker import CircuitBreaker
 import requests
 from signal import getsignal, SIGINT, SIGABRT,SIGTERM, signal
 from subprocess import CalledProcessError, check_output
@@ -82,41 +83,38 @@ class WebInspectScan:
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
         :return: JSON file
         """
+        # creating a dict to store the results in the for loop (maybe not the best way to do it
+        result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
+
         # TODO read in xml file that was just created from the scan
         file_name = self.scan_overrides.scan_name + '.xml'
 
         tree = ET.ElementTree(file=file_name)
         root = tree.getroot()
-        result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
 
-        print("Webbreaker WebInpsect scan results:\n")
-        print("\n{0:50} {1:10} {2:30} {3:10}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-        print("{0:50} {1:10} {2:30} {3:80}\n".format('-' * 80, '-' * 10, '-' * 30, '-' * 80))
-
-        # TODO parse through the xml for specific tag
-        # TODO output in console
         # TODO store the result into dict
+        print("Webbreaker WebInpsect scan results:\n")
+        print("\n{0:60} {1:10} {2:40} {3:90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:60} {1:10} {2:40} {3:90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+
         for elem in root.findall('Session'):
             self.payload_url = elem.find('URL').text
-            print("INFO: payload url: ", self.payload_url)
-            # print("{0:50}\n".format(self.payload_url))
+            result['payload_url'] = self.payload_url
 
             for issue in root.findall('Session/Issues/Issue'):
                 self.vulnerability_name = issue.find('Name').text
                 self.severity = issue.find('Severity').text
-                print("INFO: vulnerability: ", self.vulnerability_name)
-                print("INFO: severity: ", self.severity)
-                # print("{0:50} {1:10} {2:30}\n".format(self.payload_url, self.severity, self.vulnerability_name))
+                result['vulnerability'] = self.vulnerability_name
+                result['severity'] = self.severity
 
-                for classification in root.findall('Session/Issues/Issue/Classifications'):
-                    # print("DEBUG: classification: ", classification)
-                    self.cwe = classification.find('Classification').text
-                    print("INFO: CWE: ", self.cwe)
+                cwelist = ""
+                result['cwe'] = cwelist
+                for self.cwe in root.iter(tag='Classification'):
+                    result['cwe'] += self.cwe.text + "\n"
+                
+                print("\n{0:60} {1:10} {2:40} {3:90}".format(result['payload_url'], result['severity'], result['vulnerability'], i))
 
-
-        # TODO output into a json file
-
-    # @CircuitBreaker(fail_max=5, reset_timeout=60)
+    @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
         """
         Start a scan for webinspect. It is multithreaded in that it uses a thread to handle checking on the scan status
@@ -155,7 +153,6 @@ class WebInspectScan:
                 # block until scan completion.
                 self._results_queue.get(block=True)
 
-            print("Killing it")
             # kill thread
             pool.terminate()
 
@@ -186,7 +183,6 @@ class WebInspectScan:
             self.xml_parsing(self.scan_overrides.settings)
         else:
             local = self.scan_overrides.settings + '.xml'
-            print("DEBUG: local file ", local)
             if os.path.exists(local):
                 self.xml_parsing(local)
             self.xml_parsing(local)
