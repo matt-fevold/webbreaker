@@ -20,6 +20,7 @@ import re
 from webbreaker.common.confighelper import Config
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
+from webbreaker.common.webbreakerconfig import trim_ext
 from webbreaker.webinspect.authentication import WebInspectAuth
 # deviating from standard style to remove circular dependency problem.
 import webbreaker.webinspect.common.helper
@@ -284,9 +285,11 @@ class ScanOverrides:
 
             self.settings = override_dict['settings']
             self.scan_name = override_dict['scan_name']
+            # Deprecate these click options
             self.webinspect_upload_settings = override_dict['upload_settings']
             self.webinspect_upload_policy = override_dict['upload_policy']
             self.webinspect_upload_webmacros = override_dict['upload_webmacros']
+            # end deprecation
             self.scan_mode = override_dict['scan_mode']
             self.scan_scope = override_dict['scan_scope']
             self.login_macro = override_dict['login_macro']
@@ -577,46 +580,22 @@ class ScanOverrides:
             Logger.app.error("No servers are available to handle this request! {}".format(e))
             sys.exit(ExitStatus.failure)
 
-    @staticmethod
-    def _trim_ext(file):
-        """
-        This function removes the extension from a settings file. It has NOT been tested and this code is seemingly
-        duplicated somewhere else, but the code is different so without figuring out which does what exactly, will
-        leave in place.
-        :param file:
-        :return:
-        """
-        if type(file) is list:
-            result = []
-            for f in file:
-                if os.path.isfile(f):
-                    result.append(os.path.splitext(f)[0])
-                else:
-                    result.append(os.path.splitext(os.path.basename(f))[0])
-            return result
-        elif file is None:
-            return file
-        else:
-            if os.path.isfile(file):
-                return os.path.splitext(file)[0]
-            return os.path.splitext(os.path.basename(file))[0]
-
     def _trim_overrides(self):
         """
         strips off the extension from some of the overrides
         """
         # Trim .xml
-        self.settings = self._trim_ext(self.settings)
-        self.webinspect_upload_settings = self._trim_ext(self.webinspect_upload_settings)
+        self.settings = trim_ext(self.settings)
+        self.webinspect_upload_settings = trim_ext(self.webinspect_upload_settings)
 
         # Trim .webmacro
-        self.webinspect_upload_webmacros = self._trim_ext(self.webinspect_upload_webmacros)
-        self.workflow_macros = self._trim_ext(self.workflow_macros)
-        self.login_macro = self._trim_ext(self.login_macro)
+        self.webinspect_upload_webmacros = trim_ext(self.webinspect_upload_webmacros)
+        self.workflow_macros = trim_ext(self.workflow_macros)
+        self.login_macro = trim_ext(self.login_macro)
 
         # Trim .policy
-        self.webinspect_upload_policy = self._trim_ext(self.webinspect_upload_policy)
-        self.scan_policy = self._trim_ext(self.scan_policy)
+        self.webinspect_upload_policy = trim_ext(self.webinspect_upload_policy)
+        self.scan_policy = trim_ext(self.scan_policy)
 
     @staticmethod
     def _get_scan_targets(settings_file_path):

@@ -641,3 +641,35 @@ def test_ScanOverrides_get_endpoint_success():
 
     assert 0
     # TODO this will be have to be redone/abstracted when I work on proxy
+
+
+@mock.patch('webbreaker.webinspect.scan.trim_ext')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_trim_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock, trim_mock):
+    # Trim ext is tested elsewhere so in this test all we really care about is that it is called 7 times.
+
+    # Given
+    overides = _setup_overrides()
+    scan_overrides_object = ScanOverrides(overides)
+
+    # When
+    scan_overrides_object._trim_overrides()
+
+    # Expect
+    assert trim_mock.call_count == 7
+
+
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_get_scan_targets_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_overrides_object = ScanOverrides(overrides)
+    settings_file_path = "/path/to/settings.xml"
+
+    # When
+    result = scan_overrides_object._get_scan_targets(settings_file_path=settings_file_path)
+
