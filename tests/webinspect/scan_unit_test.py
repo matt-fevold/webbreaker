@@ -49,12 +49,14 @@ def _setup_overrides(expected_username=None, expected_password=None, expected_al
 
 
 
-def test_ScanOverrides_init_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_init_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
     # mock function calls within init so we can focus the test.
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+    get_endpoint_mock.return_value = "webinspect_url"
+    run_env_mock.return_value = "expected_run_env"
 
     overrides = _setup_overrides()
 
@@ -88,17 +90,18 @@ def test_ScanOverrides_init_success():
     assert scan_override_object.runenv == "expected_run_env"
 
 
-def test_ScanOverrides_init_failure_environment_error_exception():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_init_failure_environment_error_exception(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # I'm not 100% where this is raised, but I can't be certain nothing doesn't call it so going to be a bit hacky
     # and just call it somewhere to make sure it is properly handled with a sys.exit and a log call.
 
     # Given
     # mock function calls within init so we can focus the test
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
 
     WebInspectLogHelper.log_error_scan_overrides_parsing_error = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(side_effect=EnvironmentError)
+    run_env_mock.side_effect = EnvironmentError
 
     overrides = _setup_overrides()
 
@@ -112,17 +115,18 @@ def test_ScanOverrides_init_failure_environment_error_exception():
     assert WebInspectLogHelper.log_error_scan_overrides_parsing_error.call_count == 1
 
 
-def test_ScanOverrides_init_failure_type_error_exception():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_init_failure_type_error_exception(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # I'm not 100% where this is raised, but I can't be certain nothing doesn't call it so going to be a bit hacky
     # and just call it somewhere to make sure it is properly handled with a sys.exit and a log call.
 
     # Given
 
     # mock function calls within init so we can focus the test
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
 
-    ScanOverrides._parse_webinspect_overrides = MagicMock(side_effect=TypeError)
+    parse_webinspect_mock.side_effect = TypeError
     WebInspectLogHelper.log_error_scan_overrides_parsing_error = MagicMock()
     overrides = _setup_overrides()
 
@@ -133,14 +137,11 @@ def test_ScanOverrides_init_failure_type_error_exception():
     assert WebInspectLogHelper.log_error_scan_overrides_parsing_error.call_count == 1
 
 
-def test_ScanOverrides_get_formatted_overrides_success():
-    # Test will fail for now - I want to test this after parse_webinspect_overrides to ensure everything is all good.
-    # TODO
-
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_get_formatted_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
 
     overrides = _setup_overrides()
 
@@ -161,12 +162,15 @@ def test_ScanOverrides_get_formatted_overrides_success():
     assert formatted_overrides_dict['webinspect_overrides_scan_start'] is None
     assert formatted_overrides_dict['webinspect_overrides_start_urls'] == []
     assert formatted_overrides_dict['webinspect_scan_targets'] is None
-    assert formatted_overrides_dict['webinspect_workflow_macros'] is []
-    assert formatted_overrides_dict['webinspect_allowed_hosts'] is []
-    assert formatted_overrides_dict['webinspect_scan_size'] is None
+    assert formatted_overrides_dict['webinspect_workflow_macros'] == []
+    assert formatted_overrides_dict['webinspect_allowed_hosts'] == []
+    assert formatted_overrides_dict['webinspect_scan_size'] == 'large'
     assert formatted_overrides_dict['fortify_user'] is None
 
 
+# don't hate me, but tried to do this in a more readable way but there were unintended issues created with that.
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides._trim_overrides')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_scan_name_overrides')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_upload_settings_overrides')
@@ -179,24 +183,11 @@ def test_ScanOverrides_get_formatted_overrides_success():
 def test_ScanOverrides_parse_webinspect_overrides_success(trim_mock, scan_name_mock, upload_settings_mock,
                                                           login_macro_mock, workflow_macro_mock, upload_webmacro_mock,
                                                           upload_policy_mock, upload_settings_scan_target_mock,
-                                                          assigned_hosts_mock):
+                                                          assigned_hosts_mock, get_endpoint_mock, check_run_env_mock):
     # Given
 
     # can't use setup_mocks sadly - can't mock parse_webinspect_options
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
     overrides = _setup_overrides()
-
-    # ScanOverrides._trim_overrides = MagicMock()
-    # ScanOverrides._parse_scan_name_overrides = MagicMock()
-    # ScanOverrides._parse_upload_settings_overrides = MagicMock()
-    # ScanOverrides._parse_login_macro_overrides = MagicMock()
-    # ScanOverrides._parse_workflow_macros_overrides = MagicMock()
-    # ScanOverrides._parse_upload_webmacros_overrides = MagicMock()
-    # ScanOverrides._parse_upload_policy_overrides = MagicMock()
-    # ScanOverrides._parse_upload_settings_overrides_for_scan_target = MagicMock()
-    # ScanOverrides._parse_assigned_hosts_overrides = MagicMock()
 
     # When
     ScanOverrides(overrides)  # this will call _parse_webinspect_overrides
@@ -209,19 +200,17 @@ def test_ScanOverrides_parse_webinspect_overrides_success(trim_mock, scan_name_m
     assert workflow_macro_mock.call_count == 1
     assert upload_webmacro_mock.call_count == 1
     assert upload_policy_mock.call_count == 1
-    assert upload_settings_mock.call_count == 1
     assert upload_settings_scan_target_mock.call_count == 1
+    assert assigned_hosts_mock.call_count == 1
 
 
-def test_ScanOverrides_parse_scan_name_overrides_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_scan_name_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides()
     WebInspectLogHelper.log_error_scan_overrides_parsing_error = MagicMock()
-
 
     # When
     scan_overrides_object = ScanOverrides(overrides)
@@ -231,31 +220,11 @@ def test_ScanOverrides_parse_scan_name_overrides_success():
     assert scan_overrides_object.scan_name[0:11] in ['webinspect-']  # the randomly generated scan name
 
 
-# def test_ScanOverrides_parse_scan_name_overrides_AttributeError_failure():
-#     # Not 100% sure this exception can't be called anymore, but might as well test handling it somewhere.
-#
-#     # Given
-#     _setup_mocks()  # will mock _parse_webinspect_overrides so we can call the individual parse command
-#     WebInspectLogHelper.log_scan_error = MagicMock
-#
-#     overrides = _setup_overrides()
-#     os.getenv = MagicMock(return_value=None)
-#
-#     # When
-#     with pytest.raises(AttributeError):
-#         scan_overrides_object = ScanOverrides(overrides)
-#         scan_overrides_object._parse_scan_name_overrides()
-#
-#     # Expect
-#     assert WebInspectLogHelper.log_scan_error.call_count == 1
-
-
-def test_ScanOverrides_parse_scan_name_overrides_cli_passed_scan_name_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_scan_name_overrides_cli_passed_scan_name_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_scan_name="Expected_Scan_Name")
 
     # When
@@ -266,16 +235,17 @@ def test_ScanOverrides_parse_scan_name_overrides_cli_passed_scan_name_success():
     assert scan_overrides_object.scan_name in ["Expected_Scan_Name"]
 
 
-def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success():
+@mock.patch('webbreaker.webinspect.scan.os.getenv')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success(get_endpoint_mock, parse_webinspect_mock,
+                                                                               run_env_mock, getenv_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
-    WebBreakerHelper.check_run_env = MagicMock(return_value="jenkins")
+    run_env_mock.return_value = "jenkins"
     # _parse_scan_name_overrides makes 2 calls to getevn, first one checks if there is a / in the return value and
     #   follows 2 different paths. We want to test both paths
-    os.getenv = MagicMock(side_effect=["/JOB_NAME/", "EXPECTED_BUILD_TAG"])
+    getenv_mock.side_effect = ["/JOB_NAME/", "EXPECTED_BUILD_TAG"]
 
     overrides = _setup_overrides()
 
@@ -287,16 +257,18 @@ def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_BUILD_TAG_success()
     assert scan_overrides_object.scan_name in ['EXPECTED_BUILD_TAG']
 
 
-def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_JOB_NAME_success():
+@mock.patch('webbreaker.webinspect.scan.os.getenv')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_JOB_NAME_success(get_endpoint_mock, parse_webinspect_mock,
+                                                                              run_env_mock, getenv_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-#     WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
 
-    WebBreakerHelper.check_run_env = MagicMock(return_value="jenkins")
+    run_env_mock.return_value = "jenkins"
     # _parse_scan_name_overrides makes 2 calls to getevn, first one checks if there is a / in the return value and
     #   follows 2 different paths. We want to test both paths
-    os.getenv = MagicMock(side_effect=["JOB_NAME", "EXPECTED_JOB_NAME"])
+    getenv_mock.side_effect = ["JOB_NAME", "EXPECTED_JOB_NAME"]
 
     overrides = _setup_overrides()
 
@@ -308,13 +280,15 @@ def test_ScanOverrides_parse_scan_name_overrides_jenkins_job_JOB_NAME_success():
     assert scan_overrides_object.scan_name in ['EXPECTED_JOB_NAME']
 
 
-def test_ScanOverrides_parse_upload_settings_overrides_success():
+@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_settings_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock,
+                                                               isfile_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+    isfile_mock.return_value = False
 
-    os.path.isfile = MagicMock(return_value=False)
     overrides = _setup_overrides()
     scan_overrides_object = ScanOverrides(overrides)
 
@@ -325,13 +299,15 @@ def test_ScanOverrides_parse_upload_settings_overrides_success():
     assert scan_overrides_object.webinspect_upload_settings is None
 
 
-def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_success():
+@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_success(get_endpoint_mock,
+                                                                                   parse_webinspect_mock,
+                                                                                   run_env_mock, isfile_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
-    os.path.isfile = MagicMock(return_value=False)
+    isfile_mock.return_value = False
     overrides = _setup_overrides(expected_settings="NotDefault")
     scan_overrides_object = ScanOverrides(overrides)
 
@@ -343,12 +319,14 @@ def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_succe
 
 
 @mock.patch('webbreaker.webinspect.scan.os.path.isfile')
-def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_found_file_success(isfile_mock):
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_found_file_success(get_endpoint_mock,
+                                                                                              parse_webinspect_mock,
+                                                                                              run_env_mock,
+                                                                                              isfile_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     # os.path.isfile is tricky have to mock it this way or there are odd side effects
     isfile_mock.side_effect = [False, True]
     overrides = _setup_overrides(expected_settings="/valid/path/NotDefault.xml")
@@ -363,12 +341,13 @@ def test_ScanOverrides_parse_upload_settings_overrides_cli_passed_settings_found
 
 
 @mock.patch('webbreaker.webinspect.scan.os.path.isfile')
-def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(isfile_mock):
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(get_endpoint_mock,
+                                                                                parse_webinspect_mock,
+                                                                                run_env_mock, isfile_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_upload_settings="/valid/path/NotDefault.xml")
     scan_overrides_object = ScanOverrides(overrides)
     # os.path.isfile is tricky have to mock it this way or there are odd side effects
@@ -382,12 +361,13 @@ def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(
 
 
 @mock.patch('webbreaker.webinspect.scan.os.path.isfile')
-def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings__success(isfile_mock):
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings__success(get_endpoint_mock,
+                                                                                parse_webinspect_mock,
+                                                                                run_env_mock, isfile_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_upload_settings="/valid/path/NotDefault.xml")
     scan_overrides_object = ScanOverrides(overrides)
     # os.path.isfile is tricky have to mock it this way or there are odd side effects
@@ -401,12 +381,11 @@ def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings__success
     #assert scan_overrides_object.webinspect_upload_settings == "/valid/path/NotDefault.xml"
 
 
-def test_ScanOverrides_parse_login_macro_overrides_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_login_macro_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides()
 
     # When
@@ -417,12 +396,13 @@ def test_ScanOverrides_parse_login_macro_overrides_success():
     assert scan_overrides_object.login_macro is None
 
 
-def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_success(get_endpoint_mock,
+                                                                                   parse_webinspect_mock,
+                                                                                   run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_login_macro="macro.xml")
 
     # When
@@ -434,12 +414,13 @@ def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_succe
     assert scan_overrides_object.webinspect_upload_webmacros == ["macro.xml"]
 
 
-def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_2_upload_webmacros_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_2_upload_webmacros_success(get_endpoint_mock,
+                                                                                                      parse_webinspect_mock,
+                                                                                                      run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_login_macro="macro.xml", expected_upload_webmacro=["different_macro.xml"])
 
     # When
@@ -451,12 +432,11 @@ def test_ScanOverrides_parse_login_macro_overrides_cli_passed_loging_macro_2_upl
     assert scan_overrides_object.webinspect_upload_webmacros == ["different_macro.xml", "macro.xml"]
 
 
-def test_ScanOverrides_parse_workflow_macros_overrides_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_workflow_macros_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides()
 
     # When
@@ -464,15 +444,16 @@ def test_ScanOverrides_parse_workflow_macros_overrides_success():
     scan_override_object._parse_workflow_macros_overrides()
 
     # Expect
-    assert scan_override_object.workflow_macros is []
+    assert scan_override_object.workflow_macros == []
 
 
-def test_ScanOverrides_parse_workflow_macros_overrides_cli_passed_workflow_macros_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_workflow_macros_overrides_cli_passed_workflow_macros_success(get_endpoint_mock,
+                                                                                          parse_webinspect_mock,
+                                                                                          run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_workflow_macro=("workflow_macro.xml",))
 
     # When
@@ -484,12 +465,11 @@ def test_ScanOverrides_parse_workflow_macros_overrides_cli_passed_workflow_macro
     assert scan_override_object.webinspect_upload_webmacros == ["workflow_macro.xml"]
 
 
-def test_ScanOverrides_parse_upload_webmacros_overrides_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_webmacros_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides()
 
     # When
@@ -501,12 +481,13 @@ def test_ScanOverrides_parse_upload_webmacros_overrides_success():
 
 
 @mock.patch('webbreaker.webinspect.scan.os.path.isfile')
-def test_ScanOverrides_parse_upload_webmacros_overrides_cli_passed_upload_webmacro_success(isfile_mock):
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_webmacros_overrides_cli_passed_upload_webmacro_success(get_endpoint_mock,
+                                                                                          parse_webinspect_mock,
+                                                                                          run_env_mock, isfile_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     isfile_mock.return_value = False
     overrides = _setup_overrides(expected_upload_webmacro="some.webmacro")
 
@@ -525,12 +506,12 @@ def test_ScanOverrides_parse_upload_policy_overrides():
     # TODO before writing this test I want to validate this override is actually used...
 
 
-def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_success(get_endpoint_mock, parse_webinspect_mock,
+                                                                              run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides()
 
     # When
@@ -541,14 +522,17 @@ def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_success():
     assert scan_overrides_object.targets is None
 
 
-def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_cli_passed_upload_settings_success():
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._get_scan_targets')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_cli_passed_upload_settings_success(get_endpoint_mock,
+                                                                                                         parse_webinspect_mock,
+                                                                                                         run_env_mock,
+                                                                                                         scan_targets_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     # mock this because we aren't testing this here.
-    ScanOverrides._get_scan_targets = MagicMock(return_value={"some.site.com", "some.other.site"})
+    scan_targets_mock.return_value = {"some.site.com", "some.other.site"}
 
     overrides = _setup_overrides(expected_upload_settings="settings.xml")
 
@@ -560,15 +544,18 @@ def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_cli_passed
     assert scan_overrides_object.targets == {'some.other.site', 'some.site.com'}
 
 
-def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_failure_NameError_exception():
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._get_scan_targets')
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_failure_NameError_exception(get_endpoint_mock,
+                                                                                                  parse_webinspect_mock,
+                                                                                                  run_env_mock,
+                                                                                                  scan_targets_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     # a file that can't be found
     overrides = _setup_overrides(expected_upload_settings="settings.xml")
-    ScanOverrides._get_scan_targets = MagicMock(side_effect=NameError)
+    scan_targets_mock.side_effect = NameError
     WebInspectLogHelper.log_no_settings_file = MagicMock()
 
     # When
@@ -580,12 +567,11 @@ def test_ScanOverrides_parse_upload_setings_overrides_for_scan_target_failure_Na
     assert WebInspectLogHelper.log_no_settings_file.call_count == 1
 
 
-def test_ScanOverrides_parse_assigned_hosts_overrides_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_assigned_hosts_overrides_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides()
 
     # When
@@ -593,15 +579,15 @@ def test_ScanOverrides_parse_assigned_hosts_overrides_success():
     scan_overrides_object._parse_assigned_hosts_overrides()
 
     # Expect
-    assert scan_overrides_object.allowed_hosts is None  # nothing passed
+    assert scan_overrides_object.allowed_hosts == []  # nothing passed
 
 
-def test_ScanOverrides_parse_assigned_hosts_overrides_with_start_urls_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_assigned_hosts_overrides_with_start_urls_success(get_endpoint_mock, parse_webinspect_mock,
+                                                                              run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_start_urls=["some.site.com"])
 
     # When
@@ -612,12 +598,13 @@ def test_ScanOverrides_parse_assigned_hosts_overrides_with_start_urls_success():
     assert scan_overrides_object.allowed_hosts == ["some.site.com"]
 
 
-def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_success(get_endpoint_mock,
+                                                                                 parse_webinspect_mock,
+                                                                                 run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_allowed_hosts=["some.site.com"])
 
     # When
@@ -628,12 +615,13 @@ def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_success
     assert scan_overrides_object.allowed_hosts == ["some.site.com"]
 
 
-def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_and_start_urls_success():
+@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_and_start_urls_success(get_endpoint_mock,
+                                                                                                parse_webinspect_mock,
+                                                                                                run_env_mock):
     # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
     overrides = _setup_overrides(expected_allowed_hosts=["some.site.com"], expected_start_urls=["wrong.site.com"])
 
     # When
@@ -642,6 +630,7 @@ def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_and_sta
 
     # Expect
     assert scan_overrides_object.allowed_hosts == ["some.site.com"]
+
 
 
 def test_ScanOverrides_get_endpoint_success():
