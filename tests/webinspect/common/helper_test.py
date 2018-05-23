@@ -66,21 +66,18 @@ def test_webinspect_api_helper_init_with_setting_overrides_success(log_info_mock
     assert api_mock.call_count == 1
 
 
-
-def test_webinspect_api_helper_create_scan_success():
+@mock.patch('webbreaker.webinspect.common.helper.json.dumps')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi')
+def test_webinspect_api_helper_create_scan_success(api_mock, json_dumps_mock):
     # Given
-    expected_username = None
-    expected_password = None
-    expected_silent_flag = False
     override_mock = MagicMock()
-    override_mock.endpoint = "test server"
+
+    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=override_mock)
+    webinspect_api_helper_object.api = api_mock
+
 
     # When
-    webinspect_api_helper_object = WebInspectAPIHelper(host=None,
-                                                       username=expected_username,
-                                                       password=expected_password,
-                                                       webinspect_setting_overrides=override_mock,
-                                                       silent=expected_silent_flag)
-
+    webinspect_api_helper_object.create_scan()
 
     # Expect
+    assert api_mock.call_count == 1
