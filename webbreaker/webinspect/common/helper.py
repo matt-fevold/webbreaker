@@ -71,11 +71,6 @@ class WebInspectAPIHelper(object):
                                                                              self.setting_overrides.workflow_macros,
                                                                              self.setting_overrides.allowed_hosts))
             response = self.api.create_scan(overrides)
-            # print("DEBUG: overrides: ", overrides)
-            # print("DEBUG: settings ", self.setting_overrides.settings)
-            # print("DEBUG: scan_name: ", self.setting_overrides.scan_name)
-            # print("DEBUG: response ", response)
-            #APIHelper().check_for_response_errors(response)
 
             logger_response = json.dumps(response, default=lambda o: o.__dict__, sort_keys=True)
             Logger.app.debug("Request sent to {0}:\n{1}".format(self.setting_overrides.endpoint, overrides))
@@ -103,7 +98,6 @@ class WebInspectAPIHelper(object):
         Logger.app.info('Exporting scan: {} as {}'.format(scan_id, extension))
         detail_type = 'Full' if extension == 'xml' else None
         response = self.api.export_scan_format(scan_id, extension, detail_type)
-        #APIHelper().check_for_response_errors(response)
 
 	# setting_overrides is on a webinspect scan
         if scan_name == None:
@@ -120,14 +114,12 @@ class WebInspectAPIHelper(object):
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_policy_by_guid(self, policy_guid):
         response = self.api.get_policy_by_guid(policy_guid)
-        #APIHelper().check_for_response_errors(response)
 
         return response.data
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_policy_by_name(self, policy_name):
         response = self.api.get_policy_by_name(policy_name)
-        #APIHelper().check_for_response_errors(response)
 
         return response.data
 
@@ -141,7 +133,6 @@ class WebInspectAPIHelper(object):
         # scan_name = self._trim_ext(scan_name)
 
         response = self.api.get_scan_by_name(scan_name)
-        #APIHelper().check_for_response_errors(response)
 
         return response.data
 
@@ -154,7 +145,6 @@ class WebInspectAPIHelper(object):
         """
         try:
             response = self.api.get_current_status(scan_guid)
-            #APIHelper().check_for_response_errors(response)
 
             status = json.loads(response.data_json())['ScanStatus']
             return status
@@ -170,7 +160,6 @@ class WebInspectAPIHelper(object):
         """
         try:
             response = self.api.list_scans()
-            #APIHelper().check_for_response_errors(response)
 
             return response.data
 
@@ -191,13 +180,11 @@ class WebInspectAPIHelper(object):
     def policy_exists(self, policy_guid):
         # true if policy exists
         response = self.api.get_policy_by_guid(policy_guid)
-        #APIHelper().check_for_response_errors(response)
         return response.success
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def stop_scan(self, scan_guid):
         response = self.api.stop_scan(scan_guid)
-        #APIHelper().check_for_response_errors(response)
         return response.success
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
@@ -208,11 +195,9 @@ class WebInspectAPIHelper(object):
             # so find it in the full path
             # TODO: Verify split here
             response = self.api.get_policy_by_name(ntpath.basename(self.setting_overrides.webinspect_upload_policy).split('.')[0])
-            #APIHelper().check_for_response_errors(response)
 
             if response.success and response.response_code == 200:  # the policy exists on the server already
                 response = self.api.delete_policy(response.data['uniqueId'])
-                #APIHelper().check_for_response_errors(response)
 
                 Logger.app.debug("Deleted policy {} from server".format(
                     ntpath.basename(self.setting_overrides.webinspect_upload_policy).split('.')[0]))
@@ -221,7 +206,6 @@ class WebInspectAPIHelper(object):
 
         try:
             response = self.api.upload_policy(self.setting_overrides.webinspect_upload_policy)
-            #APIHelper().check_for_response_errors(response)
             Logger.console.debug("Uploaded policy {} to server.".format(self.setting_overrides.webinspect_upload_policy))
 
         except (ValueError, UnboundLocalError, TypeError, NameError) as e:
@@ -233,7 +217,6 @@ class WebInspectAPIHelper(object):
 
         try:
             response = self.api.upload_settings(self.setting_overrides.webinspect_upload_settings)
-            #APIHelper().check_for_response_errors(response)
 
             Logger.console.debug("Uploaded settings {} to server.".format(self.setting_overrides.webinspect_upload_settings))
 
@@ -246,7 +229,6 @@ class WebInspectAPIHelper(object):
         try:
             for webmacro in self.setting_overrides.webinspect_upload_webmacros:
                 response = self.api.upload_webmacro(webmacro)
-                #APIHelper().check_for_response_errors(response)
                 Logger.console.debug("Uploaded webmacro {} to server.".format(webmacro))
 
         except (ValueError, UnboundLocalError) as e:

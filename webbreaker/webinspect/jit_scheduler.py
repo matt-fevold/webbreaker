@@ -78,7 +78,6 @@ class WebInspectJitScheduler(object):
         Logger.app.debug("Searching for appropriately sized servers")
 
         correct_sized_endpoints = self._get_endpoints_of_the_right_size()
-        # correct_sized_endpoints = random.shuffle(correct_sized_endpoints)
         Logger.app.debug("correct_sized_endpoints: {}".format(correct_sized_endpoints))
 
         # if there are no endpoints of that size.

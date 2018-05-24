@@ -47,7 +47,6 @@ class WebInspectDownload:
                         Logger.console.error("Unable to find scan with ID matching {}".format(scan_id))
 
         except (UnboundLocalError, TypeError, UnboundLocalError) as e:
-            # except (ValueError, UnboundLocalError, TypeError, NameError) as e:
             webinspect_logexceptionhelper.log_error_webinspect_download(e)
 
         # If we've made it this far, our new credentials are valid and should be saved

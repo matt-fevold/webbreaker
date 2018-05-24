@@ -111,8 +111,8 @@ class WebInspectScan:
                 result['cwe'] = cwelist
                 for self.cwe in root.iter(tag='Classification'):
                     result['cwe'] += self.cwe.text + "\n"
-                
-                print("\n{0:60} {1:10} {2:40} {3:90}".format(result['payload_url'], result['severity'], result['vulnerability'], i))
+
+                print("\n{0:60} {1:10} {2:40} {3:>90}".format(result['payload_url'], result['severity'], result['vulnerability'], result['cwe']))
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
