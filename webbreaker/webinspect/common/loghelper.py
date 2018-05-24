@@ -54,3 +54,19 @@ class WebInspectLogHelper(object):
 
     def log_info_using_webinspect_server(self, server):
         Logger.app.info("Using webinspect server: -->{}<-- for query".format(server))
+
+    def log_info_scan_start(self, endpoint, scan_id):
+        Logger.app.info('WebInspect scan launched on {0} your scan id: {1}\n'.format(endpoint, scan_id))
+
+    def log_error_scan_start_failed(self, e):
+        Logger.app.error("Creating the WebInspect scan failed! {}".format(e))
+
+    def log_info_successful_scan_export(self, scan_name, extension):
+        Logger.app.info('Scan results file is available: {0}.{1}\n'.format(scan_name, extension))
+
+    def log_error_failed_scan_export(self, e):
+        Logger.app.error('Error saving file locally! {}'.format(e))
+
+    def log_error_get_scan_status(self, e):
+        Logger.app.error("There was an error getting scan status: {}".format(e))
+

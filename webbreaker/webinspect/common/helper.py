@@ -76,12 +76,12 @@ class WebInspectAPIHelper(object):
             Logger.app.debug("Response from {0}:\n{1}\n".format(self.setting_overrides.endpoint, logger_response))
 
             scan_id = response.data['ScanId']
-            sys.stdout.write(str('WebInspect scan launched on {0} your scan id: {1}\n'.format(self.setting_overrides.endpoint,
-                                                                                              scan_id)))
+            webinspect_logexceptionhelp.log_info_scan_start(self.setting_overrides.endpoint, scan_id)
             return scan_id
 
         except (ValueError, UnboundLocalError) as e:
-            Logger.app.error("Creating the WebInspect scan failed! {}".format(e))
+            webinspect_logexceptionhelp.log_error_scan_start_failed(e)
+            exit(ExitStatus.failure)
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def export_scan_results(self, scan_id, extension, scan_name=None):
@@ -99,18 +99,16 @@ class WebInspectAPIHelper(object):
         response = self.api.export_scan_format(scan_id, extension, detail_type)
         #APIHelper().check_for_response_errors(response)
 
-	# setting_overrides is on a webinspect scan
+        # setting_overrides is on a webinspect scan
         if scan_name == None:
             scan_name = self.setting_overrides.scan_name
 
         try:
             with open('{0}.{1}'.format(scan_name, extension), 'wb') as f:
-                Logger.app.debug(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
                 f.write(response.data)
-                print(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
+                webinspect_logexceptionhelp.log_info_successful_scan_export(scan_name, extension)
         except (UnboundLocalError, IOError) as e:
-            Logger.app.error('Error saving file locally! {}'.format(e))
-	
+            webinspect_logexceptionhelp.log_error_failed_scan_export(e)
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_policy_by_guid(self, policy_guid):
@@ -154,7 +152,7 @@ class WebInspectAPIHelper(object):
             status = json.loads(response.data_json())['ScanStatus']
             return status
         except (ValueError, TypeError, UnboundLocalError) as e:
-            Logger.app.error("There was an error getting scan status: {}".format(e))
+            webinspect_logexceptionhelp.log_error_get_scan_status(e)
             return None
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
