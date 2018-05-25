@@ -2,8 +2,9 @@ from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 import mock
 from mock import  MagicMock
 import pytest
-from webbreaker.webinspect.scan import ScanOverrides
-from tests.webinspect.scan_unit_test import _setup_overrides
+from webinspectapi.webinspect import WebInspectResponse
+# from webbreaker.webinspect.scan import ScanOverrides
+# from tests.webinspect.scan_unit_test import _setup_overrides
 
 
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi')
@@ -377,16 +378,135 @@ def test_webinspect_api_helper_stop_scan_success(api_mock):
     assert api_mock.call_count == 1
 
 
+@mock.patch('webbreaker.webinspect.common.helper.ntpath.basename')
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.delete_policy')
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_policy')
-def test_webinspect_api_upload_policy_success(get_policy_mock, delete_policy_mock, upload_policy_mock):
+def test_webinspect_api_upload_policy_no_existing_policy_success(upload_policy_mock,  delete_policy_mock, get_policy_mock, ntpath_mock):
     # Given
+    # There is no existing policy by this name so no deletion
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_policy_by_name("test_policy_name")
-    scan_guid = "test_guid"
 
     # When
-    #webinspect_api_helper_object.stop_scan(scan_guid)
+    webinspect_api_helper_object.upload_policy()
 
     # Expect
+    assert get_policy_mock.call_count == 1
+    assert delete_policy_mock.call_count == 0
+    assert upload_policy_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.ntpath.basename')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.delete_policy')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_policy')
+def test_webinspect_api_upload_policy_delete_existing_policy_success(upload_policy_mock,  delete_policy_mock, get_policy_mock, ntpath_mock):
+    # Given
+    # There is existing policy by this name so deletion
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    expected_response = WebInspectResponse(response_code=200, success=True, data={'test_data': 'test_data',
+                                                                                  'uniqueId': "12345"})  # there is an existing policy on the server
+    get_policy_mock.return_value = expected_response
+
+    # When
+    webinspect_api_helper_object.upload_policy()
+
+    # Expect
+    assert get_policy_mock.call_count == 1
+    assert delete_policy_mock.call_count == 1
+    assert upload_policy_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_policy_deletion')
+@mock.patch('webbreaker.webinspect.common.helper.ntpath.basename')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.delete_policy')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_policy')
+def test_webinspect_api_upload_policy_failure_value_error(upload_policy_mock,  delete_policy_mock, get_policy_mock, ntpath_mock, log_error_mock):
+    # not 100% sure where these tests fail, but want to make sure we catch it properly
+
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    get_policy_mock.side_effect = ValueError
+
+
+    # When
+    webinspect_api_helper_object.upload_policy()
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert get_policy_mock.call_count == 1
+    assert delete_policy_mock.call_count == 0
+    assert upload_policy_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_policy_deletion')
+@mock.patch('webbreaker.webinspect.common.helper.ntpath.basename')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.delete_policy')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_policy')
+def test_webinspect_api_upload_policy_failure_unbound_local_error(upload_policy_mock,  delete_policy_mock, get_policy_mock, ntpath_mock, log_error_mock):
+    # not 100% sure where these tests fail, but want to make sure we catch it properly
+
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    get_policy_mock.side_effect = UnboundLocalError
+
+
+    # When
+    webinspect_api_helper_object.upload_policy()
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert get_policy_mock.call_count == 1
+    assert delete_policy_mock.call_count == 0
+    assert upload_policy_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_policy_deletion')
+@mock.patch('webbreaker.webinspect.common.helper.ntpath.basename')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.delete_policy')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_policy')
+def test_webinspect_api_upload_policy_failure_type_error(upload_policy_mock,  delete_policy_mock, get_policy_mock, ntpath_mock, log_error_mock):
+    # not 100% sure where these tests fail, but want to make sure we catch it properly
+
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    get_policy_mock.side_effect = TypeError
+
+
+    # When
+    webinspect_api_helper_object.upload_policy()
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert get_policy_mock.call_count == 1
+    assert delete_policy_mock.call_count == 0
+    assert upload_policy_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_policy_deletion')
+@mock.patch('webbreaker.webinspect.common.helper.ntpath.basename')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.delete_policy')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_policy')
+def test_webinspect_api_upload_policy_failure_uncaught_error(upload_policy_mock,  delete_policy_mock, get_policy_mock, ntpath_mock, log_error_mock):
+    # I'm not confident this is a great test - but if something unexpected exception happens we want to at least test how it's handled.. . ?
+
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    get_policy_mock.side_effect = IOError  # a random error that isn't handled
+
+
+    # When
+    with pytest.raises(Exception):
+        webinspect_api_helper_object.upload_policy()
+
+    # Expect
+    assert log_error_mock.call_count == 0  # we break before this
+    assert get_policy_mock.call_count == 1
+    assert delete_policy_mock.call_count == 0
+    assert upload_policy_mock.call_count == 0  # we break before this
+
+

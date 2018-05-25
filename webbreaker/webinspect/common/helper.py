@@ -210,7 +210,7 @@ class WebInspectAPIHelper(object):
                 Logger.app.debug("Deleted policy {} from server".format(
                     ntpath.basename(self.setting_overrides.webinspect_upload_policy).split('.')[0]))
         except (ValueError, UnboundLocalError, TypeError) as e:
-            Logger.app.error("Verify if deletion of existing policy failed: {}".format(e))
+            webinspect_logexceptionhelp.log_error_policy_deletion(e)
 
         try:
             response = self.api.upload_policy(self.setting_overrides.webinspect_upload_policy)

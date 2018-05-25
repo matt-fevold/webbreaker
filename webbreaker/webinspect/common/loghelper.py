@@ -73,3 +73,6 @@ class WebInspectLogHelper(object):
     def log_error_list_scans(self, e):
         Logger.app.error("There was an error listing WebInspect scans! {}".format(e))
 
+    def log_error_policy_deletion(self, e):
+        Logger.app.error("Verify if the deletion of existing policy failed: {}".format(e))
+
