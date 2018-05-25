@@ -3,8 +3,8 @@ import mock
 from mock import  MagicMock
 import pytest
 from webinspectapi.webinspect import WebInspectResponse
-# from webbreaker.webinspect.scan import ScanOverrides
-# from tests.webinspect.scan_unit_test import _setup_overrides
+from webbreaker.webinspect.scan import ScanOverrides
+from tests.webinspect.scan_unit_test import _setup_overrides
 
 
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi')
@@ -279,7 +279,7 @@ def test_webinspect_api_helper_get_scan_status_failure_unbound_local_error(api_m
 def test_webinspect_api_helper_list_scans_success(api_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_current_status = api_mock
+    webinspect_api_helper_object.api.list_scans = api_mock
 
 
     # When
@@ -294,7 +294,7 @@ def test_webinspect_api_helper_list_scans_success(api_mock):
 def test_webinspect_api_helper_list_scans_failure_value_error(api_mock, log_error_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_current_status = api_mock
+    webinspect_api_helper_object.api.list_scans = api_mock
     api_mock.side_effect = ValueError
 
     # When
@@ -310,7 +310,7 @@ def test_webinspect_api_helper_list_scans_failure_value_error(api_mock, log_erro
 def test_webinspect_api_helper_list_scans_failure_unbound_local_error(api_mock, log_error_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_current_status = api_mock
+    webinspect_api_helper_object.api.list_scans = api_mock
     api_mock.side_effect = UnboundLocalError
 
     # When
@@ -326,7 +326,7 @@ def test_webinspect_api_helper_list_scans_failure_unbound_local_error(api_mock, 
 def test_webinspect_api_helper_list_scans_failure_name_error(api_mock, log_error_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_current_status = api_mock
+    webinspect_api_helper_object.api.list_scans = api_mock
     api_mock.side_effect = NameError
 
     # When
@@ -341,7 +341,7 @@ def test_webinspect_api_helper_list_scans_failure_name_error(api_mock, log_error
 def test_webinspect_api_helper_list_running_scans_success(api_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_current_status = api_mock
+    webinspect_api_helper_object.api.list_running_scans = api_mock
 
     # When
     webinspect_api_helper_object.list_running_scans()
@@ -354,7 +354,7 @@ def test_webinspect_api_helper_list_running_scans_success(api_mock):
 def test_webinspect_api_helper_policy_exists_success(api_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_current_status = api_mock
+    webinspect_api_helper_object.api.get_policy_by_guid = api_mock
     policy_guid = "test_guid"
 
     # When
@@ -368,7 +368,7 @@ def test_webinspect_api_helper_policy_exists_success(api_mock):
 def test_webinspect_api_helper_stop_scan_success(api_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    webinspect_api_helper_object.api.get_current_status = api_mock
+    webinspect_api_helper_object.api.stop_scan = api_mock
     scan_guid = "test_guid"
 
     # When
@@ -509,4 +509,150 @@ def test_webinspect_api_upload_policy_failure_uncaught_error(upload_policy_mock,
     assert delete_policy_mock.call_count == 0
     assert upload_policy_mock.call_count == 0  # we break before this
 
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_settings')
+def test_webinspect_api_helper_upload_settings_success(api_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.upload_settings = api_mock
+
+    # When
+    webinspect_api_helper_object.upload_settings()
+
+    # Expect
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_no_webinspect_server_found')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_uploading')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_settings')
+def test_webinspect_api_helper_upload_settings_failed_value_error(api_mock, log_error_mock, log_no_server_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    api_mock.side_effect = ValueError
+    webinspect_api_helper_object.api.upload_settings = api_mock
+    
+
+    # When
+    webinspect_api_helper_object.upload_settings()
+
+    # Expect
+    assert  log_no_server_mock.call_count == 1
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_no_webinspect_server_found')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_uploading')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_settings')
+def test_webinspect_api_helper_upload_settings_failed_unbound_local_error(api_mock, log_error_mock, log_no_server_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    api_mock.side_effect = UnboundLocalError
+    webinspect_api_helper_object.api.upload_settings = api_mock
+
+    # When
+    webinspect_api_helper_object.upload_settings()
+
+    # Expect
+    assert log_no_server_mock.call_count == 1
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_no_webinspect_server_found')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_uploading')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_settings')
+def test_webinspect_api_helper_upload_settings_failed_name_error(api_mock, log_error_mock, log_no_server_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    api_mock.side_effect = NameError
+    webinspect_api_helper_object.api.upload_settings = api_mock
+
+    # When
+    webinspect_api_helper_object.upload_settings()
+
+    # Expect
+    assert log_no_server_mock.call_count == 1
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+####
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_webmacro')
+def test_webinspect_api_helper_upload_webmacro_success(api_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=mock)
+    webinspect_api_helper_object.setting_overrides.webinspect_upload_webmacros = ['test_list']
+    webinspect_api_helper_object.api.upload_webmacro = api_mock
+
+    # When
+    webinspect_api_helper_object.upload_webmacros()
+
+    # Expect
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_no_webinspect_server_found')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_uploading')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_webmacro')
+def test_webinspect_api_helper_upload_webmacro_failed_value_error(api_mock, log_error_mock, log_no_server_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.setting_overrides.webinspect_upload_webmacros = ['test_list']
+    api_mock.side_effect = ValueError
+    webinspect_api_helper_object.api.upload_webmacro = api_mock
+
+    # When
+    webinspect_api_helper_object.upload_webmacros()
+
+    # Expect
+    assert log_no_server_mock.call_count == 1
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_no_webinspect_server_found')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_uploading')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_webmacro')
+def test_webinspect_api_helper_upload_settings_failed_unbound_local_error(api_mock, log_error_mock, log_no_server_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.setting_overrides.webinspect_upload_webmacros = ['test_list']
+    api_mock.side_effect = UnboundLocalError
+    webinspect_api_helper_object.api.upload_webmacro = api_mock
+
+    # When
+    webinspect_api_helper_object.upload_webmacros()
+
+    # Expect
+    assert log_no_server_mock.call_count == 1
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectAPIHelper._check_if_built_in')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectAPIHelper._get_index')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_guid')
+def test_webinspect_api_verify_scan_policy(get_policy_by_guid_mock, get_index_mock, check_if_built_in_mock):
+    # Given
+    # webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    # webinspect_api_helper_object.setting_overrides.scan_policy = "test_policy"
+    # get_policy_by_guid_mock.return_value = WebInspectResponse(success=True)
+    # webinspect_api_helper_object.api.get_policy_by_guid = get_policy_by_guid_mock
+    #
+    # check_if_built_in_mock.return_value = True
+    #
+    # test_config = MagicMock()
+    #
+    # # When
+    # webinspect_api_helper_object.verify_scan_policy(test_config)
+    #
+    # # Expect
+    # assert check_if_built_in_mock.call_count == 1
+    # assert get_index_mock.call_count == 1
+    # assert get_policy_by_guid_mock.call_count == 1
+    # TODO: this test was taking too long to write.     
+    assert 0
 

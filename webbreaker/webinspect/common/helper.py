@@ -253,10 +253,11 @@ class WebInspectAPIHelper(object):
                 # two happy paths: either the provided policy refers to an existing builtin policy, or it refers to
                 # a local policy we need to first upload and then use.
 
-                if str(self.setting_overrides.scan_policy).lower() in [str(x[0]).lower() for x in
-                                                                       config.mapped_policies]:
-                    idx = [x for x, y in enumerate(config.mapped_policies) if
-                           y[0] == str(self.setting_overrides.scan_policy).lower()]
+                built_in = self._check_if_built_in(config)
+
+                if built_in:
+                    idx = self._get_index(config)
+
                     policy_guid = config.mapped_policies[idx[0]][1]
                     Logger.app.info(
                         "scan_policy {} with policyID {} has been selected.".format(self.setting_overrides.scan_policy,
@@ -292,3 +293,27 @@ class WebInspectAPIHelper(object):
 
         except (UnboundLocalError, NameError) as e:
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
+
+    def _check_if_built_in(self, config):
+        """
+        check if scan policy is a built in, this is abstracted from verify_scan_policy so it can be mocked.
+        :param config:
+        :return:
+        """
+        if str(self.setting_overrides.scan_policy).lower() in [str(x[0]).lower() for x in
+                                                               config.mapped_policies]:
+            return True
+        else:
+            return False
+
+    def _get_index(self, config):
+        """
+        # wow what a list comprehension. not a single comment - this was added posthumously.
+        this was abstracted from verify_scan_policy so mocking could occur.
+        :param config:
+        :return:
+        """
+        index = [x for x, y in enumerate(config.mapped_policies) if
+                 y[0] == str(self.setting_overrides.scan_policy).lower()]
+
+        return index
