@@ -154,12 +154,13 @@ class WebInspectScan:
         if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
             self.webinspect_api.upload_policy()
 
-    def _scan(self, scan_id):
+    def _scan(self, scan_id, delay=2):
         """
         Used by a thread to handle querying the webinspect endpoint for the scan status. If it returns complete we are
         happy and download the results files. If we enter NotRunning then something has gone wrong and we want to
         exit with a failure.
         :param scan_id: the id on the webinspect server for the running scan
+        :param delay: time between calls to Webinspect server
         :return: no return but upon completion sends a "complete" message back to the queue that is waiting for it.
         """
         # for multithreading we want to use the same server each request
@@ -182,7 +183,7 @@ class WebInspectScan:
                 webinspectloghelper.log_error_not_running_scan()
                 self._stop_scan(scan_id)
                 sys.exit(ExitStatus.failure)
-            time.sleep(2)
+            time.sleep(delay)
 
     def _stop_scan(self, scan_id):
         self.webinspect_api.stop_scan(scan_id)

@@ -47,6 +47,52 @@ def _setup_overrides(expected_username=None, expected_password=None, expected_al
     return overrides
 
 
+def test_WebinspectScan_init_success():
+    assert 0
+
+
+def test_WebInspectScan_scan_success():
+    assert 0
+
+
+def test_WebInspectScan_scan_failure_connection_error():
+    assert 0
+
+
+def test_WebInspectScan_scan_failure_http_error():
+    assert 0
+
+
+def test_WebInspectScan_scan_failure_type_error():
+    assert 0
+
+
+def test_WebInspectScan_scan_failure_timeout_error():
+    assert 0
+
+
+def test_WebInspectScan_upload_settings_and_policies_success():
+    assert 0
+
+
+def test_WebInspectScan_threaded_scan_complete_success():
+    assert 0
+
+
+def test_WebInspectScan_threaded_scan_not_running_failure():
+    assert 0
+
+
+def test_WebInspectScan_stop_scan_success():
+    assert 0
+
+
+def test_WebInspectScan_exit_gracefully_success():
+    assert 0
+
+
+def test_WebInspectScan_webinspect_git_clone():
+    assert 0
 
 
 @mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')

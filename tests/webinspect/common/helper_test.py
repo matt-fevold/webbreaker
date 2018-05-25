@@ -585,6 +585,8 @@ def test_webinspect_api_helper_upload_webmacro_success(api_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=mock)
     webinspect_api_helper_object.setting_overrides.webinspect_upload_webmacros = ['test_list']
+    webinspect_api_helper_object.setting_overrides.endpoint = "test_host"
+
     webinspect_api_helper_object.api.upload_webmacro = api_mock
 
     # When
