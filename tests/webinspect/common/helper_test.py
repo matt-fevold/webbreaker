@@ -27,7 +27,7 @@ def test_webinspect_api_helper_init_success(log_info_mock, api_mock):
     assert webinspect_api_helper_object.username == expected_username
     assert webinspect_api_helper_object.password == expected_password
     assert webinspect_api_helper_object.setting_overrides is None
-    assert webinspect_api_helper_object.silent is False
+    assert webinspect_api_helper_object.silent is expected_silent_flag
 
     log_info_mock.assert_called_once_with(expected_host)
     assert log_info_mock.call_count == 1
@@ -58,7 +58,7 @@ def test_webinspect_api_helper_init_with_setting_overrides_success(log_info_mock
     assert webinspect_api_helper_object.username == expected_username
     assert webinspect_api_helper_object.password == expected_password
 #    assert override_mock.call_count == 1
-    assert webinspect_api_helper_object.silent is False
+    assert webinspect_api_helper_object.silent is expected_silent_flag
 
     log_info_mock.assert_called_once_with(expected_host)
     assert log_info_mock.call_count == 1
@@ -72,10 +72,8 @@ def test_webinspect_api_helper_init_with_setting_overrides_success(log_info_mock
 def test_webinspect_api_helper_create_scan_success(api_mock, json_dumps_mock, log_scan_start_mock):
     # Given
 
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.create_scan = api_mock
-
-
 
     # When
     webinspect_api_helper_object.create_scan()
@@ -90,11 +88,9 @@ def test_webinspect_api_helper_create_scan_success(api_mock, json_dumps_mock, lo
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.create_scan')
 def test_webinspect_api_helper_create_scan_failure_value_error(api_mock, json_dumps_mock, log_scan_failed_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     json_dumps_mock.side_effect = ValueError
     webinspect_api_helper_object.api.create_scan = api_mock
-
-
 
     # When
     with pytest.raises(SystemExit):
@@ -110,11 +106,9 @@ def test_webinspect_api_helper_create_scan_failure_value_error(api_mock, json_du
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.create_scan')
 def test_webinspect_api_helper_create_scan_failure_unbound_local_error(api_mock, json_dumps_mock, log_scan_failed_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     json_dumps_mock.side_effect = UnboundLocalError
     webinspect_api_helper_object.api.create_scan = api_mock
-
-
 
     # When
     with pytest.raises(SystemExit):
@@ -130,7 +124,7 @@ def test_webinspect_api_helper_create_scan_failure_unbound_local_error(api_mock,
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.export_scan_format')
 def test_webinspect_api_helper_export_scan_results_success(api_mock, log_export_success_mock, open_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.export_scan_format = api_mock
 
     # When
@@ -146,7 +140,7 @@ def test_webinspect_api_helper_export_scan_results_success(api_mock, log_export_
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.export_scan_format')
 def test_webinspect_api_helper_export_scan_results_failure_unbound_local_error(api_mock, log_export_failure_mock, open_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.export_scan_format = api_mock
     open_mock.side_effect = UnboundLocalError
 
@@ -163,7 +157,7 @@ def test_webinspect_api_helper_export_scan_results_failure_unbound_local_error(a
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.export_scan_format')
 def test_webinspect_api_helper_export_scan_results_io_error(api_mock, log_export_failure_mock, open_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.export_scan_format = api_mock
     open_mock.side_effect = IOError
 
@@ -178,7 +172,7 @@ def test_webinspect_api_helper_export_scan_results_io_error(api_mock, log_export
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_guid')
 def test_webinspect_api_helper_get_policy_by_guid_success(api_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.get_policy_by_guid = api_mock
 
     # When
@@ -191,7 +185,7 @@ def test_webinspect_api_helper_get_policy_by_guid_success(api_mock):
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
 def test_webinspect_api_helper_get_policy_by_name_success(api_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.get_policy_by_name = api_mock
 
     # When
@@ -204,7 +198,7 @@ def test_webinspect_api_helper_get_policy_by_name_success(api_mock):
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_scan_by_name')
 def test_webinspect_api_helper_get_scan_by_name_success(api_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.get_scan_by_name = api_mock
 
     # When
@@ -218,7 +212,7 @@ def test_webinspect_api_helper_get_scan_by_name_success(api_mock):
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_current_status')
 def test_webinspect_api_helper_get_scan_status_success(api_mock, json_loads_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.get_current_status = api_mock
     json_loads_mock.side_effect = None
 
@@ -234,7 +228,7 @@ def test_webinspect_api_helper_get_scan_status_success(api_mock, json_loads_mock
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_current_status')
 def test_webinspect_api_helper_get_scan_status_failure_value_error(api_mock, json_loads_mock, log_error_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.api.get_current_status = api_mock
     json_loads_mock.side_effect = ValueError
 
@@ -246,3 +240,153 @@ def test_webinspect_api_helper_get_scan_status_failure_value_error(api_mock, jso
     assert api_mock.call_count == 1
 
 
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_get_scan_status')
+@mock.patch('webbreaker.webinspect.common.helper.json.loads')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_current_status')
+def test_webinspect_api_helper_get_scan_status_failure_type_error(api_mock, json_loads_mock, log_error_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+    json_loads_mock.side_effect = TypeError
+
+    # When
+    webinspect_api_helper_object.get_scan_status("test_guid")
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_get_scan_status')
+@mock.patch('webbreaker.webinspect.common.helper.json.loads')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_current_status')
+def test_webinspect_api_helper_get_scan_status_failure_unbound_local_error(api_mock, json_loads_mock, log_error_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+    json_loads_mock.side_effect = UnboundLocalError
+
+    # When
+    webinspect_api_helper_object.get_scan_status("test_guid")
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.list_scans')
+def test_webinspect_api_helper_list_scans_success(api_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+
+
+    # When
+    webinspect_api_helper_object.list_scans()
+
+    # Expect
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_list_scans')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.list_scans')
+def test_webinspect_api_helper_list_scans_failure_value_error(api_mock, log_error_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+    api_mock.side_effect = ValueError
+
+    # When
+    webinspect_api_helper_object.list_scans()
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_list_scans')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.list_scans')
+def test_webinspect_api_helper_list_scans_failure_unbound_local_error(api_mock, log_error_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+    api_mock.side_effect = UnboundLocalError
+
+    # When
+    webinspect_api_helper_object.list_scans()
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectLogHelper.log_error_list_scans')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.list_scans')
+def test_webinspect_api_helper_list_scans_failure_name_error(api_mock, log_error_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+    api_mock.side_effect = NameError
+
+    # When
+    webinspect_api_helper_object.list_scans()
+
+    # Expect
+    assert log_error_mock.call_count == 1
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.list_running_scans')
+def test_webinspect_api_helper_list_running_scans_success(api_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+
+    # When
+    webinspect_api_helper_object.list_running_scans()
+
+    # Expect
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_guid')
+def test_webinspect_api_helper_policy_exists_success(api_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+    policy_guid = "test_guid"
+
+    # When
+    webinspect_api_helper_object.policy_exists(policy_guid)
+
+    # Expect
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.stop_scan')
+def test_webinspect_api_helper_stop_scan_success(api_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_current_status = api_mock
+    scan_guid = "test_guid"
+
+    # When
+    webinspect_api_helper_object.stop_scan(scan_guid)
+
+    # Expect
+    assert api_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_name')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.delete_policy')
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_policy')
+def test_webinspect_api_upload_policy_success(get_policy_mock, delete_policy_mock, upload_policy_mock):
+    # Given
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.api.get_policy_by_name("test_policy_name")
+    scan_guid = "test_guid"
+
+    # When
+    #webinspect_api_helper_object.stop_scan(scan_guid)
+
+    # Expect

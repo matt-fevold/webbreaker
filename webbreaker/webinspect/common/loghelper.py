@@ -70,3 +70,6 @@ class WebInspectLogHelper(object):
     def log_error_get_scan_status(self, e):
         Logger.app.error("There was an error getting scan status: {}".format(e))
 
+    def log_error_list_scans(self, e):
+        Logger.app.error("There was an error listing WebInspect scans! {}".format(e))
+

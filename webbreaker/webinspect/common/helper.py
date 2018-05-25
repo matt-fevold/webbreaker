@@ -168,7 +168,7 @@ class WebInspectAPIHelper(object):
             return response.data
 
         except (ValueError, UnboundLocalError, NameError) as e:
-            Logger.app.error("There was an error listing WebInspect scans! {}".format(e))
+            webinspect_logexceptionhelp.log_error_list_scans(e)
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def list_running_scans(self):
