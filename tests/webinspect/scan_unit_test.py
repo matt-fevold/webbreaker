@@ -2,11 +2,17 @@
 from webbreaker.common.confighelper import Config
 import pytest
 from mock import MagicMock
-from webbreaker.webinspect.scan import ScanOverrides
+from webbreaker.webinspect.scan import ScanOverrides, WebInspectScan
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 import os
 import mock
+import requests
+
+try:  # python 3
+    from queue import Queue, Empty
+except ImportError:  # python 2
+    from Queue import Queue as queue
 
 
 def _setup_overrides(expected_username=None, expected_password=None, expected_allowed_hosts=(), expected_start_urls=(),
@@ -47,48 +53,185 @@ def _setup_overrides(expected_username=None, expected_password=None, expected_al
     return overrides
 
 
-def test_WebinspectScan_init_success():
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebinspectScan_init_success(scan_mock, scan_override_mock, wi_config_mock, config_git_mock):
+    # Given
+    overrides = {}  # empty dictionary
+
+    # When
+    scan_object = WebInspectScan(overrides)
+
+    # Expect
+    assert config_git_mock.call_count == 1
+    assert wi_config_mock.call_count == 1
+    assert scan_mock.call_count == 1
+
+
+# These decorators can be a bit ugly at time - they help handle all the ugliness of teardown and setup so it's
+# a net win, but can be a bit abstract at times.
+
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.create_scan')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._scan')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._upload_settings_and_policies')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._webinspect_git_clone')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAuth')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+def test_WebInspectScan_scan_success(scan_override_mock, wi_config_mock, auth_mock, git_clone_mock,
+                                     upload_settings_policies_mock, _scan_mock, api_create_scan_mock):
+    # Given
+    overrides = _setup_overrides()
+    auth_mock.return_value.authenticate.return_value = ("expected_username", "expected_password")
+
+
+    # When
+    scan = WebInspectScan(overrides)
+
+    # Expect
+    assert api_create_scan_mock.call_count == 1
+    assert _scan_mock.call_count == 1
+    assert upload_settings_policies_mock.call_count == 1
+    assert git_clone_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.WebInspectLogHelper.log_error_scan_start_failed')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.create_scan')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._scan')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._upload_settings_and_policies')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._webinspect_git_clone')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAuth')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+def test_WebInspectScan_scan_failure_connection_error(scan_override_mock, wi_config_mock, auth_mock, git_clone_mock,
+                                                      upload_settings_policies_mock, _scan_mock, api_create_scan_mock,
+                                                      log_error_mock):
+    # Given
+    overrides = _setup_overrides()
+    auth_mock.return_value.authenticate.return_value = ("expected_username", "expected_password")
+    _scan_mock.side_effect = requests.ConnectionError
+
+    # When
+    with pytest.raises(SystemExit):
+        scan = WebInspectScan(overrides)
+
+    # Expect
+    assert log_error_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.WebInspectLogHelper.log_error_scan_start_failed')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.create_scan')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._scan')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._upload_settings_and_policies')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan._webinspect_git_clone')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAuth')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+def test_WebInspectScan_scan_failure_http_error(scan_override_mock, wi_config_mock, auth_mock, git_clone_mock,
+                                                      upload_settings_policies_mock, _scan_mock, api_create_scan_mock,
+                                                      log_error_mock):
+    # Given
+    overrides = _setup_overrides()
+    auth_mock.return_value.authenticate.return_value = ("expected_username", "expected_password")
+    _scan_mock.side_effect = requests.HTTPError
+
+    # When
+    with pytest.raises(SystemExit):
+        scan = WebInspectScan(overrides)
+
+    # Expect
+    assert log_error_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.upload_policy')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.upload_webmacros')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.upload_settings')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.verify_scan_policy')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_upload_settings_and_policies_success(scan_mock, scan_override_mock, wi_config_mock,
+                                                             config_git_mock, verify_scan_mock, upload_settings_mock,
+                                                             upload_webmacros_mock, upload_policy_mock):
+    # Given
+    overrides = _setup_overrides(expected_upload_settings="settings.xml", expected_upload_webmacro="upload.macro",
+                                 expected_upload_policy="test policy?")
+
+    scan_object = WebInspectScan(overrides)
+    # below was done to logically isolate this test - which was harder to do than I thought.
+    scan_object._set_api(None, None)
+    scan_object.webinspect_api.setting_overrides.webinspect_upload_policy = True
+    scan_object.webinspect_api.setting_overrides.scan_policy = None
+    # When
+    scan_object._upload_settings_and_policies()
+
+    # Expect
+    assert verify_scan_mock.call_count == 1
+    assert upload_settings_mock.call_count == 1
+    assert upload_webmacros_mock.call_count == 1
+    assert upload_policy_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.stop_scan')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_stop_scan_success(scan_mock, scan_override_mock, wi_config_mock, config_git_mock,
+                                                       stop_scan_mock):
+    # Given
+    overrides = _setup_overrides()
+
+    scan_object = WebInspectScan(overrides)
+    scan_object._set_api(None, None)
+
+    # When
+    scan_object._stop_scan("scan_guid")
+
+    # Expect
+    assert stop_scan_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_threaded_scan_complete_success(scan_mock, scan_override_mock, wi_config_mock, config_git_mock):
     assert 0
 
 
-def test_WebInspectScan_scan_success():
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_threaded_scan_not_running_failure(scan_mock, scan_override_mock, wi_config_mock, config_git_mock):
     assert 0
 
 
-def test_WebInspectScan_scan_failure_connection_error():
-    assert 0
 
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.stop_scan')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_exit_gracefully_success(scan_mock, scan_override_mock, wi_config_mock, config_git_mock,
+                                                       stop_scan_mock):
+    # Given
+    overrides = _setup_overrides()
 
-def test_WebInspectScan_scan_failure_http_error():
-    assert 0
+    scan_object = WebInspectScan(overrides)
+    scan_object._set_api(None, None)
+    scan_object.scan_id = "scan_guid"  # this gets set when a scan is created - we're not creating a scan here.
 
+    # When
+    with pytest.raises(SystemExit):
+        scan_object._exit_scan_gracefully("scan_guid")
 
-def test_WebInspectScan_scan_failure_type_error():
-    assert 0
-
-
-def test_WebInspectScan_scan_failure_timeout_error():
-    assert 0
-
-
-def test_WebInspectScan_upload_settings_and_policies_success():
-    assert 0
-
-
-def test_WebInspectScan_threaded_scan_complete_success():
-    assert 0
-
-
-def test_WebInspectScan_threaded_scan_not_running_failure():
-    assert 0
-
-
-def test_WebInspectScan_stop_scan_success():
-    assert 0
-
-
-def test_WebInspectScan_exit_gracefully_success():
-    assert 0
+    # Expect
+    assert stop_scan_mock.call_count == 1
 
 
 def test_WebInspectScan_webinspect_git_clone():
@@ -410,7 +553,7 @@ def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(
 @mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
-def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings__success(get_endpoint_mock,
+def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(get_endpoint_mock,
                                                                                 parse_webinspect_mock,
                                                                                 run_env_mock, isfile_mock):
     # Given

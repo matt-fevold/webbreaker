@@ -4,7 +4,6 @@
 
 from contextlib import contextmanager
 from exitstatus import ExitStatus
-from multiprocessing.dummy import Pool as ThreadPool
 import requests
 from signal import getsignal, SIGINT, SIGABRT,SIGTERM, signal
 from subprocess import CalledProcessError, check_output
@@ -23,7 +22,8 @@ from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.webbreakerconfig import trim_ext
 from webbreaker.webinspect.authentication import WebInspectAuth
 # deviating from standard style to remove circular dependency problem.
-import webbreaker.webinspect.common.helper
+#import webbreaker.webinspect.common.helper
+from webbreaker.webinspect.common.helper import WebInspectAPIHelper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
@@ -43,10 +43,6 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
-try:  # python 3
-    import queue
-except ImportError:  # python 2
-    import Queue as queue
 
 
 try:  # python 2
@@ -58,8 +54,6 @@ except (ImportError, AttributeError):  # Python3
 class WebInspectScan:
     def __init__(self, cli_overrides):
         # used for multi threading the _is_available API call
-        self._results_queue = queue.Queue()
-
         self.config = WebInspectConfig()
 
         # handle all the overrides
@@ -85,11 +79,9 @@ class WebInspectScan:
         # handle github setup
         self._webinspect_git_clone()
 
-        # Doing it kind of ugly - it removes a circular dependency issue, it's functionally the same as other uses of
-        #  WebInspectAPIHelper.
-        self.webinspect_api = webbreaker.webinspect.common.helper.WebInspectAPIHelper(username=username,
-                                                                                      password=password,
-                                                                                      webinspect_setting_overrides=self.scan_overrides)
+        self._set_api(username=username, password=password)
+        # self.webinspect_api = WebInspectAPIHelper(username=username, password=password,
+        #                                           webinspect_setting_overrides=self.scan_overrides)
 
         # abstract out a bunch of conditional uploads
         self._upload_settings_and_policies()
@@ -97,35 +89,15 @@ class WebInspectScan:
         try:
             Logger.app.info("Running WebInspect Scan")
 
-            # make this class variable so the multithreading and context management can use the scan_id
             self.scan_id = self.webinspect_api.create_scan()
-
-            # Start a single thread so we can have a timeout functionality added.
-            pool = ThreadPool(1)
-            pool.imap_unordered(self._scan, [self.scan_id])
 
             # context manager to handle interrupts properly
             with self._termination_event_handler():
-                # block until scan completion.
-                self._results_queue.get(block=True)
 
-            # kill thread
-            pool.terminate()
+                self._scan()
 
-        # Since 2.1.24 removing excepts that don't make sense
-        # removed: IndexError, KeyError, NameError
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
-            Logger.app.error(
-                "WebInspect scan was not properly configured, unable to launch!! see also: {}".format(e))
-            raise
-        except TypeError as e:
-            Logger.app.error("Something went wrong, please submit a bug report on github.com/Target/webbreaker/issues "
-                             "{}".format(e))
-            # Not necessarily the best way to handle this, but at least attempt to stop the running scan and exit.
-            exit(ExitStatus.failure)
-        except queue.Empty as e:  # if queue is still empty after timeout period this is raised.
-            Logger.app.error("The WebInspect server is unreachable after several retries: {}!".format(e))
-            self._stop_scan(self.scan_id)
+            webinspectloghelper.log_error_scan_start_failed(e)
             exit(ExitStatus.failure)
 
         Logger.app.info("WebInspect Scan Complete.")
@@ -133,6 +105,16 @@ class WebInspectScan:
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
+
+    def _set_api(self, username, password):
+        """
+        created so I could mock this functionality better. It sets up the webinspect api
+        :param username:
+        :param password:
+        :return:
+        """
+        self.webinspect_api = WebInspectAPIHelper(username=username, password=password,
+                                                  webinspect_setting_overrides=self.scan_overrides)
 
     def _upload_settings_and_policies(self):
         """
@@ -154,7 +136,7 @@ class WebInspectScan:
         if self.webinspect_api.setting_overrides.webinspect_upload_policy and not self.webinspect_api.setting_overrides.scan_policy:
             self.webinspect_api.upload_policy()
 
-    def _scan(self, scan_id, delay=2):
+    def _scan(self, delay=2):
         """
         Used by a thread to handle querying the webinspect endpoint for the scan status. If it returns complete we are
         happy and download the results files. If we enter NotRunning then something has gone wrong and we want to
@@ -169,19 +151,19 @@ class WebInspectScan:
 
         scan_complete = False
         while not scan_complete:
-            current_status = self.webinspect_api.get_scan_status(scan_id)
+            current_status = self.webinspect_api.get_scan_status(self.scan_id)
 
             if current_status.lower() == 'complete':
                 scan_complete = True
                 # Now let's download or export the scan artifact in two formats
-                self.webinspect_api.export_scan_results(scan_id, 'fpr')
-                self.webinspect_api.export_scan_results(scan_id, 'xml')
-                self._results_queue.put('complete', block=False)
+                self.webinspect_api.export_scan_results(self.scan_id, 'fpr')
+                self.webinspect_api.export_scan_results(self.scan_id, 'xml')
+                return
                 # TODO add json export
 
             elif current_status.lower() == 'notrunning':
                 webinspectloghelper.log_error_not_running_scan()
-                self._stop_scan(scan_id)
+                self._stop_scan(self.scan_id)
                 sys.exit(ExitStatus.failure)
             time.sleep(delay)
 
