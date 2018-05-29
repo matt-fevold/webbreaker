@@ -4,6 +4,7 @@
 
 from contextlib import contextmanager
 from exitstatus import ExitStatus
+import json
 from multiprocessing.dummy import Pool as ThreadPool
 from pybreaker import CircuitBreaker
 import requests
@@ -74,10 +75,6 @@ class WebInspectScan:
         # run the scan
         self.scan()
 
-        #xml parsing
-        # if self.scan_overrides.settings.lower() == 'Default':
-        #     self.xml_parsing(self.scan_overrides.settings)
-
     def xml_parsing(self, file_name):
         """
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
@@ -110,9 +107,20 @@ class WebInspectScan:
                 cwelist = ""
                 result['cwe'] = cwelist
                 for self.cwe in root.iter(tag='Classification'):
-                    result['cwe'] += self.cwe.text + "\n"
+                    result['cwe'] += self.cwe.text + '\n'
 
-                print("\n{0:60} {1:10} {2:40} {3:>90}".format(result['payload_url'], result['severity'], result['vulnerability'], result['cwe']))
+                with open(self.scan_overrides.scan_name + '.json', 'w') as fp:
+                    # dumps = json.dumps(result, indent=4)
+                    # loads = json.loads(dumps)
+                    print("DEBUG: ", result)
+                    json.dump(result, fp)
+                    # print("DEBUG: ", type(loads))
+                    # print("DEBUG: ", loads)
+
+        Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
+        Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
+                # print(("result list: ", result))
+                # print("\n{0:60} {1:10} {2:40} {3:>90}".format(result['payload_url'], result['severity'], result['vulnerability'], result['cwe']))
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
