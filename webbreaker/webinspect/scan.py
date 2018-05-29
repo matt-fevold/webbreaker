@@ -138,23 +138,21 @@ class WebInspectScan:
 
     def _scan(self, delay=2):
         """
-        Used by a thread to handle querying the webinspect endpoint for the scan status. If it returns complete we are
+        If it returns complete we are
         happy and download the results files. If we enter NotRunning then something has gone wrong and we want to
         exit with a failure.
         :param scan_id: the id on the webinspect server for the running scan
         :param delay: time between calls to Webinspect server
         :return: no return but upon completion sends a "complete" message back to the queue that is waiting for it.
         """
-        # for multithreading we want to use the same server each request
-        self.webinspect_server = self.webinspect_api.setting_overrides.endpoint
-        self.webinspect_api.host = self.webinspect_server
+        # self.webinspect_server = self.webinspect_api.setting_overrides.endpoint
+        self.webinspect_api.host = self.webinspect_api.setting_overrides.endpoint
 
         scan_complete = False
         while not scan_complete:
             current_status = self.webinspect_api.get_scan_status(self.scan_id)
 
             if current_status.lower() == 'complete':
-                scan_complete = True
                 # Now let's download or export the scan artifact in two formats
                 self.webinspect_api.export_scan_results(self.scan_id, 'fpr')
                 self.webinspect_api.export_scan_results(self.scan_id, 'xml')
@@ -239,13 +237,10 @@ class WebInspectScan:
             except GitCommandError as e:
                 webinspectloghelper.log_git_access_error(self.config.webinspect_git, e)
                 exit(ExitStatus.failure)
-                # removed 2.1.24 - doesn't appear to be very useful
-                # raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
+
             except IndexError as e:
                 webinspectloghelper.log_config_file_unavailable(e)
                 exit(ExitStatus.failure)
-                # removed 2.1.24 - doesn't appear to be very useful
-                # raise Exception(webinspectloghelper.log_error_fetch_webinspect_configs())
 
             Logger.app.debug("Completed webinspect config fetch")
             

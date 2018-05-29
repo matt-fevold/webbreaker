@@ -195,21 +195,49 @@ def test_WebInspectScan_stop_scan_success(scan_mock, scan_override_mock, wi_conf
     assert stop_scan_mock.call_count == 1
 
 
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.export_scan_results')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.get_scan_status')
 @mock.patch('webbreaker.webinspect.scan.Config')
 @mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides')
 @mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
-def test_WebInspectScan_threaded_scan_complete_success(scan_mock, scan_override_mock, wi_config_mock, config_git_mock):
-    assert 0
+def test_WebInspectScan_scan_complete_success(scan_mock, scan_override_mock, wi_config_mock, config_git_mock,
+                                              get_status_mock, export_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_object = WebInspectScan(overrides)
+    scan_object._set_api(None, None)
+    scan_object.scan_id = "test_guid"
+    get_status_mock.return_value = 'complete'
+
+    # When
+    scan_object._scan()
+
+    # Expect
+    assert export_mock.call_count == 2
 
 
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.stop_scan')
+@mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.get_scan_status')
 @mock.patch('webbreaker.webinspect.scan.Config')
 @mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides')
 @mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
-def test_WebInspectScan_threaded_scan_not_running_failure(scan_mock, scan_override_mock, wi_config_mock, config_git_mock):
-    assert 0
+def test_WebInspectScan_scan_not_running_failure(scan_mock, scan_override_mock, wi_config_mock, config_git_mock,
+                                              get_status_mock, stop_scan_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_object = WebInspectScan(overrides)
+    scan_object._set_api(None, None)
+    scan_object.scan_id = "test_guid"
+    get_status_mock.return_value = 'notrunning'
 
+    # When
+    with pytest.raises(SystemExit):
+        scan_object._scan()
+
+    # Expect
+    assert stop_scan_mock.call_count == 1
 
 
 @mock.patch('webbreaker.webinspect.scan.WebInspectAPIHelper.stop_scan')
