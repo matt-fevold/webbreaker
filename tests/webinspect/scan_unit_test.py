@@ -262,7 +262,7 @@ def test_WebInspectScan_exit_gracefully_success(scan_mock, scan_override_mock, w
     assert stop_scan_mock.call_count == 1
 
 
-def test_WebInspectScan_webinspect_git_clone():
+def test_WebInspectScan_webinspect_git_clone_success():
     assert 0
 
 
@@ -720,8 +720,7 @@ def test_ScanOverrides_parse_upload_webmacros_overrides_cli_passed_upload_webmac
 
 def test_ScanOverrides_parse_upload_policy_overrides():
     assert 0
-    # TODO before writing this test I want to validate this override is actually used...
-
+    # TODO This test + removing the upload click arguements
 
 @mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
