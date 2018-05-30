@@ -80,7 +80,7 @@ class WebInspectScan:
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
         :return: JSON file
         """
-        # creating a dict to store the results in the for loop (maybe not the best way to do it
+        # creating a dict to store the results in the for loop (maybe not the best way to do it\
         result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
 
         # TODO read in xml file that was just created from the scan
@@ -91,8 +91,8 @@ class WebInspectScan:
 
         # TODO store the result into dict
         print("Webbreaker WebInpsect scan results:\n")
-        print("\n{0:60} {1:10} {2:40} {3:90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-        print("{0:60} {1:10} {2:40} {3:90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+        print("\n{0:60} {1:10} {2:40} {3:>90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:60} {1:10} {2:40} {3:>90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
 
         for elem in root.findall('Session'):
             self.payload_url = elem.find('URL').text
@@ -109,18 +109,22 @@ class WebInspectScan:
                 for self.cwe in root.iter(tag='Classification'):
                     result['cwe'] += self.cwe.text + '\n'
 
+                # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
+                print("\n{0:60} {1:10} {2:40} {3:>90}".format(result['payload_url'], result['severity'],
+                                                             result['vulnerability'], result['cwe']))
+
                 with open(self.scan_overrides.scan_name + '.json', 'w') as fp:
-                    # dumps = json.dumps(result, indent=4)
-                    # loads = json.loads(dumps)
-                    print("DEBUG: ", result)
+                    # print("DEBUG: ", result)
                     json.dump(result, fp)
-                    # print("DEBUG: ", type(loads))
-                    # print("DEBUG: ", loads)
+                    # x = json.dumps(result)
+                    # f = open(self.scan_overrides.scan_name + '.json', 'w')
+                    # f.write(x)
+                    # f.close()
 
         Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
         Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
                 # print(("result list: ", result))
-                # print("\n{0:60} {1:10} {2:40} {3:>90}".format(result['payload_url'], result['severity'], result['vulnerability'], result['cwe']))
+
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def scan(self):
