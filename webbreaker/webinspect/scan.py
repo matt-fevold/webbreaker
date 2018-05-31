@@ -722,7 +722,11 @@ class Vulnerability:
         return {'payload_url': self.payload_url, 'severity': self.severity, 'vulnerability_name': self.vulnerability_name, 'cwe': self.cwe}
 
     def console_output(self):
-        pass
+        # in order for pretty printing - self.cwe can is a list and we want the first element in the same line with the following elements printed
+        # nicely afterwards.
+        print("\n{0:60} {1:10} {2:40} {3:90} ".format(self.payload_url, self.severity, self.vulnerability_name, self.cwe[0]))
+        for cwe in self.cwe[1:-1]:
+            print("{0:112} {1:90}".format(' '*112, cwe))
 
 
 def xml_parsing(file_name):
@@ -738,14 +742,17 @@ def xml_parsing(file_name):
     root = tree.getroot()
 
     # TODO store the result into dict
-    # print("Webbreaker WebInpsect scan results:\n")
-    # print("\n{0:60} {1:10} {2:40} {3:>90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-    # print("{0:60} {1:10} {2:40} {3:>90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+    print("Webbreaker WebInpsect scan results:\n")
+    print("\n{0:60} {1:10} {2:40} {3:90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+    print("{0:60} {1:10} {2:40} {3:90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
     vuln_list = []
 
     for elem in root.findall('Session'):
 
         payload_url = elem.find('URL').text
+        # cwe_list = []
+        # severity = ""
+        # vulnerability_name = ""
 
         for issue in root.findall('Session/Issues/Issue'):
             vulnerability_name = issue.find('Name').text
@@ -755,13 +762,15 @@ def xml_parsing(file_name):
             for cwe in issue.iter(tag='Classification'):
                 cwe_list.append(cwe.text)
 
-            # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
-            #print("\n{0:60} {1:10} {2:40} {3:>90}\n".format(result['payload_url'], result['severity'],
-            #                                             result['vulnerability'], result['cwe']))
+            # print("\n{0:60} {1:10} {2:40} {3:>90}\n".format(result['payload_url'], result['severity'],
+            #                                                  result['vulnerability'], result['cwe']))
             vuln_list.append(Vulnerability(payload_url=payload_url,
                                              severity=severity,
                                              vulnerability_name=vulnerability_name,
                                              cwe=cwe_list))
+    for vuln in vuln_list:
+        vuln.console_output()
+
     # TODO change back to filename
     with open("/Users/z003201/Downloads/asdf2" + '.json', 'a') as fp:
         fp.write('{ "finding" : ')
