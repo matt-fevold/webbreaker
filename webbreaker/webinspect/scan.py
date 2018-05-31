@@ -107,23 +107,19 @@ class WebInspectScan:
                 cwelist = ""
                 result['cwe'] = cwelist
                 for self.cwe in root.iter(tag='Classification'):
-                    result['cwe'] += self.cwe.text + '\n'
+                    result['cwe'] += self.cwe.text
 
                 # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
                 print("\n{0:60} {1:10} {2:40} {3:>90}".format(result['payload_url'], result['severity'],
                                                              result['vulnerability'], result['cwe']))
 
-                with open(self.scan_overrides.scan_name + '.json', 'w') as fp:
+                with open(self.scan_overrides.scan_name + '.json', 'a') as fp:
                     # print("DEBUG: ", result)
                     json.dump(result, fp)
-                    # x = json.dumps(result)
-                    # f = open(self.scan_overrides.scan_name + '.json', 'w')
-                    # f.write(x)
-                    # f.close()
+                    fp.write("\n")
 
         Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
         Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
-                # print(("result list: ", result))
 
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
