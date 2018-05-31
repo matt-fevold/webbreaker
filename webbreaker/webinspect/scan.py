@@ -110,7 +110,7 @@ class WebInspectScan:
                     result['cwe'] += self.cwe.text
 
                 # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
-                print("\n{0:60} {1:10} {2:40} {3:>90}".format(result['payload_url'], result['severity'],
+                print("{0:60} {1:10} {2:40} {3:90}".format(result['payload_url'], result['severity'],
                                                              result['vulnerability'], result['cwe']))
 
                 with open(self.scan_overrides.scan_name + '.json', 'a') as fp:
@@ -708,3 +708,65 @@ class ScanOverrides:
             Logger.app.error("Settings file is not configured properly")
             exit(ExitStatus.failure)
         return targets
+
+
+class Vulnerabilities:
+    def __init__(self, payload_url, severity, vulnerability_name, cwe):
+        self.payload_url = payload_url
+        self.severity = severity
+        self.vulnerability_name = vulnerability_name
+        self.cwe = cwe
+        pass
+
+    def json_output(self):
+        pass
+
+    def console_output(self):
+        pass
+
+
+    def xml_parsing(self, file_name):
+        """
+        if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
+        :return: JSON file
+        """
+        # creating a dict to store the results in the for loop (maybe not the best way to do it\
+        result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
+
+        # TODO read in xml file that was just created from the scan
+        file_name = self.scan_overrides.scan_name + '.xml'
+
+        tree = ET.ElementTree(file=file_name)
+        root = tree.getroot()
+
+        # TODO store the result into dict
+        print("Webbreaker WebInpsect scan results:\n")
+        print("\n{0:60} {1:10} {2:40} {3:>90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:60} {1:10} {2:40} {3:>90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+
+        for elem in root.findall('Session'):
+            self.payload_url = elem.find('URL').text
+            result['payload_url'] = self.payload_url
+
+            for issue in root.findall('Session/Issues/Issue'):
+                self.vulnerability_name = issue.find('Name').text
+                self.severity = issue.find('Severity').text
+                result['vulnerability'] = self.vulnerability_name
+                result['severity'] = self.severity
+
+                cwelist = ""
+                result['cwe'] = cwelist
+                for self.cwe in root.iter(tag='Classification'):
+                    result['cwe'] += self.cwe.text
+
+                # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
+                print("\n{0:60} {1:10} {2:40} {3:>90}\n".format(result['payload_url'], result['severity'],
+                                                             result['vulnerability'], result['cwe']))
+
+                with open(self.scan_overrides.scan_name + '.json', 'a') as fp:
+                    # print("DEBUG: ", result)
+                    json.dump(result, fp)
+                    fp.write("\n")
+
+        Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
+        Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
