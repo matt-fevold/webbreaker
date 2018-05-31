@@ -17,4 +17,5 @@ def test_two_server():
     pass
 
 def test_no_server_availble():
-    #TODO: go through the list one at a time and exit gracefully 
+    #TODO: go through the list one at a time and exit gracefully
+    pass
