@@ -103,8 +103,8 @@ class WebInspectScan:
 
                 vulnerabilities.add(vulnerability)
 
-            vulnerabilities.write_to_console(scan_name=self.scan_overrides.scan_name)
-            vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id)
+        vulnerabilities.write_to_console(scan_name=self.scan_overrides.scan_name)
+        vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id)
 
         Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
         Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
@@ -830,6 +830,3 @@ class Vulnerabilities:
 #     vulnerabilities.write_to_console(scan_name="test")
 #     vulnerabilities.write_to_json("/Users/z003201/Downloads/asdf33333", "test name", "tes id")
 #
-
-if __name__ == '__main__':
-    xml_parsing("/Users/z003201/Downloads/webinspect-7IKNY.xml")
