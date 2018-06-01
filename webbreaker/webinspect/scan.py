@@ -711,12 +711,15 @@ class ScanOverrides:
 
 
 class Vulnerability:
-    def __init__(self, payload_url, severity, vulnerability_name, cwe):
+    def __init__(self, payload_url=None, severity=None, vulnerability_name=None, cwe=None):
         self.payload_url = payload_url
         self.severity = severity
         self.vulnerability_name = vulnerability_name
         self.cwe = cwe
-        pass
+
+        self.vulnerability_list = []
+        
+    def add_vulnerability(self):
 
     def json_output(self):
         return {'payload_url': self.payload_url, 'severity': self.severity, 'vulnerability_name': self.vulnerability_name, 'cwe': self.cwe}
@@ -727,6 +730,11 @@ class Vulnerability:
         print("\n{0:60} {1:10} {2:40} {3:90} ".format(self.payload_url, self.severity, self.vulnerability_name, self.cwe[0]))
         for cwe in self.cwe[1:-1]:
             print("{0:112} {1:90}".format(' '*112, cwe))
+
+    def display_console_header(self):
+        print("Webbreaker WebInpsect scan results:\n")
+        print("\n{0:60} {1:10} {2:40} {3:90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:60} {1:10} {2:40} {3:90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
 
 
 def xml_parsing(file_name):
@@ -741,20 +749,15 @@ def xml_parsing(file_name):
     tree = ET.ElementTree(file=file_name)
     root = tree.getroot()
 
-    # TODO store the result into dict
-    print("Webbreaker WebInpsect scan results:\n")
-    print("\n{0:60} {1:10} {2:40} {3:90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-    print("{0:60} {1:10} {2:40} {3:90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+
     vuln_list = []
 
+    # thing2 =root.findall('Session')
     for elem in root.findall('Session'):
 
         payload_url = elem.find('URL').text
-        # cwe_list = []
-        # severity = ""
-        # vulnerability_name = ""
 
-        for issue in root.findall('Session/Issues/Issue'):
+        for issue in elem.iter(tag='Issue'):
             vulnerability_name = issue.find('Name').text
             severity = issue.find('Severity').text
 
@@ -762,17 +765,18 @@ def xml_parsing(file_name):
             for cwe in issue.iter(tag='Classification'):
                 cwe_list.append(cwe.text)
 
-            # print("\n{0:60} {1:10} {2:40} {3:>90}\n".format(result['payload_url'], result['severity'],
-            #                                                  result['vulnerability'], result['cwe']))
             vuln_list.append(Vulnerability(payload_url=payload_url,
-                                             severity=severity,
-                                             vulnerability_name=vulnerability_name,
-                                             cwe=cwe_list))
+                                           severity=severity,
+                                           vulnerability_name=vulnerability_name,
+                                           cwe=cwe_list))
+
+    Vulnerability().display_console_header()
+
     for vuln in vuln_list:
         vuln.console_output()
 
     # TODO change back to filename
-    with open("/Users/z003201/Downloads/asdf2" + '.json', 'a') as fp:
+    with open("/Users/z003201/Downloads/asdf3" + '.json', 'a') as fp:
         fp.write('{ "finding" : ')
 
         for vuln in vuln_list:
