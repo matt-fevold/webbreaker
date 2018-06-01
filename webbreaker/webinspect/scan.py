@@ -75,51 +75,83 @@ class WebInspectScan:
         # run the scan
         self.scan()
 
-    def xml_parsing(self, file_name):
+    def xml_parsing(self):
         """
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
         :return: JSON file
         """
-        # creating a dict to store the results in the for loop (maybe not the best way to do it\
-        result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
 
-        # TODO read in xml file that was just created from the scan
         file_name = self.scan_overrides.scan_name + '.xml'
 
         tree = ET.ElementTree(file=file_name)
         root = tree.getroot()
 
-        # TODO store the result into dict
-        print("Webbreaker WebInpsect scan results:\n")
-        print("\n{0:60} {1:10} {2:40} {3:>90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-        print("{0:60} {1:10} {2:40} {3:>90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+        vulnerabilities = Vulnerabilities()
 
         for elem in root.findall('Session'):
-            self.payload_url = elem.find('URL').text
-            result['payload_url'] = self.payload_url
+            vulnerability = Vulnerability()
 
-            for issue in root.findall('Session/Issues/Issue'):
-                self.vulnerability_name = issue.find('Name').text
-                self.severity = issue.find('Severity').text
-                result['vulnerability'] = self.vulnerability_name
-                result['severity'] = self.severity
+            vulnerability.payload_url = elem.find('URL').text
 
-                cwelist = ""
-                result['cwe'] = cwelist
-                for self.cwe in root.iter(tag='Classification'):
-                    result['cwe'] += self.cwe.text
+            for issue in elem.iter(tag='Issue'):
+                vulnerability.vulnerability_name = issue.find('Name').text
+                vulnerability.severity = issue.find('Severity').text
 
-                # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
-                print("{0:60} {1:10} {2:40} {3:90}".format(result['payload_url'], result['severity'],
-                                                             result['vulnerability'], result['cwe']))
+                vulnerability.cwe = []
+                for cwe in issue.iter(tag='Classification'):
+                    vulnerability.cwe.append(cwe.text)
 
-                with open(self.scan_overrides.scan_name + '.json', 'a') as fp:
-                    # print("DEBUG: ", result)
-                    json.dump(result, fp)
-                    fp.write("\n")
+                vulnerabilities.add(vulnerability)
+
+            vulnerabilities.write_to_console(scan_name=self.scan_overrides.scan_name)
+            vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id)
 
         Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
         Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
+
+
+        # def xml_parsing(self, file_name):
+    #     """
+    #     if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
+    #     :return: JSON file
+    #     """
+    #     # creating a dict to store the results in the for loop (maybe not the best way to do it\
+    #     result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
+    #
+    #     # TODO read in xml file that was just created from the scan
+    #     file_name = self.scan_overrides.scan_name + '.xml'
+    #
+    #     tree = ET.ElementTree(file=file_name)
+    #     root = tree.getroot()
+    #
+    #     # TODO store the result into dict
+    #     print("Webbreaker WebInpsect scan results:\n")
+    #     print("\n{0:60} {1:10} {2:40} {3:>90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+    #     print("{0:60} {1:10} {2:40} {3:>90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+    #
+    #     for elem in root.findall('Session'):
+    #         self.payload_url = elem.find('URL').text
+    #         result['payload_url'] = self.payload_url
+    #
+    #         for issue in root.findall('Session/Issues/Issue'):
+    #             self.vulnerability_name = issue.find('Name').text
+    #             self.severity = issue.find('Severity').text
+    #             result['vulnerability'] = self.vulnerability_name
+    #             result['severity'] = self.severity
+    #
+    #             cwelist = ""
+    #             result['cwe'] = cwelist
+    #             for self.cwe in root.iter(tag='Classification'):
+    #                 result['cwe'] += self.cwe.text
+    #
+    #             # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
+    #             print("{0:60} {1:10} {2:40} {3:90}".format(result['payload_url'], result['severity'],
+    #                                                          result['vulnerability'], result['cwe']))
+    #
+    #             with open(self.scan_overrides.scan_name + '.json', 'a') as fp:
+    #                 # print("DEBUG: ", result)
+    #                 json.dump(result, fp)
+    #                 fp.write("\n")
 
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
@@ -187,14 +219,14 @@ class WebInspectScan:
             auth_config.write_credentials(username, password)
 
         #parse through xml file after scan
-        if self.scan_overrides.settings.lower() == 'default':
-            self.xml_parsing(self.scan_overrides.settings)
-        else:
-            local = self.scan_overrides.settings + '.xml'
-            if os.path.exists(local):
-                self.xml_parsing(local)
-            self.xml_parsing(local)
-            Logger.app.info("WebInspect Scan Complete.")
+        # if self.scan_overrides.settings.lower() == 'default':
+        self.xml_parsing()
+        # else:
+        #     local = self.scan_overrides.settings + '.xml'
+        #     if os.path.exists(local):
+        #         self.xml_parsing(local)
+        #     self.xml_parsing(local)
+        #     Logger.app.info("WebInspect Scan Complete.")
 
     def _upload_settings_and_policies(self):
         """
@@ -717,10 +749,6 @@ class Vulnerability:
         self.vulnerability_name = vulnerability_name
         self.cwe = cwe
 
-        self.vulnerability_list = []
-        
-    def add_vulnerability(self):
-
     def json_output(self):
         return {'payload_url': self.payload_url, 'severity': self.severity, 'vulnerability_name': self.vulnerability_name, 'cwe': self.cwe}
 
@@ -731,63 +759,77 @@ class Vulnerability:
         for cwe in self.cwe[1:-1]:
             print("{0:112} {1:90}".format(' '*112, cwe))
 
-    def display_console_header(self):
-        print("Webbreaker WebInpsect scan results:\n")
+
+class Vulnerabilities:
+    def __init__(self):
+        self.vulnerabilities_list = []
+
+    def add(self, vuln):
+        self.vulnerabilities_list.append(vuln)
+
+    def write_to_console(self, scan_name):
+        # write the header
+        print("Webbreaker WebInpsect scan {} results:\n".format(scan_name))
         print("\n{0:60} {1:10} {2:40} {3:90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
         print("{0:60} {1:10} {2:40} {3:90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
 
+        # write the body of the table
+        for vuln in self.vulnerabilities_list:
+            vuln.console_output()
 
-def xml_parsing(file_name):
-    """
-    if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
-    :return: JSON file
-    """
+    def write_to_json(self, file_name, scan_name, scan_id):
+        with open(file_name + '.json', 'a') as fp:
+            # kinda ugly - adds the things to the json that we want.
+            fp.write('{ "scan_name" : "' + scan_name + '", "scan_id" : "' + scan_id + '", "findings" :')
 
-    # TODO read in xml file that was just created from the scan
-    # file_name =  self.scan_overrides.scan_name + '.xml'
+            for vuln in self.vulnerabilities_list:
 
-    tree = ET.ElementTree(file=file_name)
-    root = tree.getroot()
+                json.dump(vuln.json_output(), fp)
+                # if element is not last we want to write a ,
+                if vuln is not self.vulnerabilities_list[-1]:
+                    fp.write(",")
 
+            # if no vulnerabilities were found want to still have a valid json so add {}
+            if len(self.vulnerabilities_list) == 0:
+                fp.write("{}")
 
-    vuln_list = []
+            fp.write("}")
 
-    # thing2 =root.findall('Session')
-    for elem in root.findall('Session'):
-
-        payload_url = elem.find('URL').text
-
-        for issue in elem.iter(tag='Issue'):
-            vulnerability_name = issue.find('Name').text
-            severity = issue.find('Severity').text
-
-            cwe_list = []
-            for cwe in issue.iter(tag='Classification'):
-                cwe_list.append(cwe.text)
-
-            vuln_list.append(Vulnerability(payload_url=payload_url,
-                                           severity=severity,
-                                           vulnerability_name=vulnerability_name,
-                                           cwe=cwe_list))
-
-    Vulnerability().display_console_header()
-
-    for vuln in vuln_list:
-        vuln.console_output()
-
-    # TODO change back to filename
-    with open("/Users/z003201/Downloads/asdf3" + '.json', 'a') as fp:
-        fp.write('{ "finding" : ')
-
-        for vuln in vuln_list:
-
-            json.dump(vuln.json_output(), fp)
-            # if element is not last we want to write a ,
-            if vuln is not vuln_list[-1]:
-                fp.write(",")
-        fp.write("}")
-
-
+#
+#
+#
+# def xml_parsing(file_name):
+#     """
+#     if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
+#     :return: JSON file
+#     """
+#
+#     # TODO read in xml file that was just created from the scan
+#     # file_name =  self.scan_overrides.scan_name + '.xml'
+#
+#     tree = ET.ElementTree(file=file_name)
+#     root = tree.getroot()
+#
+#     vulnerabilities = Vulnerabilities()
+#
+#     for elem in root.findall('Session'):
+#         vulnerability = Vulnerability()
+#
+#         vulnerability.payload_url = elem.find('URL').text
+#
+#         for issue in elem.iter(tag='Issue'):
+#             vulnerability.vulnerability_name = issue.find('Name').text
+#             vulnerability.severity = issue.find('Severity').text
+#
+#             vulnerability.cwe = []
+#             for cwe in issue.iter(tag='Classification'):
+#                 vulnerability.cwe.append(cwe.text)
+#
+#             vulnerabilities.add(vulnerability)
+#
+#     vulnerabilities.write_to_console(scan_name="test")
+#     vulnerabilities.write_to_json("/Users/z003201/Downloads/asdf33333", "test name", "tes id")
+#
 
 if __name__ == '__main__':
     xml_parsing("/Users/z003201/Downloads/webinspect-7IKNY.xml")
