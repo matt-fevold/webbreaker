@@ -15,7 +15,7 @@ from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webinspectapi.webinspect import WebInspectApi
 import ntpath
 
-from webbreaker.webinspect.scan import ScanOverrides
+
 
 #from webbreaker.common.api_response_helper import APIHelper
 

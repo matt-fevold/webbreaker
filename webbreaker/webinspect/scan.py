@@ -75,13 +75,13 @@ class WebInspectScan:
         # run the scan
         self.scan()
 
-    def xml_parsing(self):
+    def xml_parsing(self, file_name):
         """
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
         :return: JSON file
         """
 
-        file_name = self.scan_overrides.scan_name + '.xml'
+        # file_name = self.scan_overrides.scan_name + '.xml'
 
         tree = ET.ElementTree(file=file_name)
         root = tree.getroot()
@@ -107,7 +107,7 @@ class WebInspectScan:
         Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
         Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
 
-        vulnerabilities.write_to_console(scan_name=self.scan_overrides.scan_name)
+        vulnerabilities.write_to_console(self.scan_overrides.scan_name)
         vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id)
 
 
@@ -175,7 +175,8 @@ class WebInspectScan:
             auth_config.write_credentials(username, password)
 
         #parse through xml file after scan
-        self.xml_parsing()
+        file_name = self.scan_overrides.scan_name + '.xml'
+        self.xml_parsing(file_name)
 
 
     def _upload_settings_and_policies(self):
