@@ -80,9 +80,6 @@ class WebInspectScan:
         if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
         :return: JSON file
         """
-
-        # file_name = self.scan_overrides.scan_name + '.xml'
-
         tree = ET.ElementTree(file=file_name)
         root = tree.getroot()
 
@@ -702,7 +699,8 @@ class Vulnerability:
         self.cwe = cwe
 
     def json_output(self):
-        return {'webinspect_id': self.webinspect_id, 'payload_url': self.payload_url, 'severity': self.severity, 'vulnerability_name': self.vulnerability_name, 'cwe': self.cwe}
+        return {'webinspect_id': self.webinspect_id, 'payload_url': self.payload_url,
+                'severity': self.severity, 'vulnerability_name': self.vulnerability_name, 'cwe': self.cwe}
 
     def console_output(self):
         # in order for pretty printing - self.cwe can is a list and we want the first element in the same line with the following elements printed

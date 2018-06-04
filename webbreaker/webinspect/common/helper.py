@@ -16,9 +16,6 @@ from webinspectapi.webinspect import WebInspectApi
 import ntpath
 
 
-
-#from webbreaker.common.api_response_helper import APIHelper
-
 import sys
 from exitstatus import ExitStatus
 
