@@ -5,9 +5,11 @@ from mock import MagicMock
 from webbreaker.webinspect.scan import ScanOverrides, WebInspectScan
 from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
+from subprocess import CalledProcessError
 import os
 import mock
 import requests
+from git.exc import GitCommandError
 
 try:  # python 3
     from queue import Queue, Empty
@@ -262,8 +264,117 @@ def test_WebInspectScan_exit_gracefully_success(scan_mock, scan_override_mock, w
     assert stop_scan_mock.call_count == 1
 
 
-def test_WebInspectScan_webinspect_git_clone_success():
-    assert 0
+@mock.patch('webbreaker.webinspect.scan.WebInspectLogHelper.log_info_default_settings')
+@mock.patch('webbreaker.webinspect.scan.os')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_webinspect_git_clone_default_success(scan_mock, scan_overrides_mock, wi_config_mock, config_mock,
+                                                     os_mock, log_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_object = WebInspectScan(overrides)
+    # Kinda weird, have to set it like this since we mock scan overrides.
+    scan_object.scan_overrides.settings = 'Default'
+
+    # When
+    scan_object._webinspect_git_clone()
+
+    # Expect
+    assert log_mock.call_count == 1
+    assert config_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.check_output')
+@mock.patch('webbreaker.webinspect.scan.WebInspectLogHelper.log_info_updating_webinspect_configurations')
+@mock.patch('webbreaker.webinspect.scan.os')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_webinspect_git_clone_not_default_with_valid_git_dir_success(scan_mock, scan_overrides_mock, wi_config_mock, config_mock,
+                                                     os_mock, log_mock, check_output_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_object = WebInspectScan(overrides)
+    # Kinda weird, have to set it like this since we mock scan overrides.
+    scan_object.scan_overrides.settings = 'NotDefault'
+
+    # When
+    scan_object._webinspect_git_clone()
+
+    # Expect
+    assert log_mock.call_count == 1
+    assert check_output_mock.call_count == 3
+
+
+@mock.patch('webbreaker.webinspect.scan.check_output')
+@mock.patch('webbreaker.webinspect.scan.WebInspectLogHelper.log_info_webinspect_git_clonning')
+@mock.patch('webbreaker.webinspect.scan.os.path.exists')
+@mock.patch('webbreaker.webinspect.scan.os')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_webinspect_git_clone_not_default_with_invalid_git_dir_success(scan_mock, scan_overrides_mock, wi_config_mock, config_mock,
+                                                      os_mock, os_path_exists_mock, log_mock, check_output_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_object = WebInspectScan(overrides)
+    os_path_exists_mock.return_value = False
+    # Kinda weird, have to set it like this since we mock scan overrides.
+    scan_object.scan_overrides.settings = 'NotDefault'
+
+    # When
+    scan_object._webinspect_git_clone()
+
+    # Expect
+    assert log_mock.call_count == 1
+    assert check_output_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.WebInspectLogHelper.log_error_git_cloning_error')
+@mock.patch('webbreaker.webinspect.scan.os')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_webinspect_git_clone_failure_type_error(scan_mock, scan_overrides_mock, wi_config_mock, config_mock,
+                                                     os_mock, log_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_object = WebInspectScan(overrides)
+    config_mock.side_effect = TypeError
+
+    # When
+    scan_object._webinspect_git_clone()
+
+    # Expect
+    assert log_mock.call_count == 1
+
+
+@mock.patch('webbreaker.webinspect.scan.WebInspectLogHelper.log_webinspect_config_issue')
+@mock.patch('webbreaker.webinspect.scan.os.path.exists')
+@mock.patch('webbreaker.webinspect.scan.os')
+@mock.patch('webbreaker.webinspect.scan.Config')
+@mock.patch('webbreaker.webinspect.scan.WebInspectConfig')
+@mock.patch('webbreaker.webinspect.scan.ScanOverrides')
+@mock.patch('webbreaker.webinspect.scan.WebInspectScan.scan')
+def test_WebInspectScan_webinspect_git_clone_failure_attribute_error(scan_mock, scan_overrides_mock, wi_config_mock, config_mock,
+                                                     os_mock, os_path_exists_mock, log_mock):
+    # Given
+    overrides = _setup_overrides()
+    scan_object = WebInspectScan(overrides)
+    os_path_exists_mock.side_effect = AttributeError
+
+
+    # When
+    with pytest.raises(AttributeError):
+        scan_object._webinspect_git_clone()
+
+    # Expect
+    assert log_mock.call_count == 1
 
 
 @mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')

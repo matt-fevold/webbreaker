@@ -202,7 +202,7 @@ class WebInspectScan:
 
     def _webinspect_git_clone(self):
         """
-        If local file exist, it will use that file. If not, it will go to gihub and clone the config files
+        If local file exist, it will use that file. If not, it will go to github and clone the config files
         :return:
         """
         try:
@@ -211,13 +211,14 @@ class WebInspectScan:
             git_dir = os.path.join(config_helper.git, '.git')
             try:
                 if self.scan_overrides.settings == 'Default':
-                    Logger.app.debug("Default settings were used")
+                    webinspectloghelper.log_info_default_settings()
 
                     if os.path.isfile(self.scan_overrides.webinspect_upload_settings + '.xml'):
                         self.scan_overrides.webinspect_upload_settings = self.scan_overrides.webinspect_upload_settings + '.xml'
 
                 elif os.path.exists(git_dir):
-                    Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
+                    webinspectloghelper.log_info_updating_webinspect_configurations(etc_dir)
+
                     check_output(['git', 'init', etc_dir])
                     check_output(
                         ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'reset', '--hard'])
@@ -225,7 +226,7 @@ class WebInspectScan:
                         ['git', '--git-dir=' + git_dir, '--work-tree=' + str(config_helper.git), 'pull', '--rebase'])
                     sys.stdout.flush()
                 elif not os.path.exists(git_dir):
-                    Logger.app.info("Cloning your specified WebInspect configurations to {}".format(config_helper.git))
+                    webinspectloghelper.log_info_webinspect_git_clonning(config_helper.git)
                     check_output(['git', 'clone', self.config.webinspect_git, config_helper.git])
 
                 else:
@@ -244,8 +245,8 @@ class WebInspectScan:
 
             Logger.app.debug("Completed webinspect config fetch")
             
-        except (TypeError):
-            Logger.app.error("Retrieving WebInspect configurations from GIT repo...")
+        except TypeError as e:
+            webinspectloghelper.log_error_git_cloning_error(e)
 
 
 class ScanOverrides:

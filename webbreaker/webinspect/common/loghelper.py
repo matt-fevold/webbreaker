@@ -76,3 +76,14 @@ class WebInspectLogHelper(object):
     def log_error_policy_deletion(self, e):
         Logger.app.error("Verify if the deletion of existing policy failed: {}".format(e))
 
+    def log_info_default_settings(self):
+        Logger.app.debug("Default settings were used")
+
+    def log_info_updating_webinspect_configurations(self, etc_dir):
+        Logger.app.info("Updating your WebInspect configurations from {}".format(etc_dir))
+
+    def log_info_webinspect_git_clonning(self, git):
+        Logger.app.info("Cloning your specified WebInspect configurations to {}".format(git))
+
+    def log_error_git_cloning_error(self, e):
+        Logger.app.error("Retrieving WebInspect configurations from GIT repo: {}".format(e))
