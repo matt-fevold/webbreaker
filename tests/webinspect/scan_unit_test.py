@@ -690,27 +690,6 @@ def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(
     assert scan_overrides_object.webinspect_upload_settings == "/valid/path/NotDefault.xml"
 
 
-@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
-@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
-@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
-@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
-def test_ScanOverrides_parse_upload_settings_cli_passed_upload_settings_success(get_endpoint_mock,
-                                                                                parse_webinspect_mock,
-                                                                                run_env_mock, isfile_mock):
-    # Given
-    overrides = _setup_overrides(expected_upload_settings="/valid/path/NotDefault.xml")
-    scan_overrides_object = ScanOverrides(overrides)
-    # os.path.isfile is tricky have to mock it this way or there are odd side effects
-    isfile_mock.side_effect = [True, False]
-
-    # When
-    scan_overrides_object._parse_upload_settings_overrides()
-    # TODO  this needs some love - look back after a bit because the isfile thing is making me go insane.
-    assert 0
-    # Expect
-    #assert scan_overrides_object.webinspect_upload_settings == "/valid/path/NotDefault.xml"
-
-
 @mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
@@ -809,31 +788,31 @@ def test_ScanOverrides_parse_upload_webmacros_overrides_success(get_endpoint_moc
     # Expect
     assert scan_overrides_object.webinspect_upload_webmacros is None
 
-
-@mock.patch('webbreaker.webinspect.scan.os.path.isfile')
-@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
-@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
-@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
-def test_ScanOverrides_parse_upload_webmacros_overrides_cli_passed_upload_webmacro_success(get_endpoint_mock,
-                                                                                          parse_webinspect_mock,
-                                                                                          run_env_mock, isfile_mock):
-    # Given
-    isfile_mock.return_value = False
-    overrides = _setup_overrides(expected_upload_webmacro="some.webmacro")
-
-    # When
-    scan_overrides_object = ScanOverrides(overrides)
-    scan_overrides_object._parse_upload_webmacros_overrides()
-
-    # Expect
-    # assert scan_overrides_object.webinspect_upload_webmacros is None
-    assert 0
-    # TODO I'm pretty sure this is borked.
-
-
-def test_ScanOverrides_parse_upload_policy_overrides():
-    assert 0
-    # TODO This test + removing the upload click arguements
+#
+# @mock.patch('webbreaker.webinspect.scan.os.path.isfile')
+# @mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
+# @mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
+# @mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
+# def test_ScanOverrides_parse_upload_webmacros_overrides_cli_passed_upload_webmacro_success(get_endpoint_mock,
+#                                                                                           parse_webinspect_mock,
+#                                                                                           run_env_mock, isfile_mock):
+#     # Given
+#     isfile_mock.return_value = False
+#     overrides = _setup_overrides(expected_upload_webmacro="some.webmacro")
+#
+#     # When
+#     scan_overrides_object = ScanOverrides(overrides)
+#     scan_overrides_object._parse_upload_webmacros_overrides()
+#
+#     # Expect
+#     # assert scan_overrides_object.webinspect_upload_webmacros is None
+#     assert 0
+#     # TODO I'm pretty sure this is borked.
+#
+#
+# def test_ScanOverrides_parse_upload_policy_overrides():
+#     assert 0
+#     # TODO This test + removing the upload click arguments
 
 @mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
 @mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
@@ -962,14 +941,14 @@ def test_ScanOverrides_parse_assigned_hosts_overrides_with_allowed_hosts_and_sta
 
 
 
-def test_ScanOverrides_get_endpoint_success():
-    # Given
-    ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
-    ScanOverrides._parse_webinspect_overrides = MagicMock()
-    WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
-
-    assert 0
-    # TODO this will be have to be redone/abstracted when I work on proxy
+# def test_ScanOverrides_get_endpoint_success():
+#     # Given
+#     ScanOverrides.get_endpoint = MagicMock(return_value="webinspect_url")
+#     ScanOverrides._parse_webinspect_overrides = MagicMock()
+#     WebBreakerHelper.check_run_env = MagicMock(return_value="expected_run_env")
+#
+#     assert 0
+#     # TODO this will be have to be redone/abstracted when I work on proxy
 
 
 @mock.patch('webbreaker.webinspect.scan.trim_ext')
@@ -989,16 +968,4 @@ def test_ScanOverrides_trim_overrides_success(get_endpoint_mock, parse_webinspec
     # Expect
     assert trim_mock.call_count == 7
 
-
-@mock.patch('webbreaker.webinspect.scan.WebBreakerHelper.check_run_env')
-@mock.patch('webbreaker.webinspect.scan.ScanOverrides._parse_webinspect_overrides')
-@mock.patch('webbreaker.webinspect.scan.ScanOverrides.get_endpoint')
-def test_ScanOverrides_get_scan_targets_success(get_endpoint_mock, parse_webinspect_mock, run_env_mock):
-    # Given
-    overrides = _setup_overrides()
-    scan_overrides_object = ScanOverrides(overrides)
-    settings_file_path = "/path/to/settings.xml"
-
-    # When
-    result = scan_overrides_object._get_scan_targets(settings_file_path=settings_file_path)
 

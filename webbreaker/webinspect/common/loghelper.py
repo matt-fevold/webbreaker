@@ -87,3 +87,9 @@ class WebInspectLogHelper(object):
 
     def log_error_git_cloning_error(self, e):
         Logger.app.error("Retrieving WebInspect configurations from GIT repo: {}".format(e))
+
+    def log_info_multiple_scans_found(self, scan_name):
+        Logger.app.info("Multiple scans matching the name {} found.".format(scan_name))
+
+    def log_error_no_scans_found(self, scan_name):
+        Logger.app.error("No scans matching the name {} where found on this host".format(scan_name))

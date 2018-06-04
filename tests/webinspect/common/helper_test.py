@@ -583,7 +583,7 @@ def test_webinspect_api_helper_upload_settings_failed_name_error(api_mock, log_e
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.upload_webmacro')
 def test_webinspect_api_helper_upload_webmacro_success(api_mock):
     # Given
-    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=mock)
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.setting_overrides.webinspect_upload_webmacros = ['test_list']
     webinspect_api_helper_object.setting_overrides.endpoint = "test_host"
 
@@ -639,22 +639,22 @@ def test_webinspect_api_helper_upload_settings_failed_unbound_local_error(api_mo
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_guid')
 def test_webinspect_api_verify_scan_policy(get_policy_by_guid_mock, get_index_mock, check_if_built_in_mock):
     # Given
-    # webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
-    # webinspect_api_helper_object.setting_overrides.scan_policy = "test_policy"
-    # get_policy_by_guid_mock.return_value = WebInspectResponse(success=True)
-    # webinspect_api_helper_object.api.get_policy_by_guid = get_policy_by_guid_mock
-    #
-    # check_if_built_in_mock.return_value = True
-    #
-    # test_config = MagicMock()
-    #
-    # # When
-    # webinspect_api_helper_object.verify_scan_policy(test_config)
-    #
-    # # Expect
-    # assert check_if_built_in_mock.call_count == 1
-    # assert get_index_mock.call_count == 1
-    # assert get_policy_by_guid_mock.call_count == 1
-    # TODO: this test was taking too long to write.     
+    webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
+    webinspect_api_helper_object.setting_overrides.scan_policy = "test_policy"
+    get_policy_by_guid_mock.return_value = WebInspectResponse(success=True)
+    webinspect_api_helper_object.api.get_policy_by_guid = get_policy_by_guid_mock
+
+    check_if_built_in_mock.return_value = True
+
+    test_config = MagicMock()
+
+    # When
+    webinspect_api_helper_object.verify_scan_policy(test_config)
+
+    # Expect
+    assert check_if_built_in_mock.call_count == 1
+    assert get_index_mock.call_count == 1
+    assert get_policy_by_guid_mock.call_count == 1
+    # TODO: this test was taking too long to write.
     assert 0
 

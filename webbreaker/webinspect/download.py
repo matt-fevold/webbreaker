@@ -24,14 +24,14 @@ class WebInspectDownload:
             if not scan_id:
                 results = query_client.get_scan_by_name(scan_name)
                 if len(results) == 0:
-                    Logger.app.error("No scans matching the name {} where found on this host".format(scan_name))
+                    webinspect_logexceptionhelper.log_error_no_scans_found(scan_name)
                 elif len(results) == 1:
                     scan_id = results[0]['ID']
                     Logger.app.info("Scan matching the name {} found.".format(scan_name))
                     Logger.app.info("Downloading scan {}".format(scan_name))
                     query_client.export_scan_results(scan_id, extension, scan_name)
                 else:
-                    Logger.app.info("Multiple scans matching the name {} found.".format(scan_name))
+                    webinspect_logexceptionhelper.log_info_multiple_scans_found(scan_name)
                     print("{0:80} {1:40} {2:10}".format('Scan Name', 'Scan ID', 'Scan Status'))
                     print("{0:80} {1:40} {2:10}\n".format('-' * 80, '-' * 40, '-' * 10))
                     for result in results:
