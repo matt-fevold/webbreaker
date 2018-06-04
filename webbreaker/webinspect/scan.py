@@ -96,6 +96,7 @@ class WebInspectScan:
             for issue in elem.iter(tag='Issue'):
                 vulnerability.vulnerability_name = issue.find('Name').text
                 vulnerability.severity = issue.find('Severity').text
+                vulnerability.webinspect_id = issue.attrib
 
                 vulnerability.cwe = []
                 for cwe in issue.iter(tag='Classification'):
@@ -103,55 +104,12 @@ class WebInspectScan:
 
                 vulnerabilities.add(vulnerability)
 
-        vulnerabilities.write_to_console(scan_name=self.scan_overrides.scan_name)
-        vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id)
-
         Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
         Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
 
+        vulnerabilities.write_to_console(scan_name=self.scan_overrides.scan_name)
+        vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id)
 
-        # def xml_parsing(self, file_name):
-    #     """
-    #     if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
-    #     :return: JSON file
-    #     """
-    #     # creating a dict to store the results in the for loop (maybe not the best way to do it\
-    #     result = {'payload_url': None, 'vulnerability': None, 'severity': None, 'cwe': None}
-    #
-    #     # TODO read in xml file that was just created from the scan
-    #     file_name = self.scan_overrides.scan_name + '.xml'
-    #
-    #     tree = ET.ElementTree(file=file_name)
-    #     root = tree.getroot()
-    #
-    #     # TODO store the result into dict
-    #     print("Webbreaker WebInpsect scan results:\n")
-    #     print("\n{0:60} {1:10} {2:40} {3:>90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-    #     print("{0:60} {1:10} {2:40} {3:>90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
-    #
-    #     for elem in root.findall('Session'):
-    #         self.payload_url = elem.find('URL').text
-    #         result['payload_url'] = self.payload_url
-    #
-    #         for issue in root.findall('Session/Issues/Issue'):
-    #             self.vulnerability_name = issue.find('Name').text
-    #             self.severity = issue.find('Severity').text
-    #             result['vulnerability'] = self.vulnerability_name
-    #             result['severity'] = self.severity
-    #
-    #             cwelist = ""
-    #             result['cwe'] = cwelist
-    #             for self.cwe in root.iter(tag='Classification'):
-    #                 result['cwe'] += self.cwe.text
-    #
-    #             # print("\n{0:60} {1:10} {2:40} {3:90}".format(None, None, None, result['cwe']))
-    #             print("{0:60} {1:10} {2:40} {3:90}".format(result['payload_url'], result['severity'],
-    #                                                          result['vulnerability'], result['cwe']))
-    #
-    #             with open(self.scan_overrides.scan_name + '.json', 'a') as fp:
-    #                 # print("DEBUG: ", result)
-    #                 json.dump(result, fp)
-    #                 fp.write("\n")
 
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
@@ -212,21 +170,13 @@ class WebInspectScan:
             self._stop_scan(self.scan_id)
             exit(ExitStatus.failure)
 
-        # Logger.app.info("WebInspect Scan Complete.")
-
         # If we've made it this far, our new credentials are valid and should be saved
         if username is not None and password is not None and not auth_config.has_auth_creds():
             auth_config.write_credentials(username, password)
 
         #parse through xml file after scan
-        # if self.scan_overrides.settings.lower() == 'default':
         self.xml_parsing()
-        # else:
-        #     local = self.scan_overrides.settings + '.xml'
-        #     if os.path.exists(local):
-        #         self.xml_parsing(local)
-        #     self.xml_parsing(local)
-        #     Logger.app.info("WebInspect Scan Complete.")
+
 
     def _upload_settings_and_policies(self):
         """
@@ -743,21 +693,22 @@ class ScanOverrides:
 
 
 class Vulnerability:
-    def __init__(self, payload_url=None, severity=None, vulnerability_name=None, cwe=None):
+    def __init__(self, payload_url=None, severity=None, vulnerability_name=None, webinspect_id=None, cwe=None):
         self.payload_url = payload_url
         self.severity = severity
         self.vulnerability_name = vulnerability_name
+        self.webinspect_id = webinspect_id
         self.cwe = cwe
 
     def json_output(self):
-        return {'payload_url': self.payload_url, 'severity': self.severity, 'vulnerability_name': self.vulnerability_name, 'cwe': self.cwe}
+        return {'webinspect_id': self.webinspect_id, 'payload_url': self.payload_url, 'severity': self.severity, 'vulnerability_name': self.vulnerability_name, 'cwe': self.cwe}
 
     def console_output(self):
         # in order for pretty printing - self.cwe can is a list and we want the first element in the same line with the following elements printed
         # nicely afterwards.
-        print("\n{0:60} {1:10} {2:40} {3:90} ".format(self.payload_url, self.severity, self.vulnerability_name, self.cwe[0]))
+        print("\n{0:60} {1:10} {2:40} {3:100} ".format(self.payload_url, self.severity, self.vulnerability_name, self.cwe[0]))
         for cwe in self.cwe[1:-1]:
-            print("{0:112} {1:90}".format(' '*112, cwe))
+            print("{0:112} {1:100}".format(' '*112, cwe))
 
 
 class Vulnerabilities:
@@ -769,18 +720,18 @@ class Vulnerabilities:
 
     def write_to_console(self, scan_name):
         # write the header
-        print("Webbreaker WebInpsect scan {} results:\n".format(scan_name))
-        print("\n{0:60} {1:10} {2:40} {3:90}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
-        print("{0:60} {1:10} {2:40} {3:90}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
+        print("\nWebbreaker WebInpsect scan {} results:\n".format(scan_name))
+        print("\n{0:60} {1:10} {2:40} {3:100}".format('Payload URL', 'Severity', 'Vulnerability', 'CWE'))
+        print("{0:60} {1:10} {2:40} {3:100}\n".format('-' * 60, '-' * 10, '-' * 40, '-' * 90))
 
         # write the body of the table
         for vuln in self.vulnerabilities_list:
             vuln.console_output()
 
     def write_to_json(self, file_name, scan_name, scan_id):
-        with open(file_name + '.json', 'a') as fp:
+        with open(scan_name + '.json', 'a') as fp:
             # kinda ugly - adds the things to the json that we want.
-            fp.write('{ "scan_name" : "' + scan_name + '", "scan_id" : "' + scan_id + '", "findings" :')
+            fp.write('{ "scan_name" : "' + scan_name + '", "scan_id" : "' + scan_id + '", "findings" : ')
 
             for vuln in self.vulnerabilities_list:
 
@@ -794,39 +745,3 @@ class Vulnerabilities:
                 fp.write("{}")
 
             fp.write("}")
-
-#
-#
-#
-# def xml_parsing(file_name):
-#     """
-#     if scan complete, open and parse through the xml file and output <host>, <severity>, <vulnerability>, <CWE> in console
-#     :return: JSON file
-#     """
-#
-#     # TODO read in xml file that was just created from the scan
-#     # file_name =  self.scan_overrides.scan_name + '.xml'
-#
-#     tree = ET.ElementTree(file=file_name)
-#     root = tree.getroot()
-#
-#     vulnerabilities = Vulnerabilities()
-#
-#     for elem in root.findall('Session'):
-#         vulnerability = Vulnerability()
-#
-#         vulnerability.payload_url = elem.find('URL').text
-#
-#         for issue in elem.iter(tag='Issue'):
-#             vulnerability.vulnerability_name = issue.find('Name').text
-#             vulnerability.severity = issue.find('Severity').text
-#
-#             vulnerability.cwe = []
-#             for cwe in issue.iter(tag='Classification'):
-#                 vulnerability.cwe.append(cwe.text)
-#
-#             vulnerabilities.add(vulnerability)
-#
-#     vulnerabilities.write_to_console(scan_name="test")
-#     vulnerabilities.write_to_json("/Users/z003201/Downloads/asdf33333", "test name", "tes id")
-#
