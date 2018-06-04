@@ -164,6 +164,8 @@ def test_WebInspectScan_upload_settings_and_policies_success(scan_mock, scan_ove
 
     scan_object = WebInspectScan(overrides)
     # below was done to logically isolate this test - which was harder to do than I thought.
+    #   since self.webinspect_api isn't declared in the init and we have mocked the function that creates
+    #   it, we have to set the api.
     scan_object._set_api(None, None)
     scan_object.webinspect_api.setting_overrides.webinspect_upload_policy = True
     scan_object.webinspect_api.setting_overrides.scan_policy = None
