@@ -9,8 +9,6 @@ from webbreaker.common.webbreakerlogger import Logger
 #   recently (~2.1.5)) but those will change as more work is done. TODO
 
 
-# TODO need to move threadfix logger out into its own file similar to webinspect and fortify after refactoring is done on threadfix (Hayley)
-
 class LogExceptionHelper(object):
 
     def __init__(self):

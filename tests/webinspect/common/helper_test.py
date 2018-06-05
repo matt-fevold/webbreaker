@@ -634,15 +634,17 @@ def test_webinspect_api_helper_upload_settings_failed_unbound_local_error(api_mo
     assert api_mock.call_count == 1
 
 
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectAPIHelper.policy_exists')
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectAPIHelper._check_if_built_in')
 @mock.patch('webbreaker.webinspect.common.helper.WebInspectAPIHelper._get_index')
-@mock.patch('webbreaker.webinspect.common.helper.WebInspectApi.get_policy_by_guid')
-def test_webinspect_api_verify_scan_policy(get_policy_by_guid_mock, get_index_mock, check_if_built_in_mock):
+@mock.patch('webbreaker.webinspect.common.helper.WebInspectAPIHelper.get_policy_by_guid')
+def test_webinspect_api_verify_scan_policy(get_policy_by_guid_mock, get_index_mock, check_if_built_in_mock,
+                                           policy_exists_mock):
     # Given
     webinspect_api_helper_object = WebInspectAPIHelper(silent=True, webinspect_setting_overrides=MagicMock())
     webinspect_api_helper_object.setting_overrides.scan_policy = "test_policy"
-    get_policy_by_guid_mock.return_value = WebInspectResponse(success=True)
-    webinspect_api_helper_object.api.get_policy_by_guid = get_policy_by_guid_mock
+    # get_policy_by_guid_mock.return_value =
+    # webinspect_api_helper_object.api.get_policy_by_guid =  # get_policy_by_guid_mock
 
     check_if_built_in_mock.return_value = True
 
@@ -655,6 +657,4 @@ def test_webinspect_api_verify_scan_policy(get_policy_by_guid_mock, get_index_mo
     assert check_if_built_in_mock.call_count == 1
     assert get_index_mock.call_count == 1
     assert get_policy_by_guid_mock.call_count == 1
-    # TODO: this test was taking too long to write.
-    assert 0
 
