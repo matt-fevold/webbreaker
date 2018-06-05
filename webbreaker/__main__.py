@@ -150,6 +150,10 @@ def webinspect_scan(**kwargs):
         Logger.app.critical("--upload_webmacros is a deprecated option because of underuse, if you believe there is a "
                          "valid use for this please make a github issue")
 
+    if kwargs['upload_settings']:
+        Logger.app.critical("--upload_settings is a deprecated option because of underuse, if you believe there is a "
+                         "valid use for this please make a github issue")
+
     WebInspectScan(kwargs.copy())
 
 
