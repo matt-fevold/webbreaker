@@ -114,6 +114,10 @@ class WebInspectJitScheduler(object):
         :return: return all endpoints that are the size required
         """
         possible_endpoints = []
+
+        if self.server_size_needed == "NoSize":
+            return self.endpoints
+
         for endpoint in self.endpoints:
 
             # endpoint[1] is either 1 or 2 aka max concurrent scans - it's also a string so need to cast as int.
