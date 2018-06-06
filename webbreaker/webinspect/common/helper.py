@@ -8,16 +8,12 @@ from webbreaker.common.webbreakerhelper import WebBreakerHelper
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
 
-from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
+# from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 import webbreaker.webinspect.webinspect_json as webinspectjson
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 from webinspectapi.webinspect import WebInspectApi
 import ntpath
-
-from webbreaker.webinspect.scan import ScanOverrides
-
-#from webbreaker.common.api_response_helper import APIHelper
 
 import sys
 from exitstatus import ExitStatus
