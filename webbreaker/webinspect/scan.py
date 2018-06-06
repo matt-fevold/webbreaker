@@ -87,7 +87,7 @@ class WebInspectScan:
         self._upload_settings_and_policies()
 
         try:
-            Logger.app.info("Running WebInspect Scan")
+            Logger.app.debug("Running WebInspect Scan")
 
             self.scan_id = self.webinspect_api.create_scan()
 
