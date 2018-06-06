@@ -115,8 +115,6 @@ class WebInspectJitScheduler(object):
         """
         possible_endpoints = []
 
-        if self.server_size_needed == "NoSize":
-            return self.endpoints
 
         for endpoint in self.endpoints:
 
