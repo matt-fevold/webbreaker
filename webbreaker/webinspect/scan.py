@@ -3,6 +3,7 @@
 
 
 from contextlib import contextmanager
+import datetime
 from exitstatus import ExitStatus
 import json
 from multiprocessing.dummy import Pool as ThreadPool
@@ -64,6 +65,9 @@ except ImportError:
 
 class WebInspectScan:
     def __init__(self, cli_overrides):
+        # keep track on when the scan starts
+        self.start_time = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+
         # used for multi threading the _is_available API call
         self._results_queue = queue.Queue()
 
@@ -104,8 +108,14 @@ class WebInspectScan:
         Logger.app.info("Exporting scan: {0} as {1}".format(self.scan_id, 'json'))
         Logger.app.info("Scan results file is available: {0}{1}".format(self.scan_overrides.scan_name, '.json'))
 
+        # keep track on when the scan ends
+        end_time = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+
         vulnerabilities.write_to_console(self.scan_overrides.scan_name)
-        vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id)
+        vulnerabilities.write_to_json(file_name, self.scan_overrides.scan_name, self.scan_id, self.start_time, end_time)
+
+        Logger.app.info("Scan start time: {}".format(self.start_time))
+        Logger.app.info("Scan end time: {}".format(end_time))
 
 
 
@@ -727,10 +737,12 @@ class Vulnerabilities:
         for vuln in self.vulnerabilities_list:
             vuln.console_output()
 
-    def write_to_json(self, file_name, scan_name, scan_id):
+    def write_to_json(self, file_name, scan_name, scan_id, start_time, end_time):
+        # print("DEBUG: end_time", end_time)
         with open(scan_name + '.json', 'a') as fp:
             # kinda ugly - adds the things to the json that we want.
-            fp.write('{ "scan_name" : "' + scan_name + '", "scan_id" : "' + scan_id + '", "findings" : ')
+            fp.write('{ "scan_start_time" : "' + start_time + '", "scan_end_time" : "' + end_time +
+                     '", "scan_name" : "' + scan_name + '", "scan_id" : "' + scan_id + '", "findings" : ')
 
             for vuln in self.vulnerabilities_list:
 
