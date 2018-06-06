@@ -19,7 +19,7 @@ except ImportError:  # python 2
 
 
 class WebInspectJitScheduler(object):
-    def __init__(self, endpoints, server_size_needed='large', username=None, password=None, timeout=30):
+    def __init__(self, endpoints, server_size_needed='large', username=None, password=None, timeout=60):
         """
         The Just-In-Time Scheduler is meant to take in a list of endpoints (either passed in from a user or from a
             config) and return one that is not busy running scans.
