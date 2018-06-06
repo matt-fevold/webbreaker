@@ -33,7 +33,9 @@ class WebInspectProxy:
             self.port = ""
 
         self.proxy(list, start, stop, download, upload, webmacro, setting, servers)
-        auth_config.write_credentials(self.username, self.password)
+
+        if username is not None and password is not None and not auth_config.has_auth_creds():
+            auth_config.write_credentials(self.username, self.password)
 
     def proxy(self, list, start, stop, download, upload, webmacro, setting, servers):
         """
