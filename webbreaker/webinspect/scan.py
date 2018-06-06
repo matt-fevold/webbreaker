@@ -25,7 +25,7 @@ from webbreaker.webinspect.authentication import WebInspectAuth
 # deviating from standard style to remove circular dependency problem.
 import webbreaker.webinspect.common.helper
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
-from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
+from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
 
 runenv = WebBreakerHelper.check_run_env()
@@ -559,19 +559,14 @@ class ScanOverrides:
 
     def get_endpoint(self):
         # TODO this needs to be abstracted back to the jit scheduler class - left in due to time considerations
-        config = WebInspectConfig()
-        lb = WebInspectJitScheduler(endpoints=config.endpoints,
-                                    server_size_needed=self.scan_size,
-                                    username=self.username,
-                                    password=self.password)
+        jit_scheduler = webbreaker.webinspect.jit_scheduler.WebInspectJitScheduler(server_size_needed=self.scan_size,
+                                                                                   username=self.username,
+                                                                                   password=self.password)
         Logger.app.info("Querying WebInspect scan engines for availability.")
-        try:
-            endpoint = lb.get_endpoint()
-            return endpoint
 
-        except NoServersAvailableError as e:
-            Logger.app.error("No servers are available to handle this request! {}".format(e))
-            sys.exit(ExitStatus.failure)
+        endpoint = jit_scheduler.get_endpoint()
+        return endpoint
+
 
     @staticmethod
     def _trim_ext(file):
@@ -643,3 +638,5 @@ class ScanOverrides:
             Logger.app.error("Settings file is not configured properly")
             exit(ExitStatus.failure)
         return targets
+
+
