@@ -8,6 +8,7 @@ from exitstatus import ExitStatus
 import webbreaker.webinspect.common.helper
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.common.confighelper import Config
+from webbreaker.webinspect.webinspect_config import WebInspectConfig
 
 from webbreaker.common.webbreakerlogger import Logger
 
@@ -19,7 +20,7 @@ except ImportError:  # python 2
 
 
 class WebInspectJitScheduler(object):
-    def __init__(self, endpoints, server_size_needed='large', username=None, password=None, timeout=45):
+    def __init__(self, server_size_needed='large', username=None, password=None, timeout=30):
         """
         The Just-In-Time Scheduler is meant to take in a list of endpoints (either passed in from a user or from a
             config) and return one that is not busy running scans.
@@ -37,7 +38,7 @@ class WebInspectJitScheduler(object):
         :param username:
         :param password:
         """
-        self.endpoints = endpoints
+        self.endpoints = WebInspectConfig().endpoints
 
         auth_config = WebInspectAuth()
         self.username, self.password = auth_config.authenticate(username, password)
@@ -67,7 +68,8 @@ class WebInspectJitScheduler(object):
             Logger.app.info("WebBreaker has selected: {} as your WebInspect Server.".format(endpoint[0]))
             return endpoint[0]
         else:
-            raise NoServersAvailableError
+            Logger.app.error("The JIT Scheduler found no available servers for this request.")
+            exit(ExitStatus.failure)
 
     def _get_available_endpoint(self):
         """
@@ -112,6 +114,8 @@ class WebInspectJitScheduler(object):
         :return: return all endpoints that are the size required
         """
         possible_endpoints = []
+
+
         for endpoint in self.endpoints:
 
             # endpoint[1] is either 1 or 2 aka max concurrent scans - it's also a string so need to cast as int.

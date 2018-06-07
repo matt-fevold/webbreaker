@@ -66,19 +66,14 @@ class WebInspectWiswag:
             random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
 
     def get_endpoint(self):
-        config = WebInspectConfig()
-        lb = WebInspectJitScheduler(endpoints=config.endpoints,
-                                    username=self.username,
-                                    password=self.password)
+        jit_scheduler = WebInspectJitScheduler(username=self.username,
+                                               password=self.password)
         Logger.app.info("Querying WebInspect scan engines for availability.")
 
-        try:
-            endpoint = lb.get_endpoint()
-            return endpoint
+        endpoint = jit_scheduler.get_endpoint()
+        return endpoint
 
-        except NoServersAvailableError as e:
-            Logger.app.error("No Servers are available due to a misconfiguration or lack of availability! {}".format(e))
-            sys.exit(ExitStatus.failure)
+
 
 
 
