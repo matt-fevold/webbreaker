@@ -56,3 +56,28 @@ def convert_verify_ssl_config(verify_ssl):
     else:
         logexceptionhelper.log_error_invalid_ssl_credentials()
         sys.exit(ExitStatus.failure)
+
+
+def trim_ext(file):
+    """
+    This function removes the extension from a settings file. If file is a valid file, will preserve any /path/
+    otherwise will just trim the extension and return that.  If it is a list it will repeat this process N times
+    if it is None return None.
+    :param file:
+    :return:
+    """
+    if type(file) is list:
+        result = []
+        for f in file:
+            if os.path.isfile(f):
+                result.append(os.path.splitext(f)[0])
+
+            else:
+                result.append(os.path.splitext(os.path.basename(f))[0])
+        return result
+    elif file is None:
+        return file
+    else:
+        if os.path.isfile(file):
+            return os.path.splitext(file)[0]
+        return os.path.splitext(os.path.basename(file))[0]
