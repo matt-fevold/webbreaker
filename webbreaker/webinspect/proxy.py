@@ -11,7 +11,8 @@ import sys
 from webbreaker.common.api_response_helper import APIHelper
 from webbreaker.webinspect.authentication import WebInspectAuth
 from webbreaker.webinspect.webinspect_config import WebInspectConfig
-
+# import webbreaker.webinspect.jit_scheduler
+from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler
 
 class WebInspectProxy:
     def __init__(self, download, list, port, proxy_name, setting, server, start, stop, upload, webmacro, username,
@@ -32,7 +33,9 @@ class WebInspectProxy:
             self.port = ""
 
         self.proxy(list, start, stop, download, upload, webmacro, setting, servers)
-        auth_config.write_credentials(self.username, self.password)
+
+        if username is not None and password is not None and not auth_config.has_auth_creds():
+            auth_config.write_credentials(self.username, self.password)
 
     def proxy(self, list, start, stop, download, upload, webmacro, setting, servers):
         """
@@ -56,7 +59,9 @@ class WebInspectProxy:
         try:
 
             if start:
-                server = servers[0]
+
+                server = self.get_endpoint()
+
                 self._get_proxy_certificate(server)
                 result = self._start_proxy(server)
                 if result and len(result):
@@ -119,6 +124,14 @@ class WebInspectProxy:
         except (UnboundLocalError, EnvironmentError) as e:
             Logger.app.critical("Incorrect WebInspect configurations found!! {}".format(e))
             sys.exit(ExitStatus.failure)
+
+    def get_endpoint(self):
+        jit_scheduler = WebInspectJitScheduler(username=self.username,
+                                                                                   password=self.password)
+        Logger.app.info("Querying WebInspect scan engines for availability.")
+
+        endpoint = jit_scheduler.get_endpoint()
+        return endpoint
 
     def _get_proxy_certificate(self, server):
         path = Config().cert
@@ -207,3 +220,7 @@ class WebInspectProxy:
     def _generate_random_proxy_name(self):
         self.proxy_name = "webinspect" + "-" + "".join(
             random.choice(string.ascii_uppercase + string.digits) for _ in range(5))
+
+
+if __name__ == '__main__':
+    WebInspectProxy(False, False, None, None, False, None, True, False, None, False, None, None)

@@ -3,18 +3,17 @@
 
 import os
 import json
+import ntpath
+import sys
+from exitstatus import ExitStatus
 from pybreaker import CircuitBreaker
-from webbreaker.common.webbreakerhelper import WebBreakerHelper
+from webinspectapi.webinspect import WebInspectApi
+
+
 from webbreaker.common.webbreakerlogger import Logger
 from webbreaker.common.logexceptionhelper import LogExceptionHelper
-
-from webbreaker.webinspect.jit_scheduler import WebInspectJitScheduler, NoServersAvailableError
 from webbreaker.webinspect.common.loghelper import WebInspectLogHelper
 import webbreaker.webinspect.webinspect_json as webinspectjson
-from webbreaker.webinspect.webinspect_config import WebInspectConfig
-from webinspectapi.webinspect import WebInspectApi
-import ntpath
-
 
 import sys
 from exitstatus import ExitStatus
@@ -35,18 +34,22 @@ class WebInspectAPIHelper(object):
             self.setting_overrides = webinspect_setting_overrides
             # set the host to be the available endpoint
             self.host = self.setting_overrides.endpoint
+        else:
+            self.setting_overrides = None
 
         self._set_api()
-        if silent is False:  # want to be able to hide this output for multithreading
-            Logger.app.info("Using webinspect server: -->{}<-- for query".format(self.host))
+        self.silent = silent
+
+        if self.silent is False:  # want to be able to hide this output for multithreading
+            webinspect_logexceptionhelp.log_info_using_webinspect_server(self.host)
 
     def _set_api(self):
         self.api = WebInspectApi(self.host, verify_ssl=False, username=self.username, password=self.password)
 
 
-    @staticmethod
-    def _trim_ext(file):
-        return os.path.splitext(os.path.basename(file))[0]
+    # @staticmethod
+    # def _trim_ext(file):
+    #     return os.path.splitext(os.path.basename(file))[0]
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def create_scan(self):
@@ -74,12 +77,12 @@ class WebInspectAPIHelper(object):
             Logger.app.debug("Response from {0}:\n{1}\n".format(self.setting_overrides.endpoint, logger_response))
 
             scan_id = response.data['ScanId']
-            sys.stdout.write(str('WebInspect scan launched on {0} your scan id: {1}\n'.format(self.setting_overrides.endpoint,
-                                                                                              scan_id)))
+            webinspect_logexceptionhelp.log_info_scan_start(self.setting_overrides.endpoint, scan_id)
             return scan_id
 
         except (ValueError, UnboundLocalError) as e:
-            Logger.app.error("Creating the WebInspect scan failed! {}".format(e))
+            webinspect_logexceptionhelp.log_error_scan_start_failed(e)
+            exit(ExitStatus.failure)
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def export_scan_results(self, scan_id, extension, scan_name=None):
@@ -96,17 +99,17 @@ class WebInspectAPIHelper(object):
         detail_type = 'Full' if extension == 'xml' else None
         response = self.api.export_scan_format(scan_id, extension, detail_type)
 
-	# setting_overrides is on a webinspect scan
+        # setting_overrides is on a webinspect scan
         if scan_name == None:
             scan_name = self.setting_overrides.scan_name
 
         try:
             with open('{0}.{1}'.format(scan_name, extension), 'wb') as f:
-                Logger.app.debug(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
                 f.write(response.data)
-                print(str('Scan results file is available: {0}.{1}\n'.format(scan_name, extension)))
+                webinspect_logexceptionhelp.log_info_successful_scan_export(scan_name, extension)
         except (UnboundLocalError, IOError) as e:
-            Logger.app.error('Error saving file locally! {}'.format(e))
+
+            webinspect_logexceptionhelp.log_error_failed_scan_export(e)
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def get_policy_by_guid(self, policy_guid):
@@ -146,7 +149,7 @@ class WebInspectAPIHelper(object):
             status = json.loads(response.data_json())['ScanStatus']
             return status
         except (ValueError, TypeError, UnboundLocalError) as e:
-            Logger.app.error("There was an error getting scan status: {}".format(e))
+            webinspect_logexceptionhelp.log_error_get_scan_status(e)
             return None
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
@@ -161,7 +164,7 @@ class WebInspectAPIHelper(object):
             return response.data
 
         except (ValueError, UnboundLocalError, NameError) as e:
-            Logger.app.error("There was an error listing WebInspect scans! {}".format(e))
+            webinspect_logexceptionhelp.log_error_list_scans(e)
 
     @CircuitBreaker(fail_max=5, reset_timeout=60)
     def list_running_scans(self):
@@ -199,7 +202,7 @@ class WebInspectAPIHelper(object):
                 Logger.app.debug("Deleted policy {} from server".format(
                     ntpath.basename(self.setting_overrides.webinspect_upload_policy).split('.')[0]))
         except (ValueError, UnboundLocalError, TypeError) as e:
-            Logger.app.error("Verify if deletion of existing policy failed: {}".format(e))
+            webinspect_logexceptionhelp.log_error_policy_deletion(e)
 
         try:
             response = self.api.upload_policy(self.setting_overrides.webinspect_upload_policy)
@@ -239,10 +242,11 @@ class WebInspectAPIHelper(object):
                 # two happy paths: either the provided policy refers to an existing builtin policy, or it refers to
                 # a local policy we need to first upload and then use.
 
-                if str(self.setting_overrides.scan_policy).lower() in [str(x[0]).lower() for x in
-                                                                       config.mapped_policies]:
-                    idx = [x for x, y in enumerate(config.mapped_policies) if
-                           y[0] == str(self.setting_overrides.scan_policy).lower()]
+                built_in = self._check_if_built_in(config)
+
+                if built_in:
+                    idx = self._get_index(config)
+
                     policy_guid = config.mapped_policies[idx[0]][1]
                     Logger.app.info(
                         "scan_policy {} with policyID {} has been selected.".format(self.setting_overrides.scan_policy,
@@ -278,3 +282,27 @@ class WebInspectAPIHelper(object):
 
         except (UnboundLocalError, NameError) as e:
             webinspect_logexceptionhelp.log_no_webinspect_server_found(e)
+
+    def _check_if_built_in(self, config):
+        """
+        check if scan policy is a built in, this is abstracted from verify_scan_policy so it can be mocked.
+        :param config:
+        :return:
+        """
+        if str(self.setting_overrides.scan_policy).lower() in [str(x[0]).lower() for x in
+                                                               config.mapped_policies]:
+            return True
+        else:
+            return False
+
+    def _get_index(self, config):
+        """
+        # wow what a list comprehension. not a single comment - this was added posthumously.
+        this was abstracted from verify_scan_policy so mocking could occur.
+        :param config:
+        :return:
+        """
+        index = [x for x, y in enumerate(config.mapped_policies) if
+                 y[0] == str(self.setting_overrides.scan_policy).lower()]
+
+        return index
